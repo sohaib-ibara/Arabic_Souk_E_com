@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed:gen": "node scripts/gen-seed.ts",
-    "check:supabase": "node scripts/check-supabase.ts"
+    "check:supabase": "node scripts/check-supabase.ts",
+    "import:noon": "node scripts/import/firecrawl-noon.ts",
+    "import:promote": "node scripts/import/promote-staging.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
@@ -18,6 +20,7 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.112.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
