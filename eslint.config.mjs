@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Build-time import/capture scripts (plain Node ESM, not app code).
+    "scripts/**/*.mjs",
   ]),
 ]);
 

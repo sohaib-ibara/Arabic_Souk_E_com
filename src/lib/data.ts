@@ -1,6 +1,21 @@
 import type { Brand, Category, Product, StockCheckResult, StockIssue } from "./types";
 import { sampleBrands, sampleCategories, sampleProducts } from "./sample-data";
+import { importedBrands, importedCategories, importedProducts } from "./imported-data";
 import { getSupabaseServer } from "./supabase/server";
+
+/**
+ * Local catalogue source. When a noon capture has been generated into
+ * `imported-data.ts` it takes precedence over the bundled sample catalogue;
+ * otherwise we fall back to the samples. Supabase (when configured) still wins
+ * over both — see the loaders below.
+ */
+const localProducts: Product[] = importedProducts.length ? importedProducts : sampleProducts;
+const localBrands: Brand[] = importedBrands.length ? importedBrands : sampleBrands;
+// Prefer the imported (noon) categories; otherwise fall back to the sample
+// categories that actually contain products, so we never link to an empty page.
+const localCategories: Category[] = importedCategories.length
+  ? importedCategories
+  : sampleCategories.filter((c) => localProducts.some((p) => p.category_slug === c.slug));
 
 /**
  * Data-access layer for the storefront.
@@ -65,7 +80,7 @@ async function loadProducts(): Promise<Product[]> {
     if (!error && data && data.length) return data.map(mapProductRow);
     warnFallback("products", error);
   }
-  return sampleProducts;
+  return localProducts;
 }
 
 async function loadCategories(): Promise<Category[]> {
@@ -75,7 +90,7 @@ async function loadCategories(): Promise<Category[]> {
     if (!error && data && data.length) return data as Category[];
     warnFallback("categories", error);
   }
-  return sampleCategories;
+  return localCategories;
 }
 
 async function loadBrands(): Promise<Brand[]> {
@@ -85,7 +100,7 @@ async function loadBrands(): Promise<Brand[]> {
     if (!error && data && data.length) return data as Brand[];
     warnFallback("brands", error);
   }
-  return sampleBrands;
+  return localBrands;
 }
 
 export type ProductSort = "featured" | "price-asc" | "price-desc" | "rating" | "newest";

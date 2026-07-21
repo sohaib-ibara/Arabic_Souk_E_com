@@ -34,6 +34,81 @@ human decides, per product, what is safe to publish.
 
 By approving and promoting a row you assert you have the right to use its content.
 
+---
+
+# Method A — local browser capture (NO API keys) ⭐ recommended
+
+noon blocks server-side scrapers (plain HTTP, cloud fetchers, and headless
+requests are dropped at the network layer). The free way through is a **real
+browser running on your own machine / IP**, which noon trusts. This method uses
+Playwright locally and needs **no API keys** — not even Firecrawl or Anthropic:
+
+```
+local Chromium (your IP)  →  raw capture file  →  parse (deterministic)  →  seed-noon.sql / imported-data.ts
+```
+
+Every noon product page embeds a JSON-LD `Product` block (name, brand, price,
+images, description, rating), so extraction is plain parsing — no LLM/API call.
+
+### One-time setup
+
+```bash
+npm install            # installs playwright (devDependency)
+npx playwright install chromium
+```
+
+### Step 1 — capture (opens a real browser window)
+
+```bash
+CONFIRM_SCRAPE=1 npm run import:browser
+# options: TARGET_URL=… MAX_PRODUCTS=15 DELAY_MS=1000
+
+# Capture ALL categories at once — pass multiple listings in TARGET_URLS
+# (comma-separated). MAX_PRODUCTS is then the per-listing cap:
+CONFIRM_SCRAPE=1 MAX_PRODUCTS=15 \
+TARGET_URLS="https://www.noon.com/saudi-en/beauty/makeup-16142/,\
+https://www.noon.com/saudi-en/beauty/skin-care-16813/,\
+https://www.noon.com/saudi-en/beauty/hair-care/,\
+https://www.noon.com/saudi-en/beauty/fragrance/,\
+https://www.noon.com/saudi-en/beauty/personal-care-16343/bath-and-body/,\
+https://www.noon.com/saudi-en/beauty/makeup-16142/makeup-brushes-and-tools/brushes-and-applicators-26364/" \
+npm run import:browser
+```
+
+Walks each listing, opens every product, and writes the raw structured data to
+`scripts/import/.noon-capture.json` (gitignored — never committed). Run **headed**
+(the default — a real visible browser) so noon doesn't block it; `HEADLESS=1`
+usually gets `ERR_HTTP2_PROTOCOL_ERROR`. `LIST_ONLY=1` gathers product URLs
+without scraping, handy for checking a listing yields products first.
+
+### Step 2 — build the catalogue files
+
+```bash
+node scripts/import/build-imported-data.mjs
+# options: SAR_TO_BHD=0.1  MAX_IMAGES=4
+```
+
+Produces two artifacts from the capture:
+
+- **`src/lib/imported-data.ts`** — typed `Product[]` / `Brand[]`. The storefront
+  serves these automatically when Supabase returns no rows (local demo mode).
+- **`supabase/seed-noon.sql`** — paste into the **Supabase SQL editor** and Run
+  (authenticated by your dashboard login; **no keys**). Replaces the sample
+  products/brands with the noon catalogue. This is what makes it live when the
+  store reads from Supabase (Supabase wins over the local file).
+
+Prices are converted SAR→BHD at `SAR_TO_BHD` (≈0.1) and every product is
+`stock_quantity=0` — the out-of-stock checkout flow is preserved. To revert to
+the sample catalogue, re-run `supabase/seed.sql`.
+
+---
+
+# Method B — Firecrawl + Claude → staging (needs API keys)
+
+The original pipeline, kept for when you want server-side scraping at scale with
+a review/approve gate in a staging table. Needs Firecrawl + Anthropic +
+Supabase service-role keys.
+
 ## Prerequisites
 
 - Apply the staging migration: run `supabase/migrations/0002_staging.sql` in the Supabase

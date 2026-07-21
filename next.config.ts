@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "plus.unsplash.com" },
       { protocol: "https", hostname: "*.supabase.co" },
+      // Product imagery from the noon capture (feature/noon-import demo).
+      { protocol: "https", hostname: "*.nooncdn.com" },
     ],
   },
 };

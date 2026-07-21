@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { primaryNav, siteConfig } from "@/lib/config";
+import { siteConfig } from "@/lib/config";
+import { footerCategories } from "@/lib/nav";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/icons";
 
@@ -56,7 +57,7 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">Shop</h3>
             <ul className="mt-4 space-y-2.5">
-              {primaryNav.map((item) => (
+              {footerCategories.map((item) => (
                 <li key={item.slug}>
                   <Link
                     href={`/category/${item.slug}`}

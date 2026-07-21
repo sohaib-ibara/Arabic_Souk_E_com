@@ -22,12 +22,15 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        "flex items-end justify-between gap-4",
-        align === "center" && "flex-col items-center",
+        // Two distinct layouts — kept mutually exclusive so no conflicting
+        // align-items utilities leak through (cn does not merge Tailwind classes).
+        align === "center"
+          ? "flex flex-col items-center gap-4 text-center"
+          : "flex items-end justify-between gap-4",
         className,
       )}
     >
-      <div className={cn(align === "center" && "text-center")}>
+      <div className={cn(align === "center" && "flex flex-col items-center")}>
         {eyebrow && (
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-brand">{eyebrow}</p>
         )}

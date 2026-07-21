@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { primaryNav, siteConfig } from "@/lib/config";
+import { siteConfig } from "@/lib/config";
+import { navGroups } from "@/lib/nav";
 import { CartButton } from "@/components/cart/cart-button";
-import { CloseIcon, MenuIcon, SearchIcon } from "@/components/ui/icons";
+import { ChevronRightIcon, CloseIcon, MenuIcon, SearchIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 
 export function Header() {
@@ -44,17 +45,42 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="mx-auto hidden items-center gap-7 lg:flex">
-            {primaryNav.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/category/${item.slug}`}
-                className="text-sm text-ink/80 transition-colors hover:text-brand"
-              >
-                {item.name}
-              </Link>
-            ))}
+          {/* Desktop nav — departments with sub-category dropdowns */}
+          <nav className="mx-auto hidden items-center gap-6 lg:flex">
+            {navGroups.map((group) =>
+              group.items.length ? (
+                <div key={group.slug} className="group relative">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 text-sm text-ink/80 transition-colors group-hover:text-brand"
+                  >
+                    {group.name}
+                    <ChevronRightIcon width={14} height={14} className="rotate-90 opacity-60" />
+                  </button>
+                  <div className="invisible absolute left-1/2 top-full z-50 w-56 -translate-x-1/2 pt-3 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 focus-within:visible focus-within:opacity-100">
+                    <div className="rounded-2xl border border-line bg-cream p-2 shadow-xl">
+                      {group.items.map((item) => (
+                        <Link
+                          key={item.slug}
+                          href={`/category/${item.slug}`}
+                          className="block rounded-lg px-3 py-2 text-sm text-ink/80 hover:bg-brand-tint hover:text-brand"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={group.slug}
+                  href={`/category/${group.slug}`}
+                  className="text-sm text-ink/80 transition-colors hover:text-brand"
+                >
+                  {group.name}
+                </Link>
+              ),
+            )}
             <Link href="/shop" className="text-sm font-medium text-brand hover:text-brand-dark">
               Shop all
             </Link>
@@ -154,21 +180,41 @@ export function Header() {
             />
           </form>
 
-          <nav className="flex flex-col px-2 py-2">
-            {primaryNav.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/category/${item.slug}`}
-                onClick={() => setMenuOpen(false)}
-                className="rounded-lg px-3 py-3 text-[15px] text-ink hover:bg-brand-tint hover:text-brand"
-              >
-                {item.name}
-              </Link>
-            ))}
+          <nav className="flex flex-col gap-1 overflow-y-auto px-2 py-2">
+            {navGroups.map((group) =>
+              group.items.length ? (
+                <div key={group.slug} className="px-3 py-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                    {group.name}
+                  </p>
+                  <div className="mt-1 flex flex-col">
+                    {group.items.map((item) => (
+                      <Link
+                        key={item.slug}
+                        href={`/category/${item.slug}`}
+                        onClick={() => setMenuOpen(false)}
+                        className="rounded-lg px-2 py-2 text-[15px] text-ink hover:bg-brand-tint hover:text-brand"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={group.slug}
+                  href={`/category/${group.slug}`}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg px-3 py-3 text-[15px] text-ink hover:bg-brand-tint hover:text-brand"
+                >
+                  {group.name}
+                </Link>
+              ),
+            )}
             <Link
               href="/shop"
               onClick={() => setMenuOpen(false)}
-              className="rounded-lg px-3 py-3 text-[15px] font-medium text-brand hover:bg-brand-tint"
+              className="mt-1 rounded-lg px-3 py-3 text-[15px] font-medium text-brand hover:bg-brand-tint"
             >
               Shop all
             </Link>

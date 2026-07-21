@@ -14,6 +14,13 @@ export interface Brand {
   logo_url: string | null;
 }
 
+/** A navigation department grouping several category links (used by the header/footer). */
+export interface NavGroup {
+  name: string;
+  slug: string;
+  items: Array<{ name: string; slug: string }>;
+}
+
 export interface Product {
   id: string;
   name: string;

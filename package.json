@@ -10,6 +10,7 @@
     "seed:gen": "node scripts/gen-seed.ts",
     "check:supabase": "node scripts/check-supabase.ts",
     "import:noon": "node scripts/import/firecrawl-noon.ts",
+    "import:browser": "node scripts/import/browser-noon.mjs",
     "import:promote": "node scripts/import/promote-staging.ts"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "playwright": "^1.61.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

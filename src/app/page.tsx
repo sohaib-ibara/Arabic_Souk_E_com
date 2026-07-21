@@ -43,7 +43,7 @@ export default async function HomePage() {
             description="From your daily skincare ritual to a signature scent."
           />
           <div className="mt-8">
-            <CategoryGrid categories={categories} />
+            <CategoryGrid categories={categories.slice(0, 12)} />
           </div>
         </Container>
       </section>

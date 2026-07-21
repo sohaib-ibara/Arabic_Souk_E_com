@@ -35,6 +35,10 @@ yarn-error.log*
 # ...but keep the example env file (no secrets) in version control
 !.env*.example
 
+# noon import — local scrape captures (raw, review-only; never commit)
+scripts/import/.noon-capture.json
+scripts/import/.noon-*.json
+
 # vercel
 .vercel
 
