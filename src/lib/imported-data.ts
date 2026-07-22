@@ -9,7 +9,7 @@ import type { Brand, Category, NavGroup, Product } from "./types";
  * used for this demo only. Prices were converted SAR→BHD at 0.1 and are
  * approximate. Every product ships stock_quantity=0 (out of stock at checkout by
  * design). Replace with rights-cleared assets and real pricing before go-live.
- * Source: https://www.noon.com/saudi-en/beauty/makeup-16142/face-18064/foundation/, https://www.noon.com/saudi-en/beauty/makeup-16142/face-18064/blush/, https://www.noon.com/saudi-en/beauty/makeup-16142/eyes-17047/mascara/, https://www.noon.com/saudi-en/beauty/makeup-16142/eyes-17047/eye-shadow/, https://www.noon.com/saudi-en/beauty/makeup-16142/lips/lip-glosses/, https://www.noon.com/saudi-en/beauty/skin-care-16813/moisturizers/, https://www.noon.com/saudi-en/beauty/skin-care-16813/treatment-and-serums/, https://www.noon.com/saudi-en/beauty/skin-care-16813/skincare-cleansers/, https://www.noon.com/saudi-en/beauty/hair-care/shampoo-and-conditioners/shampoos-18048/haircare-all/, https://www.noon.com/saudi-en/beauty/hair-care/shampoo-and-conditioners/conditioners/haircare-all/, https://www.noon.com/saudi-en/beauty/hair-care/hair-color/haircare-all/, https://www.noon.com/saudi-en/beauty/fragrance/fragrance-gift-sets/ · captured 2026-07-21T22:04:03.391Z
+ * Source: https://www.noon.com/saudi-en/beauty/makeup-16142/makeup-brushes-and-tools/cosmetic-bags/, https://www.noon.com/saudi-en/beauty/skin-care-16813/lip-care-moisturizers/, https://www.noon.com/saudi-en/beauty/hair-care/hair-and-scalp-treatments-24161/oils-and-serums/, https://www.noon.com/saudi-en/beauty/hair-care/styling-tools/hair-dryers-accessories/hair-dryers/, https://www.noon.com/saudi-en/beauty/hair-care/styling-tools/flattening-irons/, https://www.noon.com/saudi-en/beauty/fragrance/body-mists-and-sprays/, https://www.noon.com/saudi-en/beauty/personal-care-16343/bath-and-body/roll-on-and-deodorants/, https://www.noon.com/saudi-en/beauty/personal-care-16343/oral-hygiene/, https://www.noon.com/saudi-en/beauty/personal-care-16343/feminine-care/, https://www.noon.com/saudi-en/beauty/personal-care-16343/shaving-and-hair-removal/mens-31111/beard-mustache-care/ · captured 2026-07-22T13:45:53.475Z
  */
 
 export const importedBrands: Brand[] = [
@@ -20,9 +20,21 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-acecoat",
+    "name": "ACECOAT",
+    "slug": "acecoat",
+    "logo_url": null
+  },
+  {
     "id": "brand-afnan",
     "name": "Afnan",
     "slug": "afnan",
+    "logo_url": null
+  },
+  {
+    "id": "brand-agiva",
+    "name": "Agiva",
+    "slug": "agiva",
     "logo_url": null
   },
   {
@@ -44,9 +56,21 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-almond-hair",
+    "name": "Almond Hair",
+    "slug": "almond-hair",
+    "logo_url": null
+  },
+  {
     "id": "brand-anatasia",
     "name": "ANATASIA",
     "slug": "anatasia",
+    "logo_url": null
+  },
+  {
+    "id": "brand-anself",
+    "name": "ANSELF",
+    "slug": "anself",
     "logo_url": null
   },
   {
@@ -62,6 +86,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-arm-hammer",
+    "name": "Arm & Hammer",
+    "slug": "arm-hammer",
+    "logo_url": null
+  },
+  {
     "id": "brand-atal",
     "name": "ATAL",
     "slug": "atal",
@@ -71,6 +101,18 @@ export const importedBrands: Brand[] = [
     "id": "brand-avalon-pharma",
     "name": "Avalon Pharma",
     "slug": "avalon-pharma",
+    "logo_url": null
+  },
+  {
+    "id": "brand-babyliss",
+    "name": "BaByliss",
+    "slug": "babyliss",
+    "logo_url": null
+  },
+  {
+    "id": "brand-bare-anatomy",
+    "name": "BARE ANATOMY",
+    "slug": "bare-anatomy",
     "logo_url": null
   },
   {
@@ -86,6 +128,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-bath-body-works",
+    "name": "Bath & Body Works",
+    "slug": "bath-body-works",
+    "logo_url": null
+  },
+  {
     "id": "brand-beauty-gift",
     "name": "Beauty Gift",
     "slug": "beauty-gift",
@@ -98,6 +146,24 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-beauty-system",
+    "name": "BEAUTY SYSTEM",
+    "slug": "beauty-system",
+    "logo_url": null
+  },
+  {
+    "id": "brand-bezvoi",
+    "name": "Bezvoi",
+    "slug": "bezvoi",
+    "logo_url": null
+  },
+  {
+    "id": "brand-bikini-butter",
+    "name": "bikini butter",
+    "slug": "bikini-butter",
+    "logo_url": null
+  },
+  {
     "id": "brand-bogenia",
     "name": "Bogenia",
     "slug": "bogenia",
@@ -107,6 +173,18 @@ export const importedBrands: Brand[] = [
     "id": "brand-bourjois-paris",
     "name": "BOURJOIS PARIS",
     "slug": "bourjois-paris",
+    "logo_url": null
+  },
+  {
+    "id": "brand-bylsan",
+    "name": "Bylsan",
+    "slug": "bylsan",
+    "logo_url": null
+  },
+  {
+    "id": "brand-cantu",
+    "name": "Cantu",
+    "slug": "cantu",
     "logo_url": null
   },
   {
@@ -134,6 +212,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-chemist-at-play",
+    "name": "Chemist at Play",
+    "slug": "chemist-at-play",
+    "logo_url": null
+  },
+  {
     "id": "brand-cosmo",
     "name": "COSMO",
     "slug": "cosmo",
@@ -143,6 +227,12 @@ export const importedBrands: Brand[] = [
     "id": "brand-cream-silk",
     "name": "Cream Silk",
     "slug": "cream-silk",
+    "logo_url": null
+  },
+  {
+    "id": "brand-crest",
+    "name": "Crest",
+    "slug": "crest",
     "logo_url": null
   },
   {
@@ -164,6 +254,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-dove",
+    "name": "Dove",
+    "slug": "dove",
+    "logo_url": null
+  },
+  {
     "id": "brand-dr-rashel",
     "name": "DR. RASHEL",
     "slug": "dr-rashel",
@@ -182,6 +278,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-eelhoe",
+    "name": "EELHOE",
+    "slug": "eelhoe",
+    "logo_url": null
+  },
+  {
     "id": "brand-essence",
     "name": "Essence",
     "slug": "essence",
@@ -194,6 +296,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-fam",
+    "name": "Fam",
+    "slug": "fam",
+    "logo_url": null
+  },
+  {
     "id": "brand-fenty-beauty",
     "name": "FENTY BEAUTY",
     "slug": "fenty-beauty",
@@ -203,6 +311,12 @@ export const importedBrands: Brand[] = [
     "id": "brand-flormar",
     "name": "flormar",
     "slug": "flormar",
+    "logo_url": null
+  },
+  {
+    "id": "brand-freshdays",
+    "name": "Freshdays",
+    "slug": "freshdays",
     "logo_url": null
   },
   {
@@ -248,15 +362,39 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-h2ofloss",
+    "name": "h2ofloss",
+    "slug": "h2ofloss",
+    "logo_url": null
+  },
+  {
     "id": "brand-himalaya",
     "name": "Himalaya",
     "slug": "himalaya",
     "logo_url": null
   },
   {
+    "id": "brand-hismile",
+    "name": "HiSmile",
+    "slug": "hismile",
+    "logo_url": null
+  },
+  {
+    "id": "brand-honest-amish",
+    "name": "Honest Amish",
+    "slug": "honest-amish",
+    "logo_url": null
+  },
+  {
     "id": "brand-ikzee",
     "name": "IKZEE",
     "slug": "ikzee",
+    "logo_url": null
+  },
+  {
+    "id": "brand-immetee",
+    "name": "Immetee",
+    "slug": "immetee",
     "logo_url": null
   },
   {
@@ -284,6 +422,24 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-khajul",
+    "name": "KHAJUL",
+    "slug": "khajul",
+    "logo_url": null
+  },
+  {
+    "id": "brand-king-c-gillette",
+    "name": "King C. Gillette",
+    "slug": "king-c-gillette",
+    "logo_url": null
+  },
+  {
+    "id": "brand-kotex",
+    "name": "Kotex",
+    "slug": "kotex",
+    "logo_url": null
+  },
+  {
     "id": "brand-l-oreal-paris",
     "name": "L'OREAL PARIS",
     "slug": "l-oreal-paris",
@@ -302,6 +458,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-labello",
+    "name": "Labello",
+    "slug": "labello",
+    "logo_url": null
+  },
+  {
     "id": "brand-lakerain",
     "name": "lakerain",
     "slug": "lakerain",
@@ -311,6 +473,18 @@ export const importedBrands: Brand[] = [
     "id": "brand-lakme",
     "name": "LAKME",
     "slug": "lakme",
+    "logo_url": null
+  },
+  {
+    "id": "brand-laneige",
+    "name": "LANEIGE",
+    "slug": "laneige",
+    "logo_url": null
+  },
+  {
+    "id": "brand-lanemay",
+    "name": "LANEMAY",
+    "slug": "lanemay",
     "logo_url": null
   },
   {
@@ -344,6 +518,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-marvis",
+    "name": "Marvis",
+    "slug": "marvis",
+    "logo_url": null
+  },
+  {
     "id": "brand-max-factor",
     "name": "Max Factor",
     "slug": "max-factor",
@@ -368,6 +548,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-mielle",
+    "name": "MIELLE",
+    "slug": "mielle",
+    "logo_url": null
+  },
+  {
     "id": "brand-miss-rose",
     "name": "Miss Rose",
     "slug": "miss-rose",
@@ -377,6 +563,12 @@ export const importedBrands: Brand[] = [
     "id": "brand-mmg",
     "name": "MMG",
     "slug": "mmg",
+    "logo_url": null
+  },
+  {
+    "id": "brand-moonstone-creations",
+    "name": "Moonstone Creations",
+    "slug": "moonstone-creations",
     "logo_url": null
   },
   {
@@ -410,6 +602,18 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-obelo",
+    "name": "OBelo",
+    "slug": "obelo",
+    "logo_url": null
+  },
+  {
+    "id": "brand-okema",
+    "name": "Okema",
+    "slug": "okema",
+    "logo_url": null
+  },
+  {
     "id": "brand-olaplex",
     "name": "Olaplex",
     "slug": "olaplex",
@@ -434,9 +638,21 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-philips",
+    "name": "Philips",
+    "slug": "philips",
+    "logo_url": null
+  },
+  {
     "id": "brand-pink-flash",
     "name": "Pink Flash",
     "slug": "pink-flash",
+    "logo_url": null
+  },
+  {
+    "id": "brand-private",
+    "name": "Private",
+    "slug": "private",
     "logo_url": null
   },
   {
@@ -449,6 +665,12 @@ export const importedBrands: Brand[] = [
     "id": "brand-pyary",
     "name": "Pyary",
     "slug": "pyary",
+    "logo_url": null
+  },
+  {
+    "id": "brand-qanzire",
+    "name": "QANZIRE",
+    "slug": "qanzire",
     "logo_url": null
   },
   {
@@ -512,6 +734,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-rose",
+    "name": "Rose",
+    "slug": "rose",
+    "logo_url": null
+  },
+  {
     "id": "brand-rose-berry",
     "name": "ROSE BERRY",
     "slug": "rose-berry",
@@ -533,6 +761,12 @@ export const importedBrands: Brand[] = [
     "id": "brand-sep",
     "name": "SEP",
     "slug": "sep",
+    "logo_url": null
+  },
+  {
+    "id": "brand-sharpdo",
+    "name": "Sharpdo",
+    "slug": "sharpdo",
     "logo_url": null
   },
   {
@@ -578,6 +812,12 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-sunhome",
+    "name": "Sunhome",
+    "slug": "sunhome",
+    "logo_url": null
+  },
+  {
     "id": "brand-swift",
     "name": "Swift",
     "slug": "swift",
@@ -608,9 +848,27 @@ export const importedBrands: Brand[] = [
     "logo_url": null
   },
   {
+    "id": "brand-univer-tang",
+    "name": "Univer Tang",
+    "slug": "univer-tang",
+    "logo_url": null
+  },
+  {
     "id": "brand-urevo",
     "name": "UREVO",
     "slug": "urevo",
+    "logo_url": null
+  },
+  {
+    "id": "brand-vai-naturals",
+    "name": "VAI Naturals",
+    "slug": "vai-naturals",
+    "logo_url": null
+  },
+  {
+    "id": "brand-vaseline",
+    "name": "Vaseline",
+    "slug": "vaseline",
     "logo_url": null
   },
   {
@@ -623,6 +881,12 @@ export const importedBrands: Brand[] = [
     "id": "brand-white-shell",
     "name": "white shell",
     "slug": "white-shell",
+    "logo_url": null
+  },
+  {
+    "id": "brand-womn",
+    "name": "WOMN",
+    "slug": "womn",
     "logo_url": null
   },
   {
@@ -705,12 +969,20 @@ export const importedCategories: Category[] = [
     "sort_order": 8
   },
   {
+    "id": "cat-lip-care",
+    "name": "Lip Care",
+    "slug": "lip-care",
+    "description": null,
+    "image_url": "https://f.nooncdn.com/p/pzsku/Z7EAD3043306BEECB4797Z/45/_/1719460532/ed65fff4-b4c8-4017-b2e0-91c3ad86a8ee.jpg?width=1200",
+    "sort_order": 9
+  },
+  {
     "id": "cat-skin-cleansers",
     "name": "Skin Cleansers",
     "slug": "skin-cleansers",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pnsku/N11294411A/45/_/1776342617/8aa01818-748b-4d72-ad89-d85b6b90811c.jpg?width=1200",
-    "sort_order": 9
+    "sort_order": 10
   },
   {
     "id": "cat-sun-care",
@@ -718,7 +990,7 @@ export const importedCategories: Category[] = [
     "slug": "sun-care",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/Z9FFD340F52B826A89036Z/45/1762936757/6ee61065-2508-4110-9adc-138ca808282a.jpg?width=1200",
-    "sort_order": 10
+    "sort_order": 11
   },
   {
     "id": "cat-treatment-serums",
@@ -726,7 +998,7 @@ export const importedCategories: Category[] = [
     "slug": "treatment-serums",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/fb889ec50f784103a85817c4c97eadd1|pzsku/Z98B89E90ACD02256C23AZ/45/1771237421/787b07ba-d575-4e2b-8041-08825577b4bc.jpg?width=1200",
-    "sort_order": 11
+    "sort_order": 12
   },
   {
     "id": "cat-hair-scalp-treatments",
@@ -734,7 +1006,7 @@ export const importedCategories: Category[] = [
     "slug": "hair-scalp-treatments",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/Z9233C2C0ECC7CD3F4254Z/45/1745243479/9e35ca28-9e92-4b2d-8d26-699bc49c8d7d.jpg?width=1200",
-    "sort_order": 12
+    "sort_order": 13
   },
   {
     "id": "cat-hair-color",
@@ -742,7 +1014,7 @@ export const importedCategories: Category[] = [
     "slug": "hair-color",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pnsku/N50690518A/45/_/1766380507/41e91514-f493-4d3b-853a-559c6917abb3.jpg?width=1200",
-    "sort_order": 13
+    "sort_order": 14
   },
   {
     "id": "cat-shampoos-conditioners",
@@ -750,7 +1022,7 @@ export const importedCategories: Category[] = [
     "slug": "shampoos-conditioners",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/ZA56ADC4F1E655D7B8515Z/45/1760425013/0164e9b3-adfa-43d6-b4e1-f986dd4a2990.jpg?width=1200",
-    "sort_order": 14
+    "sort_order": 15
   },
   {
     "id": "cat-styling-products",
@@ -758,7 +1030,7 @@ export const importedCategories: Category[] = [
     "slug": "styling-products",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pnsku/N37799522A/45/_/1696767069/9b5a3e20-9eb2-465e-9779-8eae93d4953c.jpg?width=1200",
-    "sort_order": 15
+    "sort_order": 16
   },
   {
     "id": "cat-styling-tools",
@@ -766,7 +1038,7 @@ export const importedCategories: Category[] = [
     "slug": "styling-tools",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/Z0AAE36B2D309172A2511Z/45/1755501765/8760a4ae-82b8-4d25-86da-16489d08aa4a.jpg?width=1200",
-    "sort_order": 16
+    "sort_order": 17
   },
   {
     "id": "cat-attar-perfume-oils",
@@ -774,7 +1046,15 @@ export const importedCategories: Category[] = [
     "slug": "attar-perfume-oils",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/ZCE255DBD4A86507C1A76Z/45/_/1718268361/f370e3d4-0103-4841-8ce2-82c955c9dcc7.jpg?width=1200",
-    "sort_order": 17
+    "sort_order": 18
+  },
+  {
+    "id": "cat-body-mists-sprays",
+    "name": "Body Mists & Sprays",
+    "slug": "body-mists-sprays",
+    "description": null,
+    "image_url": "https://f.nooncdn.com/p/pzsku/Z9B8382AECB0DC3F7A619Z/45/1766911335/15dcb7e7-0bd6-42d4-8253-210cc3956265.jpg?width=1200",
+    "sort_order": 19
   },
   {
     "id": "cat-eau-de-parfum",
@@ -782,7 +1062,7 @@ export const importedCategories: Category[] = [
     "slug": "eau-de-parfum",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/ZF29B9F767FF2272CBAFFZ/45/1765219092/5d559703-90ac-4d1a-9503-abe62ebac083.jpg?width=1200",
-    "sort_order": 18
+    "sort_order": 20
   },
   {
     "id": "cat-fragrance",
@@ -790,7 +1070,7 @@ export const importedCategories: Category[] = [
     "slug": "fragrance",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/Z2A7172342215DE5FA7D5Z/45/_/1779094781/4d45f60b-e9f3-4702-aa35-2d3447bf5940.jpg?width=1200",
-    "sort_order": 19
+    "sort_order": 21
   },
   {
     "id": "cat-fragrance-gift-sets",
@@ -798,7 +1078,7 @@ export const importedCategories: Category[] = [
     "slug": "fragrance-gift-sets",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/ZC4217BFF547D894BF0E4Z/45/_/1739973102/730954d3-902c-47c0-b22d-c88e2d0765ea.jpg?width=1200",
-    "sort_order": 20
+    "sort_order": 22
   },
   {
     "id": "cat-bath",
@@ -806,7 +1086,7 @@ export const importedCategories: Category[] = [
     "slug": "bath",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/Z2AB5F03FF03E708048FFZ/45/1746292513/09a79fac-7746-4061-a129-0fdd437ed6b6.jpg?width=1200",
-    "sort_order": 21
+    "sort_order": 23
   },
   {
     "id": "cat-bath-body",
@@ -814,7 +1094,7 @@ export const importedCategories: Category[] = [
     "slug": "bath-body",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pnsku/N11292792A/45/_/1767607992/4536f742-1adc-4fe9-a600-e2d51971a4c8.jpg?width=1200",
-    "sort_order": 22
+    "sort_order": 24
   },
   {
     "id": "cat-deodorants-antiperspirants",
@@ -822,7 +1102,31 @@ export const importedCategories: Category[] = [
     "slug": "deodorants-antiperspirants",
     "description": null,
     "image_url": "https://f.nooncdn.com/p/pzsku/Z8B7D7244199141780104Z/45/_/1782121541/2cfeef85-e47a-4bf9-9fad-a3654fdf83e7.jpg?width=1200",
-    "sort_order": 23
+    "sort_order": 25
+  },
+  {
+    "id": "cat-feminine-care",
+    "name": "Feminine Care",
+    "slug": "feminine-care",
+    "description": null,
+    "image_url": "https://f.nooncdn.com/p/pzsku/ZA873CF9901C3DC4482A1Z/45/_/1779135401/1cbf0b1d-2c7c-4352-af35-bc975b2f874d.jpg?width=1200",
+    "sort_order": 26
+  },
+  {
+    "id": "cat-oral-hygiene",
+    "name": "Oral Hygiene",
+    "slug": "oral-hygiene",
+    "description": null,
+    "image_url": "https://f.nooncdn.com/p/pzsku/ZEA69C18B7CF377D678D0Z/45/_/1779159556/aa109b33-2263-44be-8098-5ed951a57e47.jpg?width=1200",
+    "sort_order": 27
+  },
+  {
+    "id": "cat-shaving-hair-removal",
+    "name": "Shaving & Hair Removal",
+    "slug": "shaving-hair-removal",
+    "description": null,
+    "image_url": "https://f.nooncdn.com/p/v1684392835/N50344778A_8.jpg?width=1200",
+    "sort_order": 28
   }
 ];
 
@@ -868,6 +1172,10 @@ export const importedNav: NavGroup[] = [
       {
         "name": "Creams & Moisturizers",
         "slug": "creams-moisturizers"
+      },
+      {
+        "name": "Lip Care",
+        "slug": "lip-care"
       },
       {
         "name": "Skin Cleansers",
@@ -918,6 +1226,10 @@ export const importedNav: NavGroup[] = [
         "slug": "attar-perfume-oils"
       },
       {
+        "name": "Body Mists & Sprays",
+        "slug": "body-mists-sprays"
+      },
+      {
         "name": "Eau de Parfum",
         "slug": "eau-de-parfum"
       },
@@ -946,6 +1258,18 @@ export const importedNav: NavGroup[] = [
       {
         "name": "Deodorants & Antiperspirants",
         "slug": "deodorants-antiperspirants"
+      },
+      {
+        "name": "Feminine Care",
+        "slug": "feminine-care"
+      },
+      {
+        "name": "Oral Hygiene",
+        "slug": "oral-hygiene"
+      },
+      {
+        "name": "Shaving & Hair Removal",
+        "slug": "shaving-hair-removal"
       }
     ]
   }
@@ -3128,7 +3452,7 @@ export const importedProducts: Product[] = [
     "review_count": 5,
     "stock_quantity": 0,
     "in_stock": true,
-    "is_featured": true,
+    "is_featured": false,
     "is_new": true,
     "tags": [
       "makeup",
@@ -3160,7 +3484,7 @@ export const importedProducts: Product[] = [
     "review_count": 5,
     "stock_quantity": 0,
     "in_stock": true,
-    "is_featured": true,
+    "is_featured": false,
     "is_new": true,
     "tags": [
       "makeup",
@@ -7262,6 +7586,3335 @@ export const importedProducts: Product[] = [
       "fragrance",
       "gift",
       "sets"
+    ]
+  },
+  {
+    "id": "noon-ZD95BD196184331398025Z",
+    "name": "Transparent mesh makeup bag with two compartments (top and bottom) for perfect cosmetic organization - Z03",
+    "slug": "transparent-mesh-makeup-bag-with-two-compartments-top-and-bottom-for-p",
+    "description": "Double-layer makeup bag - your perfect companion for organizing cosmetics and personal care tools. This large, multifunctional bag is designed to meet your daily needs or during travel, offering ample space for all your essentials with its practical and elegant design. How to Use: 1. Open the double zipper to access the different compartments. 2. Use the top layer to store makeup brushes or long tools, thanks to its smart vertical design. 3. Place cosmetics or personal care items in the bottom layer, utilizing the mesh for ventilation and organization. 4. After use, securely close the zipper and store the bag in a dry place or inside your travel luggage. Pre-Use Tips: Regularly clean the bag with a damp cloth to maintain its cleanliness and elegance. Avoid placing open liquids inside the bag to prevent spills. FAQs: Does the bag fit all makeup tools? Yes, its spacious and dual-layer design makes it suitable for all makeup tools and personal care products. Is the bag water-resistant? The bag is made of durable materials that help resist moisture, but it’s recommended to avoid direct exposure to water. Product Story: The double-layer makeup bag is designed to meet the needs of modern women in organizing cosmetics in a practical and efficient way. Whether you're preparing for a trip or arranging your daily essentials, this bag provides everything you need with an elegant design and ease of use. Trenz Brand Story: In a world full of choices, \"Trenz\" stands out as a distinguished Saudi brand dedicated to offering products that focus on beauty and health to meet the needs of the modern woman. Founded with a clear vision and a noble goal, Trenz aims to empower women to feel confident and beautiful every day through innovative and high-quality products. Our range includes makeup brushes, makeup sponges, mirrors, nail files, and more. Each product is the result of meticulous research and attention to detail to ensure the best for you. \"Trenz\" is not just a brand; it is your companion in beauty and wellness. We are here to be part of your daily journey towards beauty and self-care. Join us and discover how our products can add a touch of elegance and comfort to your life. Keywords: makeup bag, double-layer bag, cosmetics organizer, personal care bag, travel bag, multifunctional bag, cosmetics bag.",
+    "short_description": "Double-layer makeup bag - your perfect companion for organizing cosmetics and personal care tools.",
+    "price": 2.49,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZD95BD196184331398025Z/45/_/1781562075/a66384b1-42f6-4233-8694-837d1bd3e9bc.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZD95BD196184331398025Z/45/_/1737487794/8fc2df0b-5cca-4037-a65c-682ad57b6abb.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZD95BD196184331398025Z/45/_/1737487773/d8a428b7-f568-47e5-a602-8e5a25e285b6.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZD95BD196184331398025Z/45/_/1737487784/02388048-43eb-433e-98a0-f1262ebd2258.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "trenz",
+    "brand_name": "TRENZ",
+    "rating": 4,
+    "review_count": 85,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-Z14F95D07DB90210DDAE3Z",
+    "name": "TRENZ Clear Mesh Makeup Bag Set of 3 Multi-Size — Travel Cosmetic & Toiletry Organizer Pouch, Black Transparent (Z20)",
+    "slug": "trenz-clear-mesh-makeup-bag-set-of-3-multi-size-travel-cosmetic-toilet",
+    "description": "This set of mesh bags offers you elegant and practical storage solutions at the same time. With their transparent and flexible design, they help you quickly see their contents whether at home or outside, without mixing or cluttering your makeup and personal items. How to use: Divide your items by size: use the small bag for brushes, the medium for concealers or powders, and the large one for larger products or travel tools. Close the zipper tightly to ensure contents don’t spill during transport. Fold the set when needed to save space or store it in your travel bag. Tips before use: Wipe clean with a soft damp cloth after use, especially if products leak inside. If exposed to moisture, open them and let them dry in a well-ventilated place to maintain their quality. Avoid placing sharp tools directly inside the bags to prevent punctures. FAQs: Can they fit in a large makeup bag? Yes, the foldable design makes them ideal for storing in larger bags or even travel luggage. Are they transparent? Of course, the transparent mesh allows you to see your items clearly and access them easily. Product Story: This mesh bag set was designed to meet the needs of modern women who seek perfect organization without complexity. Whether at home or on a trip, this set ensures peace of mind and stylish storage. TRENZ Story: In a world full of choices, “TRENZ” stands out as a distinguished Saudi brand that focuses on beauty and wellness, to meet the needs of the modern woman. TRENZ was founded with a clear vision and noble mission: empowering women to feel confident and beautiful every day through innovative and high-quality products. We’ve gathered a wide variety of items including makeup brushes, makeup sponges, mirrors, nail files, and more. Every product we offer is the result of careful research and attention to detail, ensuring the best for you. “TRENZ” is not just a brand — it’s your partner in beauty and wellness. We’re here to be part of your daily journey toward elegance and self-care. Join us and discover how our products can add a touch of style and comfort to your life. Keywords: cosmetic bag, makeup bag",
+    "short_description": "This set of mesh bags offers you elegant and practical storage solutions at the same time.",
+    "price": 3.25,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/60c2c5bf7fde5c7b9287234da27661e7|pzsku/Z14F95D07DB90210DDAE3Z/45/1768919412/a6e1be2b-fea0-4e93-a90c-36a5c3e8dccf.jpg?width=1200",
+      "https://f.nooncdn.com/p/60c2c5bf7fde5c7b9287234da27661e7|pzsku/Z14F95D07DB90210DDAE3Z/45/1768919479/60c8bb03-b560-438c-9187-4802ba327404.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z14F95D07DB90210DDAE3Z/45/_/1735734894/f0e04e35-e044-437b-a506-7c531aac2248.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "trenz",
+    "brand_name": "TRENZ",
+    "rating": 4,
+    "review_count": 105,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-ZBFC977D0105AFD94616EZ",
+    "name": "Travel Bottles for Toiletries, 18pack Tsa Approved 90ml Travel Size Containers for Toiletries BPA Free Leak Proof Refillable Liquid Silicone Squeezable Travel Accessories for Shampoo Conditioner Lotion",
+    "slug": "travel-bottles-for-toiletries-18pack-tsa-approved-90ml-travel-size-con",
+    "description": "ACECOAT products make your life and travel more convenient and enjoyable. It All Began With A Simple Idea: To make every journey as seamless and enjoyable as possible by providing travelers with the perfect gear. This idea sparked the creation of the ACECOAT brand. ACECOAT stands for ‘the essence of comfort,’ embodying our mission to bring ease and style to every traveler’s adventure. We envisioned our products as the dependable companions that guide you through the unknown, much like a trusted guide on a journey. With ACECOAT by your side, you can confidently explore new horizons, knowing that every aspect of your travel experience has been thoughtfully designed for your comfort and convenience. Together, let's transform travel into not just a destination, but an extraordinary journey. Brand Vision: ACECOAT envisions a world where every journey is an extraordinary experience, driven by the perfect blend of functionality, durability, and style in our travel products. We strive to be the brand that travelers trust, offering innovative solutions that meet the demands of modern explorers. From the first step of your journey to the last, ACECOAT eager that you travel with confidence, comfort, making each journey a remarkable story.",
+    "short_description": "ACECOAT products make your life and travel more convenient and enjoyable.",
+    "price": 3.35,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZBFC977D0105AFD94616EZ/45/_/1725535675/3406824c-b089-4f83-bf98-3bdbb7207787.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZBFC977D0105AFD94616EZ/45/_/1725535686/0fb0af52-6d91-4140-8a42-95b579904370.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZBFC977D0105AFD94616EZ/45/_/1725535696/2aeb46db-9a6e-4692-b58f-d53c41a1d9e9.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZBFC977D0105AFD94616EZ/45/_/1725535708/d5b976ea-a966-49c5-a5ff-9e3bc1e75c0c.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "acecoat",
+    "brand_name": "ACECOAT",
+    "rating": 4.6,
+    "review_count": 150,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-Z2A34D6E7DCFF31604F44Z",
+    "name": "3-Piece Clear Makeup Bags - Different Sizes Travel Toiletry Bags, Makeup Bags Carry On Toiletry Bags (Black)",
+    "slug": "3-piece-clear-makeup-bags-different-sizes-travel-toiletry-bags-makeup",
+    "description": "🎉Storing Travel Size Toiletries Bottles:High-quality metal zipper is smooth not get stuck. 🎉See-though & Reinforced Seams: The TSA approved toiletry bag is made of 0.5mm thick transparent PVC, make you easier to spot your items, and ensure the security staffs check the items quickly; Reinforced seams prevent the bag splitting easily, to effectively reduce the liquids leak out from this bag (zipper is not waterproof). 🎉Sturdy Zipper & Bigger Top Opening: The toiletry bag has the durable zipper which is glided smoothly; The zipper can be closed firmly; The big top opening allows you easier to access your items in seconds. 🎉Portable & Reusable: This quart size bag perfectly suits travel bottles, also great to store cosmetics, toiletries and small stuffs; Tips to remove the smell of the small travel toiletry bag: Please firstly wash the outside and inside of the clear makeup bag with soap and water; Please unzip the bag, then leave the bag in a well-ventilated place for a few days. 🎉Lightweight & Perfect Gift for Your Friend: The clear makeup bag is less than 1 lb., perfect size to fit in your carry-on luggage for travel or vacations; This practical clear cosmetic bag a best choice as a gift for your friend and family (for age 12 or above).",
+    "short_description": "🎉Storing Travel Size Toiletries Bottles:High-quality metal zipper is smooth not get stuck.",
+    "price": 2.15,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z2A34D6E7DCFF31604F44Z/45/1744704903/37a95e14-519d-4ae7-9087-566ef072794b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2A34D6E7DCFF31604F44Z/45/_/1733211858/87116e69-741c-4cf4-be18-74af80dd2a22.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2A34D6E7DCFF31604F44Z/45/_/1733211859/79eb0853-d19a-4e73-80a2-a1306429d7e3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2A34D6E7DCFF31604F44Z/45/_/1733211817/40f969fa-b56b-462f-962b-2d634d2a99d4.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "khajul",
+    "brand_name": "KHAJUL",
+    "rating": 3.9,
+    "review_count": 83,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-ZE63ED8703EE7EC8AFBF6Z",
+    "name": "5-piece transparent makeup bag set - Z80",
+    "slug": "5-piece-transparent-makeup-bag-set-z80",
+    "description": "If you love staying organized while keeping things effortlessly chic, this set is made for you 🤍 Designed with a soft heart pattern and a fully transparent body, it lets you find everything at a glance—no more digging through clutter. This 5-piece set includes a variety of sizes for every need: Large case with top handle – perfect for travel or bulkier items Medium zip bag – ideal for daily essentials Flat pouch – great for brushes or lightweight products Small wristlet pouch – easy to carry on the go Structured base pouch – offers extra stability and neat storage Crafted from durable, water-resistant PVC with sturdy zippers, each piece is built to keep your items protected, visible, and beautifully arranged.",
+    "short_description": "If you love staying organized while keeping things effortlessly chic, this set is made for you 🤍 Designed with a soft heart pattern and a f…",
+    "price": 4.85,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZE63ED8703EE7EC8AFBF6Z/45/_/1783190471/426826c0-c9b2-401c-a2a4-ddd148dc2624.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZE63ED8703EE7EC8AFBF6Z/45/_/1783190522/fc459947-1625-427d-aac3-18ff6e1837e3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZE63ED8703EE7EC8AFBF6Z/45/_/1783190522/8441a143-e2ac-4b64-85a0-0bbfda203dfe.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZE63ED8703EE7EC8AFBF6Z/45/_/1783190522/2bee50c9-4270-4a90-bccc-599d73da5e4c.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "trenz",
+    "brand_name": "TRENZ",
+    "rating": 4.9,
+    "review_count": 9,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-Z7C5210C0204BE91A0839Z",
+    "name": "Rotating Makeup Organizer, 2 Tier Large Capacity Cosmetic Display Make Up Holder Shelf for Bathroom Vanity Perfume Skincare Brushes Lipsticks Eyeshadow",
+    "slug": "rotating-makeup-organizer-2-tier-large-capacity-cosmetic-display-make",
+    "description": "360° Rotation Design: The makeup organizer rotation design that allows you to easily access all your beauty products with just turn the makeup organizer tray. You won't have to dig through messy bags or cluttered drawers anymore. Everything will be right there where you need it. 2-Layer Large Capacity: This rotating makeup organizers with 2 spacious layers， offers ample storage space for all your skincare products， cosmetics， perfume， and jewelry. This preppy makeup organizer adds a touch of sophistication to any vanity or bathroom countertop and its compact design won't take up too much space on your dresser. Easy to Assemble & Clean: This acrylic makeup organizer is incredibly easy to assemble and disassemble， making it perfect for those who often clean their clear makeup organizers and need to relocate it frequently. The makeup holder shelf smooth surface of the plastic material makes it easy to care for and clean. Perfect Gift: Whether you're shopping for yourself or searching for the perfect gift for a beauty-loving friend or family member， our vanity makeup organizer decor is an excellent choice. Its elegant design and practical functionality will help keep your makeup organized and within reach.",
+    "short_description": "360° Rotation Design: The makeup organizer rotation design that allows you to easily access all your beauty products with just turn the make…",
+    "price": 5.595,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z7C5210C0204BE91A0839Z/45/_/1704264807/22a5d05f-7fa8-4e1a-923f-15c6ef6bdf57.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7C5210C0204BE91A0839Z/45/_/1704264814/bf5936e1-8362-427e-8f18-1ffafd82706f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7C5210C0204BE91A0839Z/45/_/1704264818/afbd76fb-33c2-4640-8261-1b642eeef095.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7C5210C0204BE91A0839Z/45/_/1704264822/a632f3bb-a4cf-46dc-9423-9edf775e0ab5.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "sharpdo",
+    "brand_name": "Sharpdo",
+    "rating": 4.6,
+    "review_count": 611,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-N15392470A",
+    "name": "Portable Makeup Bag Black",
+    "slug": "portable-makeup-bag-black",
+    "description": "About the product: Containing all the necessary tools, provide you with much more convenience, the perfect portable kit for DIY at home. All-in-one Nail Art Set: It contains 3 Poly extension gel +100 pieces of crystal nail mold +manicure brush +Double-headed Manicure Tool+ Nail File Strip+UV LED Nail Lamp， you can make a variety of beautiful extended nails and other nail designs. This nail extension gel is mainly composed of natural resin, organic and odourless. It is soft and easy to use, you can paint on it as you like. About the brand: Anself is a brand known for excellence. They have various beauty and personal care products ranging from make-up brushes, nail polishes, and other make-up accessories. How to use: Use this on the go or to store your everyday makeup. Makes a perfect vanity bag.",
+    "short_description": "Containing all the necessary tools, provide you with much more convenience, the perfect portable kit for DIY at home.",
+    "price": 6.58,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N15392470A/45/_/1766050023/7518454f-af0f-4b4a-acef-754364f25189.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15392470A/45/_/1764242429/9e50dcc1-2b2d-4b76-8b35-2912290ccc36.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15392470A/45/_/1764242430/b7138448-553c-4b53-9a36-463019935749.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15392470A/45/_/1764242431/a568492c-075d-4931-be80-2e4700474767.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "anself",
+    "brand_name": "ANSELF",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-Z81091DEC28B687FBC7D6Z",
+    "name": "The Perfect Travel Companion: Water-Resistant Toiletry Bag!",
+    "slug": "the-perfect-travel-companion-water-resistant-toiletry-bag",
+    "description": "Product Name: Waterproof Essentials Bag: Your Perfect Travel and On-the-Go Companion Usage Instructions: 1. Organize your personal care items and makeup in the bag, utilizing the various pockets and compartments to keep everything neatly arranged. 2. Ensure the zipper is securely closed to protect the contents of the bag from water and moisture. 3. Place the bag in your suitcase or use it as a standalone carry-on for daily use or travel. 4. When cleaning is needed, wipe the bag with a damp cloth to maintain its cleanliness and durability. Pre-Use Tips: - Distribute items evenly within the bag to maintain its shape and make it easier to access your essentials. - Use the bag to organize your personal care items at home to keep everything tidy. - It can also be used as a gym bag to carry personal workout essentials in an organized and protected manner. Frequently Asked Questions: Q: Is the bag fully waterproof? A: Yes, the bag is made from waterproof materials that protect its contents from getting wet, making it perfect for travel or use in humid environments. Q: Is the bag suitable for carrying large personal care items? A: The bag provides ample space and multiple pockets to organize various sizes of essentials, including larger items. Product Story: Designed by Trenz, the Waterproof Essentials Bag is your ideal companion for every journey. Whether you're heading out on a short getaway or a business trip, this bag offers ample space to organize your personal items securely and neatly. With its waterproof design, you can rest assured that your essentials are protected from any unwanted moisture. The bag comes with multiple pockets and compartments to make organizing your items easier, making it the perfect choice for travel and on-the-go convenience. Trenz Story: At Trenz, we are dedicated to offering products that combine style and practicality, making your life easier and more organized. The Waterproof Essentials Bag is another example of our commitment to providing the best solutions that ensure peace of mind while traveling or on the go. With Trenz, you deserve the best, and we strive to deliver that in every product we offer. Tagline: Trenz - Your Beauty Deserves the Best Product Keywords: Essentials bag, waterproof, travel bag, organizer bag, personal care bag, Trenz products, cosmetic bag, multi-pocket bag, practical travel bag",
+    "short_description": "Product Name: Waterproof Essentials Bag: Your Perfect Travel and On-the-Go Companion Usage Instructions: 1.",
+    "price": 2.449,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z81091DEC28B687FBC7D6Z/45/_/1781562369/44499ff0-e5c9-4d87-80f1-58e40ffa469a.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z81091DEC28B687FBC7D6Z/45/_/1726432991/4121f48b-6916-4c47-9fc3-24fe70d1abca.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z81091DEC28B687FBC7D6Z/45/_/1726433011/93811a70-f05c-47f6-9382-7b1f768ac495.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z81091DEC28B687FBC7D6Z/45/_/1726433031/1829695f-4448-461a-9100-f89c44e9fbce.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "trenz",
+    "brand_name": "TRENZ",
+    "rating": 4.7,
+    "review_count": 161,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-Z3E0682AD75FD3C8DF90CZ",
+    "name": "TRENZ 3-Piece Makeup Bag Set – Cherry Print Padded Cosmetic Pouches, Travel Toiletry Organizer",
+    "slug": "trenz-3-piece-makeup-bag-set-cherry-print-padded-cosmetic-pouches-trav",
+    "description": "Cherry Padded Makeup Bag Set – 3 PCS (Z70) from TRENZ | Easy Organization for Every Day Full Detailed Description (TRENZ Style) If you want an organized, stress-free routine—and you want to find your essentials fast without digging through a messy bag—the TRENZ Z70 set is made for you. It comes with three different sizes so you can sort everything clearly: the large bag for your full routine or travel, the medium bag for everyday must-haves, and the small pouch for quick items like lipstick, clips, accessories, or mini tools. The padded design gives a neat, premium feel and adds extra protection, while the polyester lining inside makes the set more practical for daily use and easier to clean with a quick wipe. With smooth, secure zippers, access is easy—and your items stay protected, especially when you’re in a hurry and want things to feel “neat from the first try.” And it’s not limited to makeup. You can use the set for skincare, travel items, accessories, or as organizers inside your tote or luggage. One set, multiple uses—so your day stays easier and more organized wherever you go. How to Use Large: Full makeup routine / personal care / travel items Medium: Daily essentials Small: Quick items (lipstick, clips, accessories, mini tools) Pre-Use Tips Assign each pouch a category and keep it consistent—your routine becomes noticeably faster. Keep liquids in one pouch to avoid mess in case of small leaks. Wipe the inside occasionally—polyester lining makes cleaning simple. FAQs Is it travel-friendly? Yes. It’s lightweight and helps you keep items separated and easy to find while traveling. Is it only for makeup? Not at all. It works great for skincare, accessories, small tools, and travel essentials. Are the sizes practical for daily use? Absolutely. Three sizes give you flexibility—use one, two, or all three depending on your day. Product Story The TRENZ Z70 set is made to give you “easy organization” from day one: three practical sizes, a padded design for a neat look and extra protection, and a polyester-lined interior that makes everyday use and quick cleaning simple—finished with a cute cherry print that fits your style. TRENZ Brand Story In a world full of choices, \"TRENZ\" stands out as a distinctive Saudi brand focused on beauty and wellness, meeting the needs of the modern woman. TRENZ was founded with a clear vision and a noble goal: empowering women to feel confident and beautiful every day through innovative, high-quality products. We have curated a diverse range of items including makeup brushes, makeup sponges, mirrors, nail files, and more. Every product we offer is the result of careful research and attention to detail—so we can deliver the best for you. \"TRENZ\" is not just a brand—it’s your beauty and wellness companion. We’re here to be part of your daily journey toward self-care and confidence. Join us and discover how our products can add a touch of elegance and comfort to your life. TRENZ – You deserve the best beauty. Keywords Makeup bag set, padded makeup bag, cherry makeup pouch, polyester lining, travel cosmetic organizer, toiletry bag, TRENZ Z70.",
+    "short_description": "Cherry Padded Makeup Bag Set – 3 PCS (Z70) from TRENZ | Easy Organization for Every Day Full Detailed Description (TRENZ Style) If you want…",
+    "price": 4.89,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z3E0682AD75FD3C8DF90CZ/45/_/1772328839/a9293bb8-a0b1-43e9-a9d3-09ed9297b416.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3E0682AD75FD3C8DF90CZ/45/_/1772328877/e3bd6b25-afe0-4b83-b4ec-f6c2d7869d58.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3E0682AD75FD3C8DF90CZ/45/_/1772328894/6a31dd1c-85e3-4df6-a772-4ef555c7c444.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3E0682AD75FD3C8DF90CZ/45/_/1772329201/5dcd9071-18fa-4b65-931b-156b7db62420.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "trenz",
+    "brand_name": "TRENZ",
+    "rating": 4.8,
+    "review_count": 17,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-ZC341DDD26AF612ABF8EBZ",
+    "name": "A set of three soft cotton makeup bags in different sizes - Z10",
+    "slug": "a-set-of-three-soft-cotton-makeup-bags-in-different-sizes-z10",
+    "description": "Trenz Padded Makeup Bag Set - Organization and Elegance for Travel The Trenz makeup bag set is the perfect choice for women seeking style and organization while traveling or for daily use. This set consists of three bags of different sizes, made from padded cotton and adorned with beautiful floral patterns. These bags help you organize your cosmetics and personal care items in a stylish and organized manner. Features of the Trenz Makeup Bag Set: Stylish floral design that adds a touch of femininity and sophistication. Made from high-quality padded cotton for extra protection for your products. Includes three bags in various sizes to suit all your needs while traveling or for daily use. Ideal for organizing cosmetics, personal care tools, accessories, and more. Usage Details: Use the large bag to store larger items like makeup brushes or bottles of products. The medium bag is perfect for essential items such as creams and daily makeup. The small bag is ideal for accessories or smaller items like mirrors and lip gloss. About Trenz: In a world full of choices, \"Trenz\" stands out as a distinguished Saudi brand dedicated to providing products focused on beauty and health, meeting the needs of the modern woman. Founded with a clear vision and noble goal: to empower women to feel confident and beautiful every day through innovative, high-quality products. We have curated a diverse range of products that include makeup brushes, makeup sponges, mirrors, nail files, and more. Each product is the result of thorough research and attention to detail, ensuring we provide the best for you. \"Trenz\" is not just a brand; it is your companion in beauty and health. We are here to be part of your daily journey towards beauty and self-care. Join us and discover how our products can add a touch of elegance and comfort to your life. Trenz - Your beauty deserves the best. Keywords: Makeup bag, cosmetic organization, travel bag, beauty tools bag, cotton makeup bag, floral-patterned bag, Trenz bag ,cosmetic bag, make up bag.",
+    "short_description": "Trenz Padded Makeup Bag Set - Organization and Elegance for Travel The Trenz makeup bag set is the perfect choice for women seeking style an…",
+    "price": 4.85,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZC341DDD26AF612ABF8EBZ/45/_/1726658420/a621de5a-1b87-412b-b864-7fc0ef678888.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC341DDD26AF612ABF8EBZ/45/_/1726658554/a1662798-17fa-4d78-9d9f-f0add7c7197f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC341DDD26AF612ABF8EBZ/45/_/1726658584/2ab2a22b-a2fc-408b-8392-503163609166.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC341DDD26AF612ABF8EBZ/45/_/1726658580/5aea53b7-dd55-42c1-bc69-283397c2bf6e.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "trenz",
+    "brand_name": "TRENZ",
+    "rating": 4.6,
+    "review_count": 121,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-ZC01068B7D2B9ECD39C37Z",
+    "name": "Large Waterproof Clear Travel Bag for Toiletries - Transparent Makeup Bag with Double Zipper Design - Compliant Carry-On for Men and Women",
+    "slug": "large-waterproof-clear-travel-bag-for-toiletries-transparent-makeup-ba",
+    "description": "✨✨Waterproof and Durable: Our clear travel bag is made of high-quality waterproof material, ensuring that your belongings remain safe and dry, even in wet conditions. ✨✨Spacious and Versatile: With its generous size of 32 x 21 x 16 cm, this bag can easily accommodate all your toiletries and cosmetic items, making it perfect for travel or everyday use. ✨✨Easy to Find and Access: The clear PVC material allows you to quickly locate and retrieve your items without the need to rummage through your bag. The double zipper design provides easy access and added security. ✨✨Stylish and Gender-Neutral: The sleek black trim adds a modern touch to the bag's design, making it suitable for both men and women. It's a versatile and fashionable choice for anyone looking to stay organized on their travels.",
+    "short_description": "✨✨Waterproof and Durable: Our clear travel bag is made of high-quality waterproof material, ensuring that your belongings remain safe and dr…",
+    "price": 3.88,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZC01068B7D2B9ECD39C37Z/45/1768292647/11c9a7f7-cbab-4bd7-8c48-d1985bddd078.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC01068B7D2B9ECD39C37Z/45/1768292714/1075d247-b79f-4f8c-a4f4-163cdba0b0bd.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC01068B7D2B9ECD39C37Z/45/1768292714/115ed259-40a3-4f66-a658-0dbd037550ad.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC01068B7D2B9ECD39C37Z/45/1768292714/71802532-302b-4087-94a1-c5de351cfe53.jpg?width=1200"
+    ],
+    "category_slug": "makeup-tools-accessories",
+    "category_name": "Makeup Tools & Accessories",
+    "brand_slug": "moonstone-creations",
+    "brand_name": "Moonstone Creations",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "makeup",
+      "tools",
+      "accessories",
+      "cosmetic",
+      "toiletry",
+      "bags"
+    ]
+  },
+  {
+    "id": "noon-Z7EAD3043306BEECB4797Z",
+    "name": "Lip Scrubs Exfoliator & Moisturizer, Lip Mask 2 in 1 Double Effectively Repairs Dry Cracked Lips, Lip Scrubs Exfoliator Dead Skin Moisturizer, Lip Mask Overnight (0.35Oz+Brush)",
+    "slug": "lip-scrubs-exfoliator-moisturizer-lip-mask-2-in-1-double-effectively-r",
+    "description": "【Dual Structure Design】immetee double effect lip sleeping mask lip scrub and lip mask.. It’s the perfect lip moisturizer exfoliator & moisturizer & collagen booster sleeping lip mask repair treatment to restore, for dry, chapped lips,and creating a baby lips.. 【Lip Sleeping Mask】 Wear our lip sleeping mask overnight to repair lips while you sleep so you wake up to smooth, moisturized lips.our moisturizing lip care mask creates a moisture barrier for intense hydration that lasts.. 【Lip Scrub Mask】If your lip is dry and chapped, our lip scrub lip scrub is skin friendly, which can soften & Remove the aging keratin of the lips. This scrub is natural, safe, gentle and effective way to eliminate dry scaly lips.. 【Rejuvenate Lips】Active collagen peptide formula in lip mask is perfect to restore healthy and shiny lips. which can be quickly used as a basis for renewing lips and skin tissue,and lip mask provides hydration and protection, locks in moisture, repairs cracked and damaged lips, creating a pink baby lips.. 【Excellent Sleep Lip Care】 Applying this lip sleep mask once a night is ten times more effective than use the regular lip balm.. When all muscles are relaxed and exercise is minimized, the rest time for lip care can be maximized for maximum absorption.",
+    "short_description": "【Dual Structure Design】immetee double effect lip sleeping mask lip scrub and lip mask..",
+    "price": 2.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z7EAD3043306BEECB4797Z/45/_/1719460532/ed65fff4-b4c8-4017-b2e0-91c3ad86a8ee.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7EAD3043306BEECB4797Z/45/_/1719460533/cc88b667-663f-4926-895c-aa6665512169.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7EAD3043306BEECB4797Z/45/_/1719460533/38933a5e-2611-4c8b-848a-16992d5a53cd.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7EAD3043306BEECB4797Z/45/_/1719460534/8ddc73f0-ca1e-4d05-a064-6bd9c276ceff.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "immetee",
+    "brand_name": "Immetee",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "scrubs"
+    ]
+  },
+  {
+    "id": "noon-ZC6FBDE2F8252BA6B7D6DZ",
+    "name": "Summer Fridays Lip Butter Balm - Conditioning Lip Mask and Lip Balm for Instant Moisture, Shine and Hydration - Sheer-Tinted, Soothing Lip Care - Cherry (.5 Oz)",
+    "slug": "summer-fridays-lip-butter-balm-conditioning-lip-mask-and-lip-balm-for",
+    "description": "Lip Butter Balm is a 100% vegan lip mask that hydrates and soothes dry lips while providing a touch of sheer pink color. Butter up for instant moisture, color and shine with a blend of buttercream and a hint of sweet sugar flavor.. Shea and Murumuru Seed Butters naturally moisturize, soothe, and condition parched lips.. A unique blend of vegan waxes soften lips and provide subtle shine with no tackiness.. A blend of buttercream with a hint of sweet sugar.",
+    "short_description": "Lip Butter Balm is a 100% vegan lip mask that hydrates and soothes dry lips while providing a touch of sheer pink color.",
+    "price": 2.49,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZC6FBDE2F8252BA6B7D6DZ/45/_/1730452395/1ba1cd58-6343-4451-bb84-807603dd5742.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC6FBDE2F8252BA6B7D6DZ/45/_/1730452405/64b715e0-6705-429a-9d2f-230b9fd74b81.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC6FBDE2F8252BA6B7D6DZ/45/_/1730452415/43a3c530-0e10-493e-9e66-ee3db546aba7.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC6FBDE2F8252BA6B7D6DZ/45/_/1730452415/6a369f31-9239-4c80-a8b5-dab4510c44af.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "summer-fridays",
+    "brand_name": "SUMMER FRIDAYS",
+    "rating": 3.9,
+    "review_count": 575,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "balms",
+      "butters"
+    ]
+  },
+  {
+    "id": "noon-ZB0192F8F3559A32693FFZ",
+    "name": "Natural Lip Balm| Repairs Chapped Lips Brightens Dark Lips | 1% Kojic Acid| Spf 50 Pa++++| For Men And Women| 4.5Gm",
+    "slug": "natural-lip-balm-repairs-chapped-lips-brightens-dark-lips-1-kojic-acid",
+    "description": "No Tint, Just Care: This natural lip balm is completely tint-freeâ€”perfect for both men & women.. Repairs Chapped Lips in 1 Day: This is the best lip balm for chapped lips, thanks to its Ceramide and Peptide-packed formula that soothes cracks and heals fast.. Brightens Dark Lips with 1% Kojic Acid: This lip balm for dark lips visibly fades pigmentation and uneven lip tone in just 30 days.. 24 Hours Moisturization: Powered with Hyaluronic Acid, it gives deep hydration and locks in moisture all dayno flakes, no dryness.. SPF Lip Balm with PA++++ Protection: Shield your lips from UV rays with SPF 50 PA++++â€”this SPF lip balm is your daily defence.",
+    "short_description": "No Tint, Just Care: This natural lip balm is completely tint-freeâ€”perfect for both men & women..",
+    "price": 3.599,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZB0192F8F3559A32693FFZ/45/1769076249/f060f860-0c08-46d6-8008-efe77a9e1095.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZB0192F8F3559A32693FFZ/45/1769076249/07549264-666a-4303-a3fe-ff4b4c147707.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZB0192F8F3559A32693FFZ/45/1769076249/88511005-be79-481e-8595-18b5d9cb0cfa.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZB0192F8F3559A32693FFZ/45/1769076249/55f0d915-ef7c-4645-823d-3cf3ff3cbe83.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "chemist-at-play",
+    "brand_name": "Chemist at Play",
+    "rating": 4,
+    "review_count": 12,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "balms",
+      "butters"
+    ]
+  },
+  {
+    "id": "noon-N28940820A",
+    "name": "LABELLO Lip Care, Moisturizing Lip Balm, Cherry Shine, 4.8g",
+    "slug": "labello-lip-care-moisturizing-lip-balm-cherry-shine-4-8g",
+    "description": "LABELLO Cherry Shine Lip Care Balm is a pleasantly smooth textured lip balm that provides long-lasting moisture and intensive care for your lips, and keeps them from drying out. Formulated with Hydra IQ moisture technology and enriched with the fruity aroma of cherry, LABELLO Cherry Shine Lip Care Balm is fast-absorbing and offers a hydrating care effect for your lips, leaving them sensationally soft and effectively protected. Dermatologically approved and suitable for all skin types, LABELLO Cherry Shine Lip Care Balm contains chosen pigments that leave a delicate touch of soft, glossy colour on your lips. Experience the rich care of LABELLO Cherry Shine Lip Care Balm!",
+    "short_description": "LABELLO Cherry Shine Lip Care Balm is a pleasantly smooth textured lip balm that provides long-lasting moisture and intensive care for your…",
+    "price": 0.75,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N28940820A/45/_/1767607991/722dc548-762e-404e-84a3-e93b086dde4f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N28940820A/45/_/1764242120/420fdb1a-9ff4-4256-8828-ff1d272be9b2.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N28940820A/45/_/1764242075/db9c00ae-e9ab-44d6-9d06-e14526c052b2.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N28940820A/45/_/1764242087/10f17722-5f82-494d-b2c7-d94acee5e0af.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "labello",
+    "brand_name": "Labello",
+    "rating": 4.5,
+    "review_count": 511,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "balms",
+      "butters"
+    ]
+  },
+  {
+    "id": "noon-N41889543A",
+    "name": "Lip Sleeping Mask Berry Berry 20grams",
+    "slug": "lip-sleeping-mask-berry-berry-20grams",
+    "description": "This nourishing overnight lip mask is enriched with Berry Fruit Complex, Vitamin C, and coconut oil to leave lips soft and visibly smooth. Discover the best-selling LANEIGE Lip Sleeping Mask, an ultra-nourishing formula that encourages soft, luscious lips. Available in mouth-watering flavors, the balm plumps the lips with intense moisture, helping to minimize roughness and cracking due to dryness. Vitamin C-rich Berry Mix ComplexTM, containing raspberry, strawberry, cranberry, blueberry extracts erases dry, flaky dead skin on the lips during the night for smooth and supple lips the next morning. A leave-on lip mask that soothes and moisturizes for smoother, more supple lips overnight. Lip Sleeping Mask has a softening balm texture that closely adheres to lips for quick absorption. Enriched with vitamin C and antioxidants, its Berry Mix Complex offers a nutritiously sweet and fragrant blend of raspberry, strawberry, cranberry, and blueberry extracts to indulge the senses.",
+    "short_description": "This nourishing overnight lip mask is enriched with Berry Fruit Complex, Vitamin C, and coconut oil to leave lips soft and visibly smooth.",
+    "price": 1.58,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZA59A15EFC3ECE6908F42Z/45/_/1780572670/18c8099f-9353-43cd-bb4e-193a63da0052.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZA59A15EFC3ECE6908F42Z/45/_/1780572670/442c43dc-b573-43b2-9824-92b1f2cdb65e.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZA59A15EFC3ECE6908F42Z/45/_/1780572670/acc843b0-42d6-4bad-9cbb-56ae113e3981.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZA59A15EFC3ECE6908F42Z/45/_/1780572670/dbc6a8b6-8d1d-4992-afbe-665dce3c4cc6.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "laneige",
+    "brand_name": "LANEIGE",
+    "rating": 3.9,
+    "review_count": 4263,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "balms",
+      "butters"
+    ]
+  },
+  {
+    "id": "noon-Z75806B52B2D9C15EB1F1Z",
+    "name": "Summer Fridays Lip Balm,Moisturizing Natural Lip Balm,Moisturizes And Brightened, Contains Shea Butter, Lip Care For Dry Lips (Pink Sugar)",
+    "slug": "summer-fridays-lip-balm-moisturizing-natural-lip-balm-moisturizes-and",
+    "description": "Lip Butter Balm is a vegan lip that hydrates and soothes dry lips while providing a of sheer color. Butter up for instant , color and shine with a blend of buttercream and a hint of sweet sugar flavor.. Nourishment: This moisturizing lipstick contains natural plant , such as jojoba oil, shea butter, etc., which can penetrate into the bottom layer of lip skin, provide continuous nourishment and care for dry and dehydrated lips, and make them soft and moist again.. Repair Dry Cracks: For lips that have already developed dry cracks, it has excellent repair functions. Make your lips and flat again.. Long Term Moisturizing: The unique moisturizing can form a layer of water locking protective film on the lips, effectively water loss and keeping the lips moist for a long time.. Wonderful Gifts: This lip balm also makes the perfect birthday gift, holiday gift, anniversary gift, Mother's Day and Valentine's Day.",
+    "short_description": "Lip Butter Balm is a vegan lip that hydrates and soothes dry lips while providing a of sheer color.",
+    "price": 2.565,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z75806B52B2D9C15EB1F1Z/45/1745696887/cdcccfa7-d2b9-4a45-8a6a-6e55486263a9.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z75806B52B2D9C15EB1F1Z/45/1745696893/c1f6f4ae-840c-49ca-ba09-4b2d6ad6addb.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z75806B52B2D9C15EB1F1Z/45/1745696898/5f67df02-27b8-4000-baa8-fbd13d5db799.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z75806B52B2D9C15EB1F1Z/45/1745696903/1dd73452-caba-409f-ad85-9cad4061f112.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "summer-fridays",
+    "brand_name": "SUMMER FRIDAYS",
+    "rating": 4,
+    "review_count": 139,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "balms",
+      "butters"
+    ]
+  },
+  {
+    "id": "noon-Z25A38E6EE748745857EBZ",
+    "name": "Summer Fridays Lip Butter Balm - Conditioning Lip Mask and Lip Balm for Instant Moisture, Shine and Hydration - Sheer-Tinted, Soothing Lip Care - Six color numbers",
+    "slug": "summer-fridays-lip-butter-balm-conditioning-lip-mask-and-lip-balm-for-z25a38",
+    "description": "Lip Butter Balm is a 100% vegan lip mask that hydrates and soothes dry lips while providing a touch of sheer pink color. Butter up for instant moisture, color and shine with a blend of buttercream and a hint of sweet sugar flavor.. Shea and Murumuru Seed Butters naturally moisturize, soothe, and condition parched lips.. A unique blend of vegan waxes soften lips and provide subtle shine with no tackiness.. A blend of buttercream with a hint of sweet sugar.",
+    "short_description": "Lip Butter Balm is a 100% vegan lip mask that hydrates and soothes dry lips while providing a touch of sheer pink color.",
+    "price": 8.89,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z25A38E6EE748745857EBZ/45/_/1783070731/b816958f-2b66-4706-b558-48d85319c8a1.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z25A38E6EE748745857EBZ/45/_/1783070797/afb845d3-8a53-409b-a0a2-dcb1b8c80cb8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z25A38E6EE748745857EBZ/45/_/1783070797/7562ac9f-c60e-4b34-b1a9-62af0126905c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z25A38E6EE748745857EBZ/45/_/1783070797/4360d004-5440-448c-b2a4-5b34bcd1bc71.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "summer-fridays",
+    "brand_name": "SUMMER FRIDAYS",
+    "rating": 3.9,
+    "review_count": 575,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "balms",
+      "butters"
+    ]
+  },
+  {
+    "id": "noon-Z43D120C81E0869343F2AZ",
+    "name": "Summer Fridays Lip Butter Balm - Conditioning Lip Mask and Lip Balm for Instant Moisture, Shine and Hydration - Sheer-Tinted, Soothing Lip Care - Vanilla Beige (.5 Oz)",
+    "slug": "summer-fridays-lip-butter-balm-conditioning-lip-mask-and-lip-balm-for-z43d12",
+    "description": "Lip Butter Balm is a 100% vegan lip mask that hydrates and soothes dry lips while providing a touch of sheer pink color. Butter up for instant moisture, color and shine with a blend of buttercream and a hint of sweet sugar flavor.. Shea and Murumuru Seed Butters naturally moisturize, soothe, and condition parched lips.. A unique blend of vegan waxes soften lips and provide subtle shine with no tackiness.. A blend of buttercream with a hint of sweet sugar.",
+    "short_description": "Lip Butter Balm is a 100% vegan lip mask that hydrates and soothes dry lips while providing a touch of sheer pink color.",
+    "price": 2.45,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z43D120C81E0869343F2AZ/45/_/1730450845/62070f48-2593-4d84-94c2-83035236aba5.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z43D120C81E0869343F2AZ/45/_/1730450855/64a84c9a-ba9b-4eb1-aa70-4de0c2feb6e7.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z43D120C81E0869343F2AZ/45/_/1730450865/5654c948-2a27-4e4a-b85f-927950c18645.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z43D120C81E0869343F2AZ/45/_/1730450875/a862fcd5-e826-45f1-a856-b4ad7ee37911.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "summer-fridays",
+    "brand_name": "SUMMER FRIDAYS",
+    "rating": 3.9,
+    "review_count": 575,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip",
+      "balms",
+      "butters"
+    ]
+  },
+  {
+    "id": "noon-N11885470A",
+    "name": "Lip Therapy Rosy Lip Balm 20grams",
+    "slug": "lip-therapy-rosy-lip-balm-20grams",
+    "description": "Perfect for helping keep lips healthy and protected from the elements. Brings out the natural rosy tones on your lips gently by smooth and tinted. Soft, velvety and melt-away texture makes it easier to apply. Helps to retain lip elasticity, which keeps your lips nourished",
+    "short_description": "Perfect for helping keep lips healthy and protected from the elements.",
+    "price": 0.575,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N11885470A/45/_/1766380650/2b7c3a79-3d9b-43dc-9d0c-b6c3b48075a0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11885470A/45/_/1764242392/bf6e3c1d-8a06-4ed8-ab30-e0fa6d34281c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11885470A/45/_/1764242392/a367d193-3a29-411f-bf3e-e880841bfa1a.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "vaseline",
+    "brand_name": "Vaseline",
+    "rating": 4,
+    "review_count": 6127,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip"
+    ]
+  },
+  {
+    "id": "noon-N15215591A",
+    "name": "Original Moisturizing Petroleum Jelly 450ml",
+    "slug": "original-moisturizing-petroleum-jelly-450ml",
+    "description": "Vaseline Moisturizing Petroleum Jelly is the original skin protectant. It has been used to protect, help heal, and lock in moisture for dry skin since 1870. To this day, it still effectively cares for your skin. Vaseline Petroleum Jelly Original is triple-purified and hypoallergenic, and is the ideal product for a multitude of uses, including being a moisturiser for sensitive skin. Vaseline Petroleum Jelly Original is a product you can trust. Its triple-purification seal guarantees each jar of Vaseline Jelly has been purified not once, but three times to remove impurities. It is dermatologist recommended and has been given the U.S. National Eczema Association Seal of Acceptance as appropriate for use by those with eczema and people with sensitive skin. Vaseline's white petroleum jelly is fragrance free, hypoallergenic, non-irritating, and non-comedogenic (it won’t clog your pores). Learn about the many Vaseline Petroleum Jelly uses. Petroleum Jelly uses include personal care, baby care, and beauty. By sealing in moisture, it assists the skin’s natural recovery to help dry skin heal. This can rejuvenate visibly dry skin and help reduce the appearance of fine, dry lines. Vaseline Jelly creates a protective barrier that protects skin against environmental factors such as windburn – and has been used for over 100 years to protect minor cuts, scrapes, and burns. Many of Vaseline’s dry skin lotions contain petroleum jelly, to give your skin the extra care it needs. Explore the range of Vaseline products including Vaseline lotion and enjoy the healing power of Vaseline.",
+    "short_description": "Vaseline Moisturizing Petroleum Jelly is the original skin protectant.",
+    "price": 1.905,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N15215591A/45/_/1706696211/09ac7ca7-edb8-4cbd-a470-79a28b59f26a.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15215591A/45/_/1706696212/9c404980-c598-4f01-a602-2c226331c01b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15215591A/45/_/1706696211/0f60a396-b867-4085-ab3e-db7a37f300e8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15215591A/45/_/1706696212/fb24b2f1-5be1-4679-a1ea-7ec2848aa36f.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "vaseline",
+    "brand_name": "Vaseline",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip"
+    ]
+  },
+  {
+    "id": "noon-N11292816A",
+    "name": "Moisturising Lip Care Blackberry Shine Lip Balm 4.8grams",
+    "slug": "moisturising-lip-care-blackberry-shine-lip-balm-4-8grams",
+    "description": "LABELLO Blackberry Shine Lip Care Balm is a pleasantly smooth textured lip balm that provides long-lasting moisture and intensive care for your lips, and keeps them from drying out. Enriched with the fruity aroma of blackberry, LABELLO Blackberry Shine Lip Care Balm is fast-absorbing and offers a pampering care effect for your lips, leaving them sensationally soft and effectively protected. Dermatologically approved and suitable for all skin types, LABELLO Blackberry Shine Lip Care Balm contains chosen pigments that leave a delicate touch of soft, glossy colour on your lips. Experience the rich care of LABELLO Blackberry Shine Lip Care Balm!",
+    "short_description": "LABELLO Blackberry Shine Lip Care Balm is a pleasantly smooth textured lip balm that provides long-lasting moisture and intensive care for y…",
+    "price": 0.858,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N11292816A/45/_/1765870637/8054ed1d-313d-4d24-a82e-649495253d04.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11292816A/45/_/1716887948/a7870b06-90b0-43d9-aa76-00ba738f5c73.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11292816A/45/_/1716887946/f81d68da-04c9-43ee-8497-febdb9fddabf.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11292816A/45/_/1716887947/b3c5bc44-c7c9-48a9-857c-b23b1127076a.jpg?width=1200"
+    ],
+    "category_slug": "lip-care",
+    "category_name": "Lip Care",
+    "brand_slug": "labello",
+    "brand_name": "Labello",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "skin",
+      "care",
+      "lip"
+    ]
+  },
+  {
+    "id": "noon-ZC2539A27B6A10504DA6BZ",
+    "name": "Ultra Smoothing Hair Serum For Dry And Frizzy Hair | Restores Smoothness And Texture | Powered By Carbohydrate Complex And Niacinamide | For Women And Men | Sls And Paraben Free | Vegan | 100ml",
+    "slug": "ultra-smoothing-hair-serum-for-dry-and-frizzy-hair-restores-smoothness",
+    "description": "INTENSELY HYDRATES: Ultra Smoothing Hair Serum contains Phytosqualan that mimics natural sebum and provides intense hydration by easily penetrating into the hair shaft. Thereby, protects from further breakage and strengthening the hair.. IMPROVES TEXTURE: The serum is enriched with plant-derived Omega 3, 6, 9 Concentrate that increases hair elasticity and strength while intensely nourishing the tresses.. DEEPLY NOURISHES: High-grade ingredients present in the serum have nourishing properties that bind naturally present keratin to the hair strands to moisturize the hair.. REPAIRS DAMAGE: This daily-use serum renews the hair from within while improving the texture to reduce breakage and UV damage.. INSTANT LASTING SHINE: This daily-use serum restores hair vitality, smoothens frizz, and adds instant shine to your hair.",
+    "short_description": "INTENSELY HYDRATES: Ultra Smoothing Hair Serum contains Phytosqualan that mimics natural sebum and provides intense hydration by easily pene…",
+    "price": 3.499,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZC2539A27B6A10504DA6BZ/45/1769076241/0696574d-304c-4949-94da-07b0543b76be.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZC2539A27B6A10504DA6BZ/45/1769076241/869101fc-7614-4ab9-a011-773ce732506b.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZC2539A27B6A10504DA6BZ/45/1769076241/0204c8eb-d1ba-4c2e-99d0-6379c67a3228.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZC2539A27B6A10504DA6BZ/45/1769076241/b43d5ca6-9b26-440e-a997-39d98a6f90a9.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "bare-anatomy",
+    "brand_name": "BARE ANATOMY",
+    "rating": 4.7,
+    "review_count": 25,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-Z680FFDECED6E9C6177A2Z",
+    "name": "Advanced Hair Growth Serum | 3% Redensyl + 4% Anagain + 3% Baicapil + 1% Capilia Longa, Rosemary, Biotin And Rice Extract | Hair Growth And Hair Fall Control Serum For Women And Men | 30ml",
+    "slug": "advanced-hair-growth-serum-3-redensyl-4-anagain-3-baicapil-1-capilia-l",
+    "description": "97% OBSERVED NEW HAIR GROWTH IN 45 DAYS*: This clinical formulation is made with a blend of 4 dermatologically approved hair growth actives: Redensyl, Anagain, Baicapil & Capilia Longa along with 3 natural hair growth ingredients: Rosemary, Biotin & Rice extract. It boosts hair density and regenerates new hair by restarting the hair growth cycle. *Based on consumer feedback after 90 days of product usage. UP TO 89% HAIR LOSS REDUCTION**: Powered with 3% Baicapil, 1% Capilia Longa & Rosemary. This serum reduces breakage & hair loss by enhancing the keratin composition in hair which helps to strengthen hair and improve hair elasticity. **Based on in vivo study conducted by the proprietary owner of Capilia Longa for 150 days, individual results may vary. CLINICAL HAIR GROWTH ACTIVES: This potent formula is meticulously developed through numerous refinements to stimulate hair growth, featuring a combination of 3% Redensyl, 4% Anagain, 3% Baicapil, and 1% Capilia Longa. This unique blend enhances hair growth by extending the duration of the anagen phase.. NATURAL HAIR GROWTH INGREDIENTS: Blended with the clinical formulation are 3 natural hair growth ingredients: Rosemary, Biotin & Rice extract that strengthen weak hair, reduces breakage and reduces dryness thereby ensuring healthy hair growth.. NON GREASY & EASY TO ABSORB: Unlike other hair growth serums which are sticky in texture and lead to greasy hair over time, this serum is lightweight, non greasy and absorbs easily without making hair greasy hence can be applied anytime without the fear of stepping out.",
+    "short_description": "97% OBSERVED NEW HAIR GROWTH IN 45 DAYS*: This clinical formulation is made with a blend of 4 dermatologically approved hair growth actives:…",
+    "price": 4.059,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/Z680FFDECED6E9C6177A2Z/45/1769076235/15f5db27-1626-4047-9411-794a5a3abfdd.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/Z680FFDECED6E9C6177A2Z/45/1769076236/789da8c3-7262-4dd8-8176-ff2fd33d8175.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/Z680FFDECED6E9C6177A2Z/45/1769076236/a7ee1c42-70cb-4ffa-9f86-b14abf1fa1b4.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/Z680FFDECED6E9C6177A2Z/45/1769076236/7c816b0a-ad7a-4daa-9e6c-1aca2e5be2d2.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "bare-anatomy",
+    "brand_name": "BARE ANATOMY",
+    "rating": 4,
+    "review_count": 73,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-N70374300V",
+    "name": "L'Oréal Professionnel Keratin Alpha Sleek Mirror Sleek Serum 50ml 50ml",
+    "slug": "l-ore-al-professionnel-keratin-alpha-sleek-mirror-sleek-serum-50ml-50m",
+    "description": "Keratin Alpha Sleek Mirror Sleek Serum by L'Oréal Professionnel, formulated with Keratin Sealer 5%. It seals hair keratin structure for long-lasting smoothness, frizz and volume control up to 10 washes*. It is anti-humidity up to 80% humidity in the air*. Heat protection up to 230°C (450°F)*. Daily styling in half the time*. Transform hair for 2 weeks of smooth, frizz control by using the full routine**. Heat-activated. Dry with hair dryer. Use straightening iron for longer lasting results. This serum is artificial colorant free, and alcohol free. Keratin is an animal-derived ingredient, also found in human hair. This product does not contain Keratin.",
+    "short_description": "Keratin Alpha Sleek Mirror Sleek Serum by L'Oréal Professionnel, formulated with Keratin Sealer 5%.",
+    "price": 16.475,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZAFD159F4DF55F5395823Z/45/_/1779771807/4519deef-f936-423a-9ada-39ccef188cd9.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAFD159F4DF55F5395823Z/45/_/1779771807/4f39a6a6-0a91-4b46-9cf2-fdcb484ff932.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAFD159F4DF55F5395823Z/45/_/1779771807/d0132427-a637-49d9-932b-0468d43844bd.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAFD159F4DF55F5395823Z/45/_/1779771807/e57a8156-aef0-4905-9078-149f91924441.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "l-ore-al-professionnel",
+    "brand_name": "L'Oréal Professionnel",
+    "rating": 5,
+    "review_count": 1,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-N70024254V",
+    "name": "Rosemary Mint Scalp & Hair Strengthening Oil Infused W/Biotin & Encourages Growth 59ml",
+    "slug": "rosemary-mint-scalp-hair-strengthening-oil-infused-w-biotin-encourages",
+    "description": "Mielle Rosemary Mint Scalp & Hair Oil is a premium hair care product that combines the invigorating properties of rosemary and mint with the nourishing benefits of biotin to promote hair growth and improve scalp health. This carefully crafted formula is designed to revitalize your hair and encourage its natural growth, leaving you with healthier, stronger, and more beautiful locks. The powerful blend of rosemary and mint provides a refreshing and rejuvenating experience for your scalp. Rosemary, known for its stimulating properties, helps increase blood circulation to the hair follicles. This improved circulation ensures that the hair follicles receive essential nutrients and oxygen, promoting healthy hair growth from the roots. Additionally, rosemary helps to combat scalp irritation, inflammation, and dandruff, creating an ideal environment for hair to flourish. Mint, with its cooling and soothing effects, complements rosemary by providing a refreshing sensation to the scalp. It helps to alleviate scalp discomfort, reduce itchiness, and regulate oil production. By maintaining a balanced scalp, mint contributes to healthier hair growth and prevents clogged hair follicles, allowing your hair to thrive. One of the key ingredients in this oil is biotin, a vitamin known for its hair-strengthening properties. Biotin supports the production of keratin, a protein essential for strong and resilient hair. By infusing the oil with biotin, Mielle ensures that your hair receives the necessary nourishment to grow longer and thicker. Biotin also helps reduce hair breakage and promotes overall hair health, resulting in a fuller and more voluminous appearance. To enjoy the benefits of Mielle Rosemary Mint Scalp & Hair Oil, simply apply a few drops to your fingertips and gently massage it into your scalp. The oil can be used on both damp and dry hair, making it versatile for any hair care routine. Massaging the oil into your scalp not only improves absorption but also stimulates blood circulation, enhancing the effectiveness of the product. With regular use, Mielle Rosemary Mint Scalp & Hair Oil can transform your hair care routine. It nourishes the scalp, promotes hair growth, and strengthens the hair shaft, reducing breakage and improving overall hair quality. The refreshing scent of rosemary and mint provides an invigorating experience, making your hair care routine a soothing and enjoyable self-care ritual. Mielle Rosemary Mint Scalp & Hair Oil is suitable for all hair types and is especially beneficial for those looking to encourage hair growth or address scalp issues. Incorporate this oil into your hair care regimen to experience the revitalizing effects of rosemary and mint, coupled with the growth-enhancing power of biotin. Embrace the opportunity to achieve the luscious, healthy hair you've always desired with Mielle Rosemary Mint Scalp & Hair Oil.",
+    "short_description": "Mielle Rosemary Mint Scalp & Hair Oil is a premium hair care product that combines the invigorating properties of rosemary and mint with the…",
+    "price": 1.44,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z8E12771B425E1155BDB3Z/45/_/1780915136/24461327-f722-4c76-8ce0-b7bda999f819.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8E12771B425E1155BDB3Z/45/_/1780915136/28b081ca-77d3-4c92-a876-e6c54852650e.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8E12771B425E1155BDB3Z/45/_/1780915136/9bc2818a-e133-4741-bf83-a0d2e208b6de.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8E12771B425E1155BDB3Z/45/_/1780915136/8261ddaa-79c4-4fc3-be03-45e52810f144.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "mielle",
+    "brand_name": "MIELLE",
+    "rating": 4.2,
+    "review_count": 3983,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-N35170747A",
+    "name": "Genesis Serum Anti-Chute Fortifiant 90ml",
+    "slug": "genesis-serum-anti-chute-fortifiant-90ml",
+    "description": "About the product: Daily fortifying serum for weakened hair that is prone to falling due to breakage from brushing. Daily anti hair-fall fortifying serum for weakened hair, prone to falling due to breakage. Enriched with a potent combination of Aminexil, Edelweiss Native Cells and Ginger Root, the serum improves hair resistance to minimize hair-fall and maximize beautiful hair. It helps to re-anchor hair follicle more solidly into the scalp while building the optimal environment for future growth. Day after day the serum sooths and reinforces the natural protective barrier of the scalp. The jelly like texture facilitates the application and avoids any running of the product. Hair is stronger and more beautiful with a healthier look. About the brand: Since 1964, K&eacute;rastase has infused luxury with pioneering science to create exceptional hair care. Ingredients: A unique combination of potent anti hair-fall complex: Aminexil 1.5% helps hair to anchor more solidly into the scalp and prevents collagen from hardening around hair follicles. Ginger Root is known for its ability to protect against daily external aggressor. Caffeine contributes to improve scalp micro-circulation thanks to its stimulating properties. How to use: Use once daily in the morning or before going to bed during a 6 week period. 1. Apply 4 doses on dry or towel-dried scalp, section by section. 1 dose = 1 pipette until the mark. 2. Massage gently. Do not rinse. Style as desired. Pro Tip: Use this fortifying anti-fall Serum once daily to minimize hair-fall and maximize beautiful hair .",
+    "short_description": "Daily fortifying serum for weakened hair that is prone to falling due to breakage from brushing.",
+    "price": 30.218,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N35170747A/45/_/1744111784/43210252-633e-44e1-af49-3e68be976e87.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1648446538/N35170747A_2.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1648446538/N35170747A_3.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1648446539/N35170747A_4.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "kerastase",
+    "brand_name": "KERASTASE",
+    "rating": 4.4,
+    "review_count": 586,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-Z75E7E09BB26A958C4431Z",
+    "name": "Nourishing and Repairing Hair Serum with Argan Oil and Vitamin E 110 ml",
+    "slug": "nourishing-and-repairing-hair-serum-with-argan-oil-and-vitamin-e-110-m",
+    "description": "Pamper your hair with the 110ml Oplus Serum with Argan Oil and Vitamin E. The advanced formula nourishes hair from root to tip and helps repair damage caused by styling and heat. It reduces frizz and leaves hair soft, shiny, and healthy with a natural look. It absorbs quickly without weighing hair down, making it ideal for daily use and for all hair types.",
+    "short_description": "Pamper your hair with the 110ml Oplus Serum with Argan Oil and Vitamin E.",
+    "price": 3.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z75E7E09BB26A958C4431Z/45/_/1733395094/d9d39f97-1f49-4aa6-8f27-2839d261e584.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z75E7E09BB26A958C4431Z/45/_/1733395119/3f01ed26-e408-4d64-8996-a75b49624605.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z75E7E09BB26A958C4431Z/45/_/1733395121/7b400854-1a6e-47ac-bf5c-617de5ea80b0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z75E7E09BB26A958C4431Z/45/_/1733395140/73305ccf-8f69-425d-b8b4-1649296a9756.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "oplus",
+    "brand_name": "Oplus",
+    "rating": 4.7,
+    "review_count": 117,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-Z00B5BEEDCBED4B9EE0FBZ",
+    "name": "Chroma Absolu Huile Cicagloss 75ml",
+    "slug": "chroma-absolu-huile-cicagloss-75ml",
+    "description": "The refillable Chroma Éclat oil provides long lasting radiance for color-treated hair. Enriched with Centella Asiatica, a wild plant growing among tropical environment, the oil preserves hair color and endows hair with an alluring fragrant halo. The revamped oil delivers superior performances: - Long-lasting radiance for color treated hair. - Preserves hair color. - Endows hair with an alluring fragrant halo. Refill bottle is made of at least 95% recycled plastic.* Bottle is made of at least 30% recycled glass.** Design to last, this bottle can be continuously refilled.",
+    "short_description": "The refillable Chroma Éclat oil provides long lasting radiance for color-treated hair.",
+    "price": 27.78,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z00B5BEEDCBED4B9EE0FBZ/45/_/1732866020/c6ab6c09-0e7e-4ebd-b482-d06096514c2a.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z00B5BEEDCBED4B9EE0FBZ/45/_/1732866016/38fda36f-83a5-40ee-8496-3c04921b65c2.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z00B5BEEDCBED4B9EE0FBZ/45/_/1732866018/b0540147-3566-457e-8e43-dde72285cb77.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z00B5BEEDCBED4B9EE0FBZ/45/_/1732866147/f7528b0b-66ad-4e8a-9eb6-0e827ef7052d.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "kerastase",
+    "brand_name": "KERASTASE",
+    "rating": 4.6,
+    "review_count": 96,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-Z5BFB4592CFA59C0A9DAAZ",
+    "name": "Vitamine E Hair Serum 100 Ml",
+    "slug": "vitamine-e-hair-serum-100-ml",
+    "description": "Protects the hair cuticle from damage caused by heat and prolonged exposure to the sun Protects and adds shine to dull and lifeless hair It helps repair damaged hair follicles to give your hair instant shine and shine, making it soft and supple.",
+    "short_description": "Protects the hair cuticle from damage caused by heat and prolonged exposure to the sun Protects and adds shine to dull and lifeless hair It…",
+    "price": 1.374,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z5BFB4592CFA59C0A9DAAZ/45/1765458331/097ad8b4-d52c-4d62-9de2-b04bd70719d7.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 4.4,
+    "review_count": 1248,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-ZD8EB0126E18B0F58C5C7Z",
+    "name": "Orman Meyveli Sirke & Sac Tonici 400 Ml",
+    "slug": "orman-meyveli-sirke-sac-tonici-400-ml",
+    "description": "Ajiva Fruit Vinegar gives you a clean scalp, strong hair, and a natural shine, along with effective dandruff protection for a healthy look every day! Features and Benefits ✔ Effective anti-dandruff: Helps eliminate dandruff and prevent its recurrence. ✔ Hair strengthening: Nourishes the scalp and promotes healthy hair growth. ✔ Deep cleansing: Removes product residue and excess oil, leaving the scalp feeling refreshed. ✔ Natural shine: Gives hair a healthy luster without making it greasy. ✔ Light formula: Suitable for all hair types, without weighing it down or drying it out. With Ajiva Fruit Vinegar, get clean, strong, dandruff-free hair that's full of vitality and shine!",
+    "short_description": "Ajiva Fruit Vinegar gives you a clean scalp, strong hair, and a natural shine, along with effective dandruff protection for a healthy look e…",
+    "price": 2.025,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZD8EB0126E18B0F58C5C7Z/45/1767857460/8a44ef18-8442-40f6-af44-d30377e07eaa.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZD8EB0126E18B0F58C5C7Z/45/1767857460/4f2100e0-f6a4-42e1-8847-1fedb98ca577.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "agiva",
+    "brand_name": "Agiva",
+    "rating": 4.4,
+    "review_count": 209,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-N22784113A",
+    "name": "Cantu Argan Oil Leave-In Conditioning Repair Cream 453 g - Argan Oil & Shea Butter Formula Deeply Conditions & Protects from Heat, Gentle on Relaxed, Texturized & Natural Hair 453grams",
+    "slug": "cantu-argan-oil-leave-in-conditioning-repair-cream-453-g-argan-oil-she",
+    "description": "The Cantu Shea Butter Leave in Conditioning Repair Cream is a restorative conditioning treatment dedicated to enhancing the softness and manageability of dry hair. Infused with pure Shea Butter and other natural oils, the leave-in conditioner aims to mend breakage while repairing the look of split ends and restoring shine. Deeply penetrating, it melts into dry strands to deliver intensive moisture. When used daily, it can help promote stronger, healthier-looking hair. Great for relaxed, texturized, coloured and permed hair. How to use: Daily Styling: Apply generously to ends of damp hair and work toward root, comb through evenly and do not rinse. Leave-In Treatment : Apply as directed for daily styling and cover with a plastic cap overnight for maximum absorption and intense conditioning. Frizz Free Hair: Apply daily to split ends or damaged areas, comb through and let dry naturally. Ingredients- Aqua (Water), Carbomer, Polysorbate 20, Vp/Va Copolymer, Parfum (Fragrance), Mel (Honey), Butyrospermum Parkii (Shea) Butter, Aminomethyl Propanol, Phenoxyethanol, Benzoic Acid, Ethylhexylglycerin, Glycereth-2 Cocoate, Glycerin, Disodium Edta, Ci 14700 (Red 4), Ci 15510 (Orange 4).",
+    "short_description": "The Cantu Shea Butter Leave in Conditioning Repair Cream is a restorative conditioning treatment dedicated to enhancing the softness and man…",
+    "price": 2.706,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z09556AB72159EC9A2CD7Z/45/_/1779791607/e879a0ee-8ca5-43f5-88c5-383385e2f089.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z09556AB72159EC9A2CD7Z/45/_/1779791607/798b0355-53e5-46a4-b465-029c8eded384.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z09556AB72159EC9A2CD7Z/45/_/1779791607/93defdfb-1f52-42b0-b8f1-e44e8a195de0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z09556AB72159EC9A2CD7Z/45/_/1779791607/991f9136-4ec3-45f7-aa00-4b5da5c3e16f.jpg?width=1200"
+    ],
+    "category_slug": "hair-scalp-treatments",
+    "category_name": "Hair & Scalp Treatments",
+    "brand_slug": "cantu",
+    "brand_name": "Cantu",
+    "rating": 4,
+    "review_count": 1722,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "scalp",
+      "treatments",
+      "oil",
+      "serums"
+    ]
+  },
+  {
+    "id": "noon-Z30D46FA1B1FEC2E4AD3EZ",
+    "name": "1200Watt Hair Dryer Brush – 75mm Oval Hot Air Brush for Smooth, Frizz-Free Volume | Blow Dryer & Hair Styling Tool (Pink)",
+    "slug": "1200watt-hair-dryer-brush-75mm-oval-hot-air-brush-for-smooth-frizz-fre",
+    "description": "Professional Multi-Function Hair Dryer Brush – Enjoy an all-in-one styling experience with this innovative tool that combines a blow dryer , volumizer, straightener, and curler in one easy-to-use device. Featuring a powerful 1200W motor and 360° airflow for faster drying and long-lasting styles, while the ceramic coating protects hair from excessive heat. Negative ion technology reduces frizz and static, giving your hair natural shine. Mixed nylon-pin bristles with rounded tips gently detangle hair and smooth from root to tip. With 3 heat/speed settings suitable for all hair types, this hair dryer offers full styling flexibility. Its elegant design and practical features make it a perfect gift for birthdays, holidays, or any special occasion for mothers, sisters, girlfriends, or yourself.",
+    "short_description": "Professional Multi-Function Hair Dryer Brush – Enjoy an all-in-one styling experience with this innovative tool that combines a blow dryer ,…",
+    "price": 14.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z30D46FA1B1FEC2E4AD3EZ/45/_/1777431481/663fcf05-afe2-4ccd-8882-7461c533b1d6.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z30D46FA1B1FEC2E4AD3EZ/45/_/1777431484/106b757a-580e-475c-9d66-8d8abdf9eafc.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z30D46FA1B1FEC2E4AD3EZ/45/_/1777431483/d6e26a9d-c8d9-411a-a278-cdeb8459b985.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z30D46FA1B1FEC2E4AD3EZ/45/_/1777431486/17e10f56-c2c4-4d90-b9a0-18ddbb0b9306.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "doscher",
+    "brand_name": "DOSCHER",
+    "rating": 4.4,
+    "review_count": 1717,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-Z8DFE6CAB97DF17AEB7D4Z",
+    "name": "Barony Hair Dryer – Black, 2200W Power",
+    "slug": "barony-hair-dryer-black-2200w-power",
+    "description": "The BARONY Hair Dryer 2200W delivers powerful performance and fast drying for smooth, polished hair in minutes. It features a high-performance motor with multiple heat and speed settings suitable for all hair types. Even airflow distribution helps reduce frizz and enhance natural shine, while the lightweight ergonomic design ensures comfortable daily use. Ideal for achieving salon-like results at home with less time and effort.",
+    "short_description": "The BARONY Hair Dryer 2200W delivers powerful performance and fast drying for smooth, polished hair in minutes.",
+    "price": 9.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z8DFE6CAB97DF17AEB7D4Z/45/_/1776255281/30f68eb4-0006-426f-811f-87d8175c4c27.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8DFE6CAB97DF17AEB7D4Z/45/_/1776255281/39bfe982-93e8-4dac-8134-1b8f87172e2b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8DFE6CAB97DF17AEB7D4Z/45/_/1776255281/0c9437aa-848c-471b-9108-8d6319748015.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8DFE6CAB97DF17AEB7D4Z/45/_/1776255281/b07f5fec-c13c-4ccf-83b5-24b218d05c8a.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "barony",
+    "brand_name": "BARONY",
+    "rating": 4.4,
+    "review_count": 39,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-N70287481V",
+    "name": "Professional Salon Styling Hair Dryer, Model OK-880",
+    "slug": "professional-salon-styling-hair-dryer-model-ok-880",
+    "description": "Professional hair dryer offering full control over heat and speed levels to suit all hair types providing precise and stable styling results for beauty experts.",
+    "short_description": "Professional hair dryer offering full control over heat and speed levels to suit all hair types providing precise and stable styling results…",
+    "price": 16.495,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z3127829404747FA9A83FZ/45/_/1780306664/8ba053ea-fa29-43d1-96bb-339cdbaae344.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "okema",
+    "brand_name": "Okema",
+    "rating": 5,
+    "review_count": 1,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-N30677584A",
+    "name": "Drycare Essential Hair Dryer BHD003/03 BHD003/03-Pink/white",
+    "slug": "drycare-essential-hair-dryer-bhd003-03-bhd003-03-pink-white",
+    "description": "This Philips Essential hairdryer packs the perfect balance of drying and styling power. The dryer is compact and can easily be used at home or taken on the road. Get the beautiful and gentle results you desire, wherever you go. This 1400W hairdryer creates the optimum level of airflow and gentle drying power, for beautiful results every day. This hairdryer has foldable handle, making it easy to pack, store and take with you anywhere you go. Compact and ergonomic, this hairdryer benefits from a clever modern design. This results in a dryer that is light and easy to handle yet small enough to store virtually anywhere. This hairdryer offers 2 pre-selected speed/heat combinations to make it quick and easy to achieve the perfect style. The concentrator focuses airflow through the opening to specific areas. This results in better touch-ups or more precise styling to finish your look.",
+    "short_description": "This Philips Essential hairdryer packs the perfect balance of drying and styling power.",
+    "price": 5.7,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z614A2D4859D1A9C6FB1DZ/45/_/1780912097/b8adbd2f-7ffd-4ea9-88b0-5c2f8bde1802.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z614A2D4859D1A9C6FB1DZ/45/_/1780912097/92b65ed9-8e5a-4639-8b8b-747a27bc2ca3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z614A2D4859D1A9C6FB1DZ/45/_/1780912097/18b5c67a-6aad-40b6-8519-ab2d0f72c092.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z614A2D4859D1A9C6FB1DZ/45/_/1780912097/66c4559e-df27-489d-bfdc-8e9f9f5dc361.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "philips",
+    "brand_name": "Philips",
+    "rating": 4.5,
+    "review_count": 7611,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-Z567C28315170B972DD7DZ",
+    "name": "1200 Watt Hair Dryer Brush Ceramic Dryer And Styler 2 In 1 Professional Black/Beige Gift box packaging",
+    "slug": "1200-watt-hair-dryer-brush-ceramic-dryer-and-styler-2-in-1-professiona-z567c2",
+    "description": "Our brush blow dryer is suitable for various hairstyles, whether your hair is long, short, straight, curly, thick or thin. 3 flexible heat settings are for different needs of shaping your beautiful hair.Comb, hair dryer and styler in one, comb and style while blow-drying. 50% bigger drying area let you save at least half of drying and styling time.The large paddle design runs through your hair to detangle, dry, and smooth hair in up to half the time.Large paddle design and flexible pad dries and smooths hair quickly for added styling comfort.Equipped with a negative ion generator, the blow dryer brush release negative ions to neutralize positive ions in hair, reducing frizz and static and making hair smooth and shiny.The lightweight design allows you to style your hair while drying it without feeling tired, allowing you to enjoy the salon experience easily.",
+    "short_description": "Our brush blow dryer is suitable for various hairstyles, whether your hair is long, short, straight, curly, thick or thin.",
+    "price": 11.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z567C28315170B972DD7DZ/45/_/1729244751/2370f69c-4654-4b5b-8de5-e5e3d73b4098.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z567C28315170B972DD7DZ/45/_/1729244904/407fd2de-cdfb-45bf-af7c-8a378ba3a3d5.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z567C28315170B972DD7DZ/45/_/1729244889/1fe3a698-8b3b-4079-966c-2911a142ab2b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z567C28315170B972DD7DZ/45/_/1729244890/ffb08e11-77a2-4ecb-a405-1374c4dac5c3.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "doscher",
+    "brand_name": "DOSCHER",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-Z4E6D54D4B5F718E904DFZ",
+    "name": "REVLON ONE-STEP HAIR DRYER & VOLUME",
+    "slug": "revlon-one-step-hair-dryer-volume",
+    "description": "Oval Brush Design For smoothing the hair, create volume at the roots and beautifully curled ends - No need to use another device to get waves Less time, less damage Designed to distribute air quickly and evenly across the hair to dry and faster styling for less heat damage IONIC TECHNOLOGY Negative ions saturate the airflow to reduce the size of water droplets for faster drying. This helps care, smooth out and makes hair shinier while reducing frizz and static CERAMIC COATING For even heat distribution and less damage Mixed bristles Nylon pen bristles with comfortable ball tips to gently detangle hair. Blended nylon pen and boar bristles help hold hair on curved edge for improved volume and control for smooth, shiny results 3 heat/2-speed settings Ergonomic handle, cool tip and lightweight design Button-free swivel cord",
+    "short_description": "Oval Brush Design For smoothing the hair, create volume at the roots and beautifully curled ends - No need to use another device to get wave…",
+    "price": 21.399,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z4E6D54D4B5F718E904DFZ/45/_/1652252033/e975b8d6-3abe-4394-b970-fc8e1e0ad0e5.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4E6D54D4B5F718E904DFZ/45/_/1652252033/6f67cfc1-5822-4d3b-a56e-543513188c6c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4E6D54D4B5F718E904DFZ/45/_/1652252033/bc20f3b4-76d9-44bc-b9b7-a39ebf84400c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4E6D54D4B5F718E904DFZ/45/_/1652252033/09b7b165-c535-49e5-b3dd-727da56ac89e.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "revlon",
+    "brand_name": "Revlon",
+    "rating": 4.3,
+    "review_count": 189,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-N52956413A",
+    "name": "6-Piece Professional Hair Dryer Set ,2000W Black",
+    "slug": "6-piece-professional-hair-dryer-set-2000w-black",
+    "description": "Product Name: Professional Hair Dryer Brand: SUNHOME Model: 8935 Color: black and gold Internal parts: hair dryer*1(28*24*9cm), roller comb*1(20*5cm), pair comb*2(23*4cm), smooth air nozzle*1(7.5*4.5*8cm), massage volume Diffuser *1 (14*9cm) Material: Nylon Voltage: 220-240 V Power: 2000W feature: 1. Create the best airflow level and gentle drying ability to obtain beautiful results 2. Support 2 flexible speed settings and 3 heating options for careful drying 3. The heat protection setting can provide a constant drying temperature and prevent the hair from overheating 4. Variable power and temperature control, including cooling function 5. Ergonomic design suitable for right-handed and left-handed users 6. Help you get a salon-quality hairstyle while maintaining a healthy appearance Brand introduction: The brand SUNHOME is a well-known brand in China. It was born in 1990. The characteristics of the brand: practical, fashionable, innovative, beautiful, and sunny. SUNHOME's products include tableware, hair dryers, electric splints, curling irons, humidifiers, air-conditioning fans, smart trash cans and other diversified life products. The concept of SUNHOME brand conveys is to let every family have a sunny lifestyle , Make family life better because of SUNHOME products! Instructions for use: 1.A power device is not a toy. After use, store it out of reach of children Keep packing material (plastic bags carton, etc) out of reach of children. 2.The appliance is not suited for persons (as well as children) physically, mentally, sensory disabled, or with no experience, unless they have been supervised or di rected by someone responsible of their safety. 3.Children should be supervised to make sure they do not play with the appliance.\"",
+    "short_description": "Product Name: Professional Hair Dryer Brand: SUNHOME Model: 8935 Color: black and gold Internal parts: hair dryer*1(28*24*9cm), roller comb*…",
+    "price": 5.59,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z91F9ED394A27825397C2Z/45/_/1780467203/06dca66c-97e8-401d-b18b-dbf05b8299ba.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z91F9ED394A27825397C2Z/45/_/1780467203/e3b2f5a0-aa7c-4756-a579-7066721448a5.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z91F9ED394A27825397C2Z/45/_/1780467203/aec6c34d-d30e-4b38-aeb8-ecc6c3ce2c2d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z91F9ED394A27825397C2Z/45/_/1780467203/c79938c5-0805-4c70-802e-b966963bc2dd.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "sunhome",
+    "brand_name": "Sunhome",
+    "rating": 3.8,
+    "review_count": 1326,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-N70025053V",
+    "name": "3-Piece Professional Hair Dryer With Straightener Set Black",
+    "slug": "3-piece-professional-hair-dryer-with-straightener-set-black",
+    "description": "Product Name:SUNHOME 3-Piece Professional Hair Dryer With Straightener Set Black Model: 8800+S838 Color: Black Internal parts: hair dryer*1(28*24*9cm)，hair straightener*1(34*2.5cm)， smooth air nozzle*1(7.5*4.5*8cm) Material: Nylon Voltage: 220-240 V Power: 2000W feature: 1. Professional Hair Dryer: SUNHOME hairdryer is a powerful hairdryer to get salon-like styling at the convenience of home. 2. Create the best airflow level and gentle drying ability to obtain beautiful results Support 2 flexible speed settings and 3 heating options for careful drying 3. The heat protection setting can provide a constant drying temperature and prevent the hair from overheating 4. Ceramic-coated heating plates generate perfect heat to give your hair a shine without any damage 5.Fast-working， reaching a top heat of 230 degrees in a super-quick 15 seconds， the 360-degree swivel cord design offers additional ease Brand introduction: The brand SUNHOME is a well-known brand in China. It was born in 1990. The characteristics of the brand: practical， fashionable， innovative， beautiful， and sunny. SUNHOME's products include tableware， hair dryers， electric splints， curling irons， humidifiers， air-conditioning fans， smart trash cans and other diversified life products. The concept of SUNHOME brand conveys is to let every family have a sunny lifestyle ， Make family life better because of SUNHOME products! Instructions for use: 1.A power device is not a toy. After use， store it out of reach of children Keep packing material (plastic bags carton， etc) out of reach of children. 2.The appliance is not suited for persons (as well as children) physically， mentally， sensory disabled， or with no experience， unless they have been supervised or di rected by someone responsible of their safety. 3.Children should be supervised to make sure they do not play with the appliance.",
+    "short_description": "Product Name:SUNHOME 3-Piece Professional Hair Dryer With Straightener Set Black Model: 8800+S838 Color: Black Internal parts: hair dryer*1(…",
+    "price": 9.26,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z345F682B3176971C14E0Z/45/_/1780467291/2e4567e2-af18-4b80-b68f-d2d970c5764d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z345F682B3176971C14E0Z/45/_/1780467291/b616ab68-bb84-472d-a47f-512a5722995d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z345F682B3176971C14E0Z/45/_/1780467291/e7128bfc-6da9-4d2a-b5da-8919f619f295.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z345F682B3176971C14E0Z/45/_/1780467291/e10e8e06-a270-43a4-92fc-e5513c65f250.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "sunhome",
+    "brand_name": "Sunhome",
+    "rating": 4,
+    "review_count": 329,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-N31916947A",
+    "name": "Essential Care Dryer BHC010/13 BHC010/13-Black",
+    "slug": "essential-care-dryer-bhc010-13-bhc010-13-black",
+    "description": "About the product: Choose from one to multiple speed and temperature settings to achieve the blow dry you want or choose Thermo Protect to dry faster at a constant temperature. The removeable air flow filter of your hairdryer is easy to maintain. Simply click off to clean. Doing this regularly will prevent build up of dust and hair that can affect drying performance. About the brand: Royal Philips of the Netherlands is a leading health technology company focused on improving people&rsquo;s health and enabling better outcomes across the health continuum from healthy living and prevention, to diagnosis, treatment and home care. Philips leverages advanced technology and deep clinical and consumer insights to deliver integrated solutions.",
+    "short_description": "Choose from one to multiple speed and temperature settings to achieve the blow dry you want or choose Thermo Protect to dry faster at a cons…",
+    "price": 6.7,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z4F78A76DD24D40BCAEA0Z/45/_/1780915094/9f875380-c15b-44b5-aa2a-0256febf42d2.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4F78A76DD24D40BCAEA0Z/45/_/1780915094/eed27ec7-0903-4004-bd65-8d47cae4ede8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4F78A76DD24D40BCAEA0Z/45/_/1780915094/b55d8ab1-1f22-40dc-8654-f49c18fca597.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4F78A76DD24D40BCAEA0Z/45/_/1780915094/36d06a4d-c1f3-4aca-b3be-0df760182a4d.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "philips",
+    "brand_name": "Philips",
+    "rating": 4.5,
+    "review_count": 7611,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-Z2BD0F768599CDA9BE327Z",
+    "name": "6-in-1 Ionic Hair Dryer, Salon Professional Blow Dryer 2200W AC Motor Fast Drying with 2 Speed, 3 Heat Setting, with Diffuser, Nozzle, Concentrator Comb for Curly and Straight Hair，comb",
+    "slug": "6-in-1-ionic-hair-dryer-salon-professional-blow-dryer-2200w-ac-motor-f",
+    "description": "2200W Strong wind hair dryer Make the hair more shiny the constant caring temperature of 57 ℃ allow you to quickly fry your hair without over drying. maintaining your hair's natural moisture level at 12%, for shiny,soft and smooth silky. 2 Speeds Setting 3 Heats Setting Independent cool shot DC Motor AC 220V 50~60Hz",
+    "short_description": "2200W Strong wind hair dryer Make the hair more shiny the constant caring temperature of 57 ℃ allow you to quickly fry your hair without ove…",
+    "price": 6.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z2BD0F768599CDA9BE327Z/45/1746689740/b6079c9d-bd00-4ba9-884e-592727ed7958.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2BD0F768599CDA9BE327Z/45/1746689739/0d36f522-2ef1-4793-bcfc-f2281c06c969.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2BD0F768599CDA9BE327Z/45/1746689742/78040ee0-2652-485b-94b8-cb2afd802a48.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2BD0F768599CDA9BE327Z/45/1746689741/c79ed8c6-f150-4785-a6ff-f02ef1be6592.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "univer-tang",
+    "brand_name": "Univer Tang",
+    "rating": 4,
+    "review_count": 502,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "dryers",
+      "accessories"
+    ]
+  },
+  {
+    "id": "noon-Z1533B4128B24947A236AZ",
+    "name": "Barony Ceramic Hair Straightener – Pink",
+    "slug": "barony-ceramic-hair-straightener-pink",
+    "description": "The BARONY Ceramic 160 Wide Hair Straightener is designed for fast and efficient styling with professional results. Its wide ceramic plates cover larger hair sections, reducing styling time while delivering smooth, sleek hair. Even heat distribution helps protect hair from damage and reduces frizz while enhancing natural shine. The device features a digital display for precise temperature control and fast heating performance suitable for daily use. With its ergonomic design and 360° swivel cord, it offers easy handling and flexibility, giving you long-lasting, salon-like straight hair with minimal effort.",
+    "short_description": "The BARONY Ceramic 160 Wide Hair Straightener is designed for fast and efficient styling with professional results.",
+    "price": 13.022,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z1533B4128B24947A236AZ/45/_/1775648281/612f4df9-0484-4242-b978-7ecbd7561a6c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z1533B4128B24947A236AZ/45/_/1775648281/30c414bd-f4ca-4e09-a943-ded44dbbbb44.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z1533B4128B24947A236AZ/45/_/1775648281/adac256e-8c5d-4500-ac5b-465ec41c2aae.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z1533B4128B24947A236AZ/45/_/1775648281/dda084b5-6edd-4342-b459-91a46c2a7d85.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "barony",
+    "brand_name": "BARONY",
+    "rating": 4.7,
+    "review_count": 50,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-Z348C2B9835CA055F9D98Z",
+    "name": "Barony Titanium Ionic Ceramic Hair Straightener 480° - Pink",
+    "slug": "barony-titanium-ionic-ceramic-hair-straightener-480-pink",
+    "description": "BARONY Titanium Ceramic Hair Device with Ionic Technology, Fast Heating up to 480°F, Even Heat Distribution, LCD Digital Temperature Control, Ergonomic Safe Design with Heat-Resistant Tip, Suitable for All Hair Types, Long-Lasting Professional Results",
+    "short_description": "BARONY Titanium Ceramic Hair Device with Ionic Technology, Fast Heating up to 480°F, Even Heat Distribution, LCD Digital Temperature Control…",
+    "price": 21.5,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z348C2B9835CA055F9D98Z/45/_/1775120287/9f73aab2-4582-4e6b-a2c4-182c7187be5f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z348C2B9835CA055F9D98Z/45/_/1775120287/2884cc5b-6e97-4628-9140-ea8a0d60f522.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z348C2B9835CA055F9D98Z/45/_/1775120287/89dad781-1d11-42b2-9f58-bf1bdc1ff7f0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z348C2B9835CA055F9D98Z/45/_/1775120287/d521a81b-0ac3-41c1-9253-60cbbfa93463.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "barony",
+    "brand_name": "BARONY",
+    "rating": 4.9,
+    "review_count": 1173,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-ZC5F32B3E773EF929F3F8Z",
+    "name": "Professional Ceramic Hair Device 2 in 1 Equipped with Ionic Technology to Reduce Frizz and Protect Hair and Deliver Salon Results at Home",
+    "slug": "professional-ceramic-hair-device-2-in-1-equipped-with-ionic-technology",
+    "description": "Product Description Multi-functional 2-in-1 styling tool designed as a ceramic hair straightener and curler in one device. Equipped with ionic technology to reduce frizz and enhance natural shine. Fast heating up to 500°F for professional results within minutes. Adjustable temperature control to suit different hair types. Practical design for creating smooth straight styles or natural waves with ease. Ideal for everyday use or special occasions. Leaves hair looking shiny, sleek, and frizz-free. Key Features 2-in-1 design for both straightening and curling. Negative ion technology helps reduce static and improve smoothness. High heat up to 500°F for long-lasting styling results. Adjustable temperature to match your hair type and styling needs. Ceramic plates for even heat distribution. Fast heat-up for quick styling. Floating plates for smooth gliding without pulling hair. 360° swivel cord for easy handling and flexibility. Specifications Product Type: 2-in-1 Ceramic Straightener & Curler Technology: Ceramic with Ionic Function Maximum Temperature: 500°F Feature: Adjustable Temperature Control",
+    "short_description": "Product Description Multi-functional 2-in-1 styling tool designed as a ceramic hair straightener and curler in one device.",
+    "price": 11.729,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZC5F32B3E773EF929F3F8Z/45/1754386682/935fe4b0-ae15-457c-b139-c8b14a2b34f1.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC5F32B3E773EF929F3F8Z/45/1754824720/d803cb58-5b8a-49e7-a1e6-47453428a566.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC5F32B3E773EF929F3F8Z/45/1754824741/2e0f0f78-9807-4ce8-b8c1-c59f073bbe4a.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC5F32B3E773EF929F3F8Z/45/1754824756/81bc90b0-5804-4d07-9944-b9badcbcca70.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "obelo",
+    "brand_name": "OBelo",
+    "rating": 4.4,
+    "review_count": 113,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-ZAE70908B6B4A99FC4986Z",
+    "name": "Professional 2-in-1 Titanium Ceramic Hair Straightener and Curler, equipped with ionic technology to reduce frizz, protect hair, and deliver salon-quality results at home.",
+    "slug": "professional-2-in-1-titanium-ceramic-hair-straightener-and-curler-equi",
+    "description": "The OBelo titanium ceramic styling device delivers a professional styling experience at home, combining powerful performance with a practical and elegant design. It features titanium-coated plates that ensure smooth gliding and even heat distribution, helping reduce friction and protect the hair from damage. Ionic technology works to minimize frizz while enhancing natural shine, leaving your hair smooth, sleek, and healthy-looking. The device is equipped with an LCD display for clear visibility of settings, along with adjustable temperature control to suit different hair types including fine, thick, and curly hair. Its lightweight ergonomic design ensures comfortable daily use and better control during styling, while the heat-resistant tip provides added safety. Crafted with high-quality ceramic materials for durability and consistent performance, the device also includes a heat-resistant glove for extra protection. Its stylish and premium packaging makes it perfect for personal use or as a thoughtful gift. This styling tool is ideal for achieving long-lasting, salon-quality results with smooth, frizz-free, and shiny hair.",
+    "short_description": "The OBelo titanium ceramic styling device delivers a professional styling experience at home, combining powerful performance with a practica…",
+    "price": 15.328,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/82aa0fe4b62d52f799ee8a92ad87cffc|pzsku/ZAE70908B6B4A99FC4986Z/45/1769924180/c6c596bd-0e81-4b0d-a78f-96c3dd25884f.jpg?width=1200",
+      "https://f.nooncdn.com/p/82aa0fe4b62d52f799ee8a92ad87cffc|pzsku/ZAE70908B6B4A99FC4986Z/45/1769924180/a4cdb156-df9b-485d-8962-bf5f53f2c41c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAE70908B6B4A99FC4986Z/45/_/1782642706/cbd4b5fc-cf0c-4b58-b09d-ce93e43a162b.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "obelo",
+    "brand_name": "OBelo",
+    "rating": 4.5,
+    "review_count": 915,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-Z2A073425D86D1341DF16Z",
+    "name": "Hair Straightener and Curler 2 in 1 Ceramic Flat Iron - 4 Heat Settings and Heats Up to 230°C with a Heat-Resistant Silicone Pad and Gloves",
+    "slug": "hair-straightener-and-curler-2-in-1-ceramic-flat-iron-4-heat-settings",
+    "description": "This versatile 2-in-1 Ceramic Hair Straightener is designed to meet the diverse styling needs of modern users. It combines the functionality of a straightener and a curler, making it perfect for achieving sleek, straight looks or beautiful curls. The flat iron features four adjustable heat settings, ranging from 170°C to 230°C, allowing you to customize the temperature to suit your hair type. The ceramic plates ensure even heat distribution, reducing frizz and protecting your hair from damage. Additionally, the device heats up quickly, reaching high temperatures in just seconds, making styling fast and efficient. For added safety, it includes a heat-resistant silicone pad and gloves to protect your hands and surfaces from high temperatures. This flat iron is also equipped with an automatic shut-off function to prevent accidents. Its compact and lightweight design makes it ideal for both home use and travel, fitting easily into your beauty bag. Whether you are styling at home or on the go, this 2-in-1 flat iron is a must-have tool for achieving salon-quality results.",
+    "short_description": "This versatile 2-in-1 Ceramic Hair Straightener is designed to meet the diverse styling needs of modern users.",
+    "price": 11.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z2A073425D86D1341DF16Z/45/_/1735289383/91981065-0387-476a-81fb-3fd695136d1d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2A073425D86D1341DF16Z/45/_/1735289394/e1e164ec-c3a2-40d8-89d3-fb8f9de5260a.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2A073425D86D1341DF16Z/45/_/1735289413/c6b536ce-82b0-4694-8352-c566313362ae.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2A073425D86D1341DF16Z/45/_/1735289443/880a4798-f72a-4050-b1fb-c47d4611a580.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "doscher",
+    "brand_name": "DOSCHER",
+    "rating": 4.6,
+    "review_count": 864,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-ZEAF1E638493DBD72D824Z",
+    "name": "Professional 2-in-1 Titanium Ceramic Hair Straightener and Curler, equipped with ionic technology to reduce frizz, protect hair, and deliver salon-quality results at home.",
+    "slug": "professional-2-in-1-titanium-ceramic-hair-straightener-and-curler-equi-zeaf1e",
+    "description": "The OBelo titanium ceramic styling device delivers a professional styling experience at home, combining powerful performance with a practical and elegant design. It features titanium-coated plates that ensure smooth gliding and even heat distribution, helping reduce friction and protect the hair from damage. Ionic technology works to minimize frizz while enhancing natural shine, leaving your hair smooth, sleek, and healthy-looking. The device is equipped with an LCD display for clear visibility of settings, along with adjustable temperature control to suit different hair types including fine, thick, and curly hair. Its lightweight ergonomic design ensures comfortable daily use and better control during styling, while the heat-resistant tip provides added safety. Crafted with high-quality ceramic materials for durability and consistent performance, the device also includes a heat-resistant glove for extra protection. Its stylish and premium packaging makes it perfect for personal use or as a thoughtful gift. This styling tool is ideal for achieving long-lasting, salon-quality results with smooth, frizz-free, and shiny hair.",
+    "short_description": "The OBelo titanium ceramic styling device delivers a professional styling experience at home, combining powerful performance with a practica…",
+    "price": 15.172,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZEAF1E638493DBD72D824Z/45/_/1778566498/4934b17d-f378-428c-a3a5-d6a35b9f46c9.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZEAF1E638493DBD72D824Z/45/_/1778569041/c784fb93-013f-4801-b277-f64611c8badf.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "obelo",
+    "brand_name": "OBelo",
+    "rating": 4.5,
+    "review_count": 915,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-Z85176779AEA4BF3BA591Z",
+    "name": "Professional Ionic Hair Straightener & Curler with 480°F High Heat Technology.",
+    "slug": "professional-ionic-hair-straightener-curler-with-480-f-high-heat-techn",
+    "description": "Online shopping for OBelo. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy Free Returns ✓ Cash on Delivery. Shop Now",
+    "short_description": "Online shopping for OBelo. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy Free Re…",
+    "price": 9.375,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z85176779AEA4BF3BA591Z/45/_/1780272351/7370a670-2cf2-4615-aa1c-d741bf1037bb.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "obelo",
+    "brand_name": "OBelo",
+    "rating": 4.2,
+    "review_count": 137,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-Z176EFDC33AA73B31F295Z",
+    "name": "Ceramic Hair Straightener and Curler with 3D Floating Ceramic Plates – Anti-Scald Rounded Design, Up to 230°C (450℉) High Heat, Dual Voltage, Auto Shut Off, 2m Swivel Cord, 2 Year Warranty",
+    "slug": "ceramic-hair-straightener-and-curler-with-3d-floating-ceramic-plates-a",
+    "description": "Achieve professional, salon-quality results at home with this high-heat ceramic hair straightener . Designed to reach up to 230°C (450℉) , it delivers ultra-smooth, frizz-free results in just one pass, perfect for taming even the thickest hair. The 3D floating ceramic coating plates adapt to your hair for even heat distribution, while the rounded anti-scald design makes it safe for both straightening and curling. With 4 adjustable temperature settings (170°C to 230°C), you can style everything from fine to coarse hair with precision. Powered by an advanced PTC heater , this straightener heats up fast and stays consistent. The dual voltage compatibility makes it travel-friendly, and the 2m swivel cord offers full styling freedom. For safety, it features a 60-minute auto shut-off and comes with a 2-year warranty for your peace of mind.",
+    "short_description": "Achieve professional, salon-quality results at home with this high-heat ceramic hair straightener .",
+    "price": 10.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z176EFDC33AA73B31F295Z/45/1755662907/3fa261c5-2818-4674-aa41-ecda5167c082.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z176EFDC33AA73B31F295Z/45/1755661611/87a4ffae-83e1-4c4b-82ef-99963edb01e1.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z176EFDC33AA73B31F295Z/45/1755661613/0f70df4e-c964-4966-bd57-2e2d359ab778.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z176EFDC33AA73B31F295Z/45/1755661611/bf78c70c-b876-4607-af58-2b5fa0991176.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "doscher",
+    "brand_name": "DOSCHER",
+    "rating": 4.6,
+    "review_count": 392,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-N31277006A",
+    "name": "StraightCare Essential Thermo Protect Straightener BHS375/03 Years Warranty Black/Purple. Black/Purple",
+    "slug": "straightcare-essential-thermo-protect-straightener-bhs375-03-years-war",
+    "description": "About the product : Specially designed for easy and fast styling with long Keratin-infused plates and 2 temperature settings. Care for your hair with ThermoProtect technology preventing overheating. Comes with 2 temperature settings. Lower temperature for last minute touch ups and gentle styling. Higher temperature for long lasting results. The straightener has a fast heat-up time, being ready to use in 60 seconds. The plates can be locked together for safe and easy storage. About the brand : Royal Philips of the Netherlands is a leading health technology company focused on improving people’s health and enabling better outcomes across the health continuum from healthy living and prevention, to diagnosis, treatment and home care. Philips leverages advanced technology and deep clinical and consumer insights to deliver integrated solutions. The company is a leader in diagnostic imaging, image-guided therapy, patient monitoring and health informatics, as well as in consumer health and home care. How to use : 1. Wash and condition your hair. 2. Towel dry and/or air dry your hair 80% of the way. 3. Apply a heat protectant product. 4. Divide your hair into four sections: crown, right side, left side, and back. 5. Turn on the brush and glide through each section SLOWLY from roots to tips. 6.Finish with hairspray.",
+    "short_description": ": Specially designed for easy and fast styling with long Keratin-infused plates and 2 temperature settings.",
+    "price": 9.4,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z7CDA706F272117E72831Z/45/_/1780913206/1066223d-bbc7-4435-9988-82ddf67323b8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7CDA706F272117E72831Z/45/_/1780913206/dd68cc41-3ded-4c51-8d4d-53ac08bfaaaa.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7CDA706F272117E72831Z/45/_/1780913206/b53d7134-d8ef-4fff-a66b-745cdb38a3f6.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z7CDA706F272117E72831Z/45/_/1780913206/195b6c91-06a9-440e-9c91-049d6e9e08cb.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "philips",
+    "brand_name": "Philips",
+    "rating": 4.5,
+    "review_count": 2449,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-N41782083A",
+    "name": "Ceramic Hair Straightener 25mm Straightening And Multiple Heat Settings Up To 230°c Temperature With Fast Heat-up Time Ready To Use In 30 Seconds With Salon-quality Results Black",
+    "slug": "ceramic-hair-straightener-25mm-straightening-and-multiple-heat-setting",
+    "description": "About the product : The slim ceramic plates flow during the hair, for a smooth, shiny finish, BaByliss Ceramic 230 straightener reaches as much as 230°C for high heat performance and is able to use in just 30 seconds. It has variable heat settings, suitable for different hair types to provide total keep an eye on. For thicker hair, use the upper heat settings. Delivers as much as 230 degrees C salon temperature for an instant frizz-free salon straight style. Ceramic plates flow during the hair without an equal high shine glossy finish. Easy to make use of with two temperature settings for total keep an eye on even as styling. About the brand : For over 50 years' BaByliss has been producing innovative electrical products to inspire the creativity of professional hairdressers, from session to salon and beyond. BaByliss tools are used by professional stylists & encourage evolving designs & trends. How to use : 1. First, wash your hair with shampoo and a mild conditioner. 2. Lightly dry your hair with a towel and proceed to blow-dry it from the roots up to the tips while drying the hair. 3. Once done with detangling, apply a heat protection spray to keep your hair safe from any heat damage. 4. Split the hair into sections/partitions before you start straightening. 5. Set the right temperature on the flat iron, depending on the hair length.\"",
+    "short_description": ": The slim ceramic plates flow during the hair, for a smooth, shiny finish, BaByliss Ceramic 230 straightener reaches as much as 230°C for h…",
+    "price": 13.2,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z1BEA4C28615F8DE87666Z/45/_/1779791414/4377d31b-7363-4ea6-a62f-8d4fe5ff64d2.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z1BEA4C28615F8DE87666Z/45/_/1779791414/edb6fbf1-91bd-48d3-b393-4697dd7e63af.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z1BEA4C28615F8DE87666Z/45/_/1779791414/1cbf1b7b-d081-41fc-a213-f3be4b2328a0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z1BEA4C28615F8DE87666Z/45/_/1779791414/0eb2737a-2d68-42f6-a4ba-e5cc93a7387c.jpg?width=1200"
+    ],
+    "category_slug": "styling-tools",
+    "category_name": "Styling Tools",
+    "brand_slug": "babyliss",
+    "brand_name": "BaByliss",
+    "rating": 4.5,
+    "review_count": 1055,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "hair",
+      "care",
+      "styling",
+      "tools",
+      "straighteners"
+    ]
+  },
+  {
+    "id": "noon-Z9B8382AECB0DC3F7A619Z",
+    "name": "Fragrance Mist - 250ml",
+    "slug": "fragrance-mist-250ml",
+    "description": "Spray yourself in sweetness. This lightweight mist smells like clouds of spun sugar and bubblegum-pink daydreams. It’s airy, joyful, and absolutely addicting—like wearing a candy carnival all day long. FEATURES Cotton candy fragrance with airy lightness Ideal for layering or solo wear Non-sticky, fast-drying mist Perfect for everyday spritzing Leaves a sweet, nostalgic trail",
+    "short_description": "Spray yourself in sweetness. This lightweight mist smells like clouds of spun sugar and bubblegum-pink daydreams.",
+    "price": 2.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z9B8382AECB0DC3F7A619Z/45/1766911335/15dcb7e7-0bd6-42d4-8253-210cc3956265.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 4.5,
+    "review_count": 13,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z2D925699672D43E8F281Z",
+    "name": "Into the Night Fine Fragrance Mist",
+    "slug": "into-the-night-fine-fragrance-mist",
+    "description": "What it does: scents your skin with a mist that's super layerable. Why you'll love it: The truest way to fragrance Designed for great coverage Made without parabens Dermatologist tested",
+    "short_description": "What it does: scents your skin with a mist that's super layerable.",
+    "price": 5.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z2D925699672D43E8F281Z/45/1767809228/84c6c367-2ba7-4622-9c50-9effddc1e64c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2D925699672D43E8F281Z/45/1762940875/13ebfe59-7233-45d7-9f40-dd46e08619a8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2D925699672D43E8F281Z/45/1762940874/139fcf82-12df-4322-83d2-53779cb87718.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z2D925699672D43E8F281Z/45/1762940875/e4a3b7f2-5e87-4201-9c31-93f3d512b14e.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "bath-body-works",
+    "brand_name": "Bath & Body Works",
+    "rating": 4.6,
+    "review_count": 95,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z1CBBC46B20AF7C5C5D00Z",
+    "name": "Jasmine Nights Body Mist 250ml",
+    "slug": "jasmine-nights-body-mist-250ml",
+    "description": "Experience the charm and warmth of jasmine nights with VAI Body Mist. A unique feminine fragrance that combines the enchanting scents of jasmine with delicate notes of white flowers, to give you a sense of calm and sophistication that lasts all day long.",
+    "short_description": "Experience the charm and warmth of jasmine nights with VAI Body Mist.",
+    "price": 2.6,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z1CBBC46B20AF7C5C5D00Z/45/_/1733656845/7c53fdaa-cb66-4184-b2ac-6786cb25b8df.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z1CBBC46B20AF7C5C5D00Z/45/_/1733656855/fdb7e08b-afc5-49e1-864c-6b3649bde66d.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "vai-naturals",
+    "brand_name": "VAI Naturals",
+    "rating": 3.8,
+    "review_count": 15,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z06DB1523F9EAE584EE0AZ",
+    "name": "Beaute Secrets Strawberry Crush Fragrance Mist 250 Ml",
+    "slug": "beaute-secrets-strawberry-crush-fragrance-mist-250-ml",
+    "description": "A long-lasting, refreshing body scent. We offer you a unique blend of flavors with extra freshness, so go between spritzes of this invigorating body mist that gently lingers on your skin. You can use it on your body after showering to get refreshed and silky smooth skin.",
+    "short_description": "A long-lasting, refreshing body scent. We offer you a unique blend of flavors with extra freshness, so go between spritzes of this invigorat…",
+    "price": 1.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z06DB1523F9EAE584EE0AZ/45/_/1692282282/61d3bcce-1573-4b0a-b40b-55ec64a8c46f.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 4.1,
+    "review_count": 1538,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z299917F02002F279DB97Z",
+    "name": "Coconut & Ice Cream Body Mist - 250ml",
+    "slug": "coconut-ice-cream-body-mist-250ml",
+    "description": "A spritz of this, and you’re lounging under palm trees with a coconut sundae in hand. Cool, creamy, and just the right touch of sweet, this fragrance mist layers effortlessly for all-day tropical radiance. It’s summer-in-a-bottle—no boarding pass required. FEATURES Beachy, coconut-vanilla scent that’s never too strong Refreshes skin and uplifts mood Ideal for layering or solo spritzing Lightweight and travel-ready Instantly transforms your vibe to vacation mode",
+    "short_description": "A spritz of this, and you’re lounging under palm trees with a coconut sundae in hand.",
+    "price": 2.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z299917F02002F279DB97Z/45/1766911174/8078d24a-e330-4bcc-87dd-076aeedaff2f.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 4.2,
+    "review_count": 14,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z78EE3B1E36937B29F94EZ",
+    "name": "Extra Fresh Men's Body Spray - 240 ml",
+    "slug": "extra-fresh-men-s-body-spray-240-ml",
+    "description": "Enjoy lasting freshness with Cosmo Men Extra Fresh Body Spray, a fresh and invigorating scent that leaves you feeling clean and refreshed all day long. It's the perfect choice for the modern man who loves to look fresh and confident. Product Features: A fragrant body spray with a fresh and invigorating scent. It gives you a feeling of freshness all day long. Its light and gentle formula is suitable for daily use. Its elegant design comes with a practical, easy-to-use spray. It's ideal for use after showering or before going out. Product Details: Size: 240 ml - 8.1 oz Specification: Men Category: Body Spray With Cosmo Men Extra Fresh, enjoy a renewed freshness and a modern scent that enhances your attractiveness. Order it now from Dar Al Amirah and make your daily routine more refreshing!",
+    "short_description": "Enjoy lasting freshness with Cosmo Men Extra Fresh Body Spray, a fresh and invigorating scent that leaves you feeling clean and refreshed al…",
+    "price": 1.549,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z78EE3B1E36937B29F94EZ/45/1766567641/6fe47b1b-130a-4033-bf22-1eff1e6c2733.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 4,
+    "review_count": 12,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z33ACBB2129EC19E67E17Z",
+    "name": "A Thousand Wishes Fine Fragrance Mist",
+    "slug": "a-thousand-wishes-fine-fragrance-mist",
+    "description": "What it does: scents your skin with a light-as-air-mist that's super layerable. Why you'll love it: The truest way to fragrance Designed for great coverage Made without parabens Dermatologist tested Bottle made with 50% recycled plastic",
+    "short_description": "What it does: scents your skin with a light-as-air-mist that's super layerable.",
+    "price": 5.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z33ACBB2129EC19E67E17Z/45/1744355235/35d191fb-4b47-4f32-84f3-1cdeaafe2fb8.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "bath-body-works",
+    "brand_name": "Bath & Body Works",
+    "rating": 4.5,
+    "review_count": 29,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z52967E3E2BD0E1B7E03EZ",
+    "name": "Japanese Cherry Blossom Fine Fragrance Mist",
+    "slug": "japanese-cherry-blossom-fine-fragrance-mist",
+    "description": "What it does: scents your skin with a mist that's super layerable. Why you'll love it: The truest way to fragrance Designed for great coverage Made without parabens Dermatologist tested",
+    "short_description": "What it does: scents your skin with a mist that's super layerable.",
+    "price": 5.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z52967E3E2BD0E1B7E03EZ/45/1762940875/42e024fe-3b1e-4e1a-a575-64616408d861.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z52967E3E2BD0E1B7E03EZ/45/1762940875/6ee1f8b7-cfe0-4b60-8898-f90253243031.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z52967E3E2BD0E1B7E03EZ/45/1762940875/7e3ccf7c-b825-4ad8-a401-bb758da3fd82.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "bath-body-works",
+    "brand_name": "Bath & Body Works",
+    "rating": 4.3,
+    "review_count": 48,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z1D66AD5BD4794896B302Z",
+    "name": "Baby Body Mist Floral FragranceFor Kids 100Ml",
+    "slug": "baby-body-mist-floral-fragrancefor-kids-100ml",
+    "description": "Cosmo Floral Body Mist for Kids - 100ml Cosmo Floral Body Mist for Kids, 100ml, is specially designed to provide a fresh and pleasant scent for children. It features a mild formula that is safe for sensitive skin, making it suitable for daily use without worrying about irritation or allergies. Benefits: Fresh Floral Scent: Offers a blend of floral scents such as jasmine and rose, leaving children feeling refreshed and comfortable. Safe Formula: Free from harmful chemicals, making it suitable for children's sensitive skin. Ease of Use: Comes in a convenient size (100ml) that can be easily carried in a mother's purse or school bag. Directions for Use: Gently spray onto your child's skin from a suitable distance, avoiding contact with the eyes and mouth. It can be used after bathing or anytime your child needs extra freshness.",
+    "short_description": "Cosmo Floral Body Mist for Kids - 100ml Cosmo Floral Body Mist for Kids, 100ml, is specially designed to provide a fresh and pleasant scent…",
+    "price": 0.8,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z1D66AD5BD4794896B302Z/45/1752329861/47b27c95-6961-4ac6-bcef-14a101f88d8c.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 4.3,
+    "review_count": 140,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-Z4C217A412BB69660C6EFZ",
+    "name": "Beaute Secrets Arabian Oud Delight Fragrance Mist 250 Ml",
+    "slug": "beaute-secrets-arabian-oud-delight-fragrance-mist-250-ml",
+    "description": "A long-lasting, refreshing body scent. We offer you a unique blend of flavors with extra freshness, so go between spritzes of this invigorating body mist that gently lingers on your skin. You can use it on your body after showering to get refreshed and silky smooth skin.",
+    "short_description": "A long-lasting, refreshing body scent. We offer you a unique blend of flavors with extra freshness, so go between spritzes of this invigorat…",
+    "price": 1.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z4C217A412BB69660C6EFZ/45/1764771251/4544ba74-2f34-4102-9b87-1bce838f25cf.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4C217A412BB69660C6EFZ/45/1764771266/312656d6-c58a-458d-b272-34eed59f731d.jpg?width=1200"
+    ],
+    "category_slug": "body-mists-sprays",
+    "category_name": "Body Mists & Sprays",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 4.1,
+    "review_count": 1538,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "fragrance",
+      "body",
+      "mists",
+      "sprays"
+    ]
+  },
+  {
+    "id": "noon-ZA1D7D09B44A83D8F98AEZ",
+    "name": "Underarm Roll-On With 5% Aha, Lactic Acid And 1% Mandelic Acid | Prevents Body Odour, Brightens Skin And Exfoliates Underarm | For Sensitive Skin | Royal Oudh Fragrance | Alcohol Free",
+    "slug": "underarm-roll-on-with-5-aha-lactic-acid-and-1-mandelic-acid-prevents-b",
+    "description": "GENTLE EXFOLIATION: Our underarm roll on deodorant gently exfoliates the skin as itâ€™s enriched with 5% Lactic Acid + Mandelic Acid. This also helps even out the skin tone and fades spots/patches on the skin, if any.. WHITENS & BRIGHTENS: This roll on deodorant is specially formulated to whiten and brighten your underarms with regular use. Just roll it 3-4 times post-shower daily and raise your hands in the air!. KEEPS YOU FRESH: This roll on-deodorant has added peach fragrance which keeps you feeling & smelling super fresh and fruity all day long. This is a perfect roll on to keep with you if youâ€™re a gym freak.. WHY OUR ROLL ON (WITH ROYAL OUDH FRAGRANCE): This roll on is vegan, cruelty-free, silicones free, parabens free, gluten-free, mineral oil-free and dye-free. Our roll on is based on scientific research as we believe that people should understand the science behind what they apply to their skin.. SPECIALLY FORMULATED FOR YOU: Our Under Arm Roll On Deodorant is a great choice for everyone who wishes to sport brighter, more even-toned underarms and need to replace their deodorant for long lasting fragrance. Just make sure you have no open wounds or scars as it can deeply irritate the skin. Do not use post waxing/shave.",
+    "short_description": "GENTLE EXFOLIATION: Our underarm roll on deodorant gently exfoliates the skin as itâ€™s enriched with 5% Lactic Acid + Mandelic Acid.",
+    "price": 3.099,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZA1D7D09B44A83D8F98AEZ/45/1769076243/93b2a00d-b715-413e-9f73-afd61ca2948d.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZA1D7D09B44A83D8F98AEZ/45/1769076243/8eaf44f4-ec3b-4c8f-ba5c-8692158fa5e0.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZA1D7D09B44A83D8F98AEZ/45/1769076243/910dbd70-153c-466f-8350-4ae6ef43f533.jpg?width=1200",
+      "https://f.nooncdn.com/p/7f94360644cd4a7b954b3c02af52effb|pzsku/ZA1D7D09B44A83D8F98AEZ/45/1769076243/265ad132-51c2-41d2-818c-579777d6d7ab.jpg?width=1200"
+    ],
+    "category_slug": "deodorants-antiperspirants",
+    "category_name": "Deodorants & Antiperspirants",
+    "brand_slug": "chemist-at-play",
+    "brand_name": "Chemist at Play",
+    "rating": 4.4,
+    "review_count": 38,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "deodorants",
+      "antiperspirants"
+    ]
+  },
+  {
+    "id": "noon-ZAD57EAFCE29BE4305ACFZ",
+    "name": "womn Dry & Fresh Liquid Powder, 50 ml",
+    "slug": "womn-dry-fresh-liquid-powder-50-ml",
+    "description": "Online shopping for WOMN. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy Free Returns ✓ Cash on Delivery. Shop Now",
+    "short_description": "Online shopping for WOMN. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy Free Ret…",
+    "price": 13.8,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZAD57EAFCE29BE4305ACFZ/45/1754755471/aecfa8b2-092e-4f22-87ad-d4317d2060f5.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAD57EAFCE29BE4305ACFZ/45/1754755529/964d9efd-5f55-467e-a9ec-41f96bdf72b6.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAD57EAFCE29BE4305ACFZ/45/1754755540/a899b888-e515-4c32-a300-ffe16999586b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAD57EAFCE29BE4305ACFZ/45/1754755537/a46ccf5d-9aeb-4208-adc3-a2370d3d346b.jpg?width=1200"
+    ],
+    "category_slug": "deodorants-antiperspirants",
+    "category_name": "Deodorants & Antiperspirants",
+    "brand_slug": "womn",
+    "brand_name": "WOMN",
+    "rating": 5,
+    "review_count": 1,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "deodorants",
+      "antiperspirants"
+    ]
+  },
+  {
+    "id": "noon-Z29491BBE8E90B903BD09Z",
+    "name": "Be Fresh Advanced Antiperspirant Spray with Juicy Apple - 250ml",
+    "slug": "be-fresh-advanced-antiperspirant-spray-with-juicy-apple-250ml",
+    "description": "Stay refreshed and energized with the invigorating scent of juicy apple. Features & Benefits: Energizing Apple Fragrance: Provides all-day freshness and vitality. Long-Lasting Protection: Protects against sweat and odor for up to 48 hours. Gentle on Skin: Alcohol-free formula that prevents irritation. Quick Absorption: Lightweight formula absorbs quickly without leaving residue. Smooth & Healthy Underarms: Helps maintain soft and healthy underarm skin. How to Use: Spray onto underarms after showering or as needed, keeping a safe distance while applying. Enjoy a full day of freshness, confidence, and comfort with effective protection for your skin.",
+    "short_description": "Stay refreshed and energized with the invigorating scent of juicy apple.",
+    "price": 1.446,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z29491BBE8E90B903BD09Z/45/1766563125/3f476a56-9273-4cea-b0c0-caade4ac549c.jpg?width=1200"
+    ],
+    "category_slug": "deodorants-antiperspirants",
+    "category_name": "Deodorants & Antiperspirants",
+    "brand_slug": "cosmo",
+    "brand_name": "COSMO",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "deodorants",
+      "antiperspirants"
+    ]
+  },
+  {
+    "id": "noon-N15215445A",
+    "name": "Powder Soft Antiperspirant Stick, 40g Powder Soft 40g",
+    "slug": "powder-soft-antiperspirant-stick-40g-powder-soft-40g",
+    "description": "Dove Powder Soft Antiperspirant deodorant keeps your underarms soft and dry with a comforting fresh baby powder fragrance. Love touch-me textures? Cashmere jumpers, velvet dresses, or silk sheets... we just love that feeling of softness on our skin. It’s luxuriously comforting, just like Dove Powder Soft Antiperspirant. Soft as silk, Dove Powder Soft refreshing Antiperspirant reminds us of that comforting baby powder scent we all know and love from our childhood. This formula doesn’t just feel soft but helps your skin to feel soft too, reducing irritation and helping you stay dry for up to 72 hours of protection. And with ¼ moisturising cream to care for delicate underarm skin, you can enjoy beautifully soft and smooth underarm skin. Applying this moisturising antiperspirant after bathing or showering, or at night (when you sweat less) is most effective. At Dove, our vision is of a world where beauty is a source of confidence and not anxiety. So, we are on a mission to help the next generation of women develop a positive relationship with the way they look – helping them raise their self-esteem and realize their full potential. Dove believes no young person should be held back from reaching their full potential. Since 2004, Dove has been building self-esteem and confidence in young people – and by 2030, it will have helped a quarter of a billion young people through educational programmes and resources. Have a go at using this deodorant stick on whenever you need a top-up of freshness. It’s small enough to carry with you wherever you go and its refreshing, subtle scent means it’s perfect for after work, after the gym, or just before you leave the house. So with all those soothing ingredients combined with dryness protection that lasts, what better way is there to start each day? Globally, Dove does not test deodorant on animals. For the last 30 years, Dove has used alternative non-animal methods to test the safety of its products.",
+    "short_description": "Dove Powder Soft Antiperspirant deodorant keeps your underarms soft and dry with a comforting fresh baby powder fragrance.",
+    "price": 1.452,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N15215445A/45/_/1768973956/525fc8e9-daa8-4335-92d2-49b9db18e8dd.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15215445A/45/_/1764242297/3dc33777-fb5d-4764-8231-426faacd5837.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15215445A/45/_/1764242300/4faa0e71-7c98-4ec7-b7f5-9057f5540332.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N15215445A/45/_/1764242299/37a40484-6374-475a-b9b1-0a87c11f713f.jpg?width=1200"
+    ],
+    "category_slug": "deodorants-antiperspirants",
+    "category_name": "Deodorants & Antiperspirants",
+    "brand_slug": "dove",
+    "brand_name": "Dove",
+    "rating": 4.4,
+    "review_count": 579,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "deodorants",
+      "antiperspirants"
+    ]
+  },
+  {
+    "id": "noon-Z78871F7B839E11C6511AZ",
+    "name": "LANEMAY Lady Parts Invisible Cream Deodorant Lotion, Peach Scent, for Whole Body Odor Control",
+    "slug": "lanemay-lady-parts-invisible-cream-deodorant-lotion-peach-scent-for-wh",
+    "description": "Online shopping for LANEMAY. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy Free Returns ✓ Cash on Delivery. Shop Now",
+    "short_description": "Online shopping for LANEMAY. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy Free…",
+    "price": 2.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z78871F7B839E11C6511AZ/45/_/1781150254/c997b4e5-93cb-44c7-8520-beee2b8fbdbe.jpg?width=1200",
+      "https://f.nooncdn.com/p/27f3e50c53525d2db6112f717ab251ce|pzsku/Z78871F7B839E11C6511AZ/45/1769766630/7963e0d9-d52d-44ae-85f2-49eaafbff9b9.jpg?width=1200",
+      "https://f.nooncdn.com/p/27f3e50c53525d2db6112f717ab251ce|pzsku/Z78871F7B839E11C6511AZ/45/1769766630/78852cfc-97c0-41dc-a31f-3e82ccbb4e35.jpg?width=1200",
+      "https://f.nooncdn.com/p/27f3e50c53525d2db6112f717ab251ce|pzsku/Z78871F7B839E11C6511AZ/45/1769766630/a0caa60d-70a2-40db-9291-3905074838bb.jpg?width=1200"
+    ],
+    "category_slug": "deodorants-antiperspirants",
+    "category_name": "Deodorants & Antiperspirants",
+    "brand_slug": "lanemay",
+    "brand_name": "LANEMAY",
+    "rating": 3.9,
+    "review_count": 10,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "deodorants",
+      "antiperspirants"
+    ]
+  },
+  {
+    "id": "noon-N29473423A",
+    "name": "UltraMax Antiperspirant Solid Deodorant Orange 28grams",
+    "slug": "ultramax-antiperspirant-solid-deodorant-orange-28grams",
+    "description": "About the product: Arm and Hammer Ultramax Solid Anti-Perspirant Deodorant in Powder Fresh provides maximum odour and wetness protection. Ultramax delivers all-day confidence for staying dry and smelling good with this baby powder, creamy vanilla and musk-scented deodorant. About the brand: A trusted solution for more than 170 years. Pure and simple. It's also a natural choice for taking care of every member of your family. ARM & HAMMER's laundry, cat litter, toothpaste and personal care products are made with ARM & HAMMER&trade; Baking Soda, delivering the quality you can count on, from the brand you trust. Ingredients: Aluminum Zirconium Tetrachlorohydrex Gly (19%) - Purpose: Antiperspirant. Inactive ingredients: Cyclopentasiloxane, PPG-14 Butyl Ether, Stearyl Alcohol, Ethylhexyl Isononanoate, Hydrogenated Castor Oil, Talc, Petrolatum, Fragrance, Sodium Bicarbonate (Baking Soda), PEG-25 Propylene Glycol Stearate, Silica, Corn Starch Modified, Polysaccharides, Maltodextrin. How to use: Apply a thin layer to underarms only.",
+    "short_description": "Arm and Hammer Ultramax Solid Anti-Perspirant Deodorant in Powder Fresh provides maximum odour and wetness protection.",
+    "price": 1.165,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N29473423A/45/_/1767607832/cd17673b-8081-41d8-82c1-9775fd302458.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1629361401/N29473423A_2.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1634823981/N29473423A_3.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1634823981/N29473423A_4.jpg?width=1200"
+    ],
+    "category_slug": "deodorants-antiperspirants",
+    "category_name": "Deodorants & Antiperspirants",
+    "brand_slug": "arm-hammer",
+    "brand_name": "Arm & Hammer",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "deodorants",
+      "antiperspirants"
+    ]
+  },
+  {
+    "id": "noon-ZEA69C18B7CF377D678D0Z",
+    "name": "Hismile Cherry Flavoured Fluoride Toothpaste - 60g",
+    "slug": "hismile-cherry-flavoured-fluoride-toothpaste-60g",
+    "description": "Hismile Cherry Flavoured Fluoride Toothpaste offers a delightful brushing experience with its unique cherry flavor. This toothpaste is designed to provide effective teeth cleaning and breath freshening, making it an ideal choice for daily oral care. The fluoride formula ensures superior cleaning and long-lasting oral health benefits, while the fun flavor makes brushing enjoyable for both kids and adults.",
+    "short_description": "Hismile Cherry Flavoured Fluoride Toothpaste offers a delightful brushing experience with its unique cherry flavor.",
+    "price": 2.971,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZEA69C18B7CF377D678D0Z/45/_/1779159556/aa109b33-2263-44be-8098-5ed951a57e47.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZEA69C18B7CF377D678D0Z/45/_/1779159556/b9daf9fe-77c8-4dcc-9270-e5a436c9591a.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZEA69C18B7CF377D678D0Z/45/_/1779159556/d9f1c957-340d-4b1d-b476-b5a6414d3589.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZEA69C18B7CF377D678D0Z/45/_/1779159556/9751ab83-abda-42ac-b1e5-5c461dd36718.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "hismile",
+    "brand_name": "HiSmile",
+    "rating": 4,
+    "review_count": 5,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "toothpaste"
+    ]
+  },
+  {
+    "id": "noon-ZAABC9E37DCFCFD667F09Z",
+    "name": "Hismile Strawberry Flavoured Toothpaste | Fluoride Formula for Fresh Breath",
+    "slug": "hismile-strawberry-flavoured-toothpaste-fluoride-formula-for-fresh-bre",
+    "description": "Experience the delightful taste of Hismile Strawberry Flavoured Toothpaste, designed to make your oral care routine enjoyable. This fluoride toothpaste not only freshens your breath but also provides long-lasting oral health benefits. With a creamy texture and a burst of strawberry flavor, it transforms brushing into a sweet experience that satisfies your taste buds. Ideal for daily use, this toothpaste ensures a superior clean while being gluten-free and made with natural ingredients.",
+    "short_description": "Experience the delightful taste of Hismile Strawberry Flavoured Toothpaste, designed to make your oral care routine enjoyable.",
+    "price": 2.806,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZAABC9E37DCFCFD667F09Z/45/_/1779816331/017b1f46-3dc7-4b64-b8da-d9cf6af67ece.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAABC9E37DCFCFD667F09Z/45/_/1779818731/ccb5c0b7-79a8-401e-a423-532700667ad3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAABC9E37DCFCFD667F09Z/45/_/1779818731/4b6336f6-aa0e-41d0-82e6-57ace0f91eba.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZAABC9E37DCFCFD667F09Z/45/_/1779818731/7c26d2f8-a4a9-4f75-a77b-09023a6bb32b.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "hismile",
+    "brand_name": "HiSmile",
+    "rating": 5,
+    "review_count": 1,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "toothpaste"
+    ]
+  },
+  {
+    "id": "noon-ZC937C8713E4522AD574AZ",
+    "name": "HISMILE V34 Instant Yellow Corrector Toothpaste - 100g",
+    "slug": "hismile-v34-instant-yellow-corrector-toothpaste-100g",
+    "description": "Hismile's V34 Instant Yellow Corrector Toothpaste is a revolutionary 2-in-1 daily toothpaste designed to neutralize yellow tones and deliver a visibly whiter smile. Utilizing advanced color-correcting technology, this fluoride-free formula incorporates violet pigments that balance yellow stains on enamel, providing an immediate whitening effect after brushing. Gentle on enamel and suitable for everyday use, it leaves your mouth feeling fresh and clean. This convenient 100g tube is perfect for maintaining results from professional or at-home whitening treatments, making it an essential addition to your oral care routine.",
+    "short_description": "Hismile's V34 Instant Yellow Corrector Toothpaste is a revolutionary 2-in-1 daily toothpaste designed to neutralize yellow tones and deliver…",
+    "price": 5.822,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZC937C8713E4522AD574AZ/45/_/1775634325/0fbc3120-ad4a-4351-bc5f-9a8eacf2c666.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC937C8713E4522AD574AZ/45/_/1775634326/04ccbbcf-7109-451e-884d-b6e35930b57b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC937C8713E4522AD574AZ/45/_/1775634325/77b213b8-8445-4e0a-8994-8e30495a4c7d.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "hismile",
+    "brand_name": "HiSmile",
+    "rating": 4.6,
+    "review_count": 7,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "toothpaste"
+    ]
+  },
+  {
+    "id": "noon-N50272689A",
+    "name": "Water Flosser For Teeth Cordless 300Ml Portable Oral Irrigator Flosser 5 Cleaning Modes And 5 Jet Tips, Ipx7 Waterproof Black",
+    "slug": "water-flosser-for-teeth-cordless-300ml-portable-oral-irrigator-flosser",
+    "description": "Package: 1 x Main Machine 5 x jet 1 x toothbrush 1 x USB Cable 1 x Manual 1 x Storage bag",
+    "short_description": "Package: 1 x Main Machine 5 x jet 1 x toothbrush 1 x USB Cable 1 x Manual 1 x Storage bag",
+    "price": 12.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z0C3C88155E5B75AF92CCZ/45/_/1776073463/9a5ec0a8-9bc7-4dea-80ae-47f845ef2463.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z0C3C88155E5B75AF92CCZ/45/_/1776073463/2b50cbdb-d6ef-4197-8fd4-ac243ff196e8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z0C3C88155E5B75AF92CCZ/45/_/1776073463/a5959d86-065c-441b-9134-e7bba931ddf0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z0C3C88155E5B75AF92CCZ/45/_/1776073463/ea80d367-0b15-443a-b6ef-3c63c5d0aed6.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "h2ofloss",
+    "brand_name": "h2ofloss",
+    "rating": 4.4,
+    "review_count": 17382,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "dental",
+      "floss"
+    ]
+  },
+  {
+    "id": "noon-ZB9A69A62F5F3283E6296Z",
+    "name": "Toothbrush And Toothpaste With Floss 10 Pieces",
+    "slug": "toothbrush-and-toothpaste-with-floss-10-pieces",
+    "description": "3 in 1: Toothbrush with built-in toothpaste and floss for a complete clean. Portable and easy to use: Compact design fits in your pocket or bag, perfect for travel and on the go. Long-lasting fresh feeling: Built-in toothpaste ensures fresh breath all day long. Food debris removal: Effective floss to remove food debris between teeth. No need for water or rinsing: Fast and effective cleaning anytime, anywhere. Value pack: The pack contains 10 individual pieces, making it practical and economical. Make your smile a statement of confidence with the complete Beauty System set. Superior care, deep cleaning, and lasting freshness – the perfect choice for your oral health every day!",
+    "short_description": "3 in 1: Toothbrush with built-in toothpaste and floss for a complete clean.",
+    "price": 1.446,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZB9A69A62F5F3283E6296Z/45/_/1733128763/c714c772-50d7-44e5-a9bf-f3eaa7eb3fc0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZB9A69A62F5F3283E6296Z/45/_/1733128715/d68493cf-cee6-4764-9565-ff0816dea2f6.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "beauty-system",
+    "brand_name": "BEAUTY SYSTEM",
+    "rating": 4.4,
+    "review_count": 417,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "manual",
+      "toothbrushes"
+    ]
+  },
+  {
+    "id": "noon-Z971C540FF2F95CDE223FZ",
+    "name": "Hismile v34 Colour Corrector, Purple Teeth Whitening, Tooth Stain Removal, Teeth Whitening Booster, Purple Toothpaste",
+    "slug": "hismile-v34-colour-corrector-purple-teeth-whitening-tooth-stain-remova",
+    "description": "Hismile v34 Colour Corrector is a purple toothpaste designed to instantly cancel yellow undertones for a whiter smile. It is non-invasive and can be used like regular toothpaste. The product balances warm and cool tones to reveal your brightest white smile without the use of harsh peroxides, making it safe for daily use.",
+    "short_description": "Hismile v34 Colour Corrector is a purple toothpaste designed to instantly cancel yellow undertones for a whiter smile.",
+    "price": 6.79,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z971C540FF2F95CDE223FZ/45/_/1775634169/4995ca25-cb78-4589-bce3-f74ab2d0e5d5.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z971C540FF2F95CDE223FZ/45/_/1775634169/a608da03-3f2d-4747-8059-87f200fece19.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z971C540FF2F95CDE223FZ/45/_/1775634169/5d025563-d304-4e1a-88fa-8a5873eb9e3f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z971C540FF2F95CDE223FZ/45/_/1775634169/0fac76c7-5a72-4ff2-8b14-6aebc0c33088.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "hismile",
+    "brand_name": "HiSmile",
+    "rating": 4.3,
+    "review_count": 12,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "toothpaste"
+    ]
+  },
+  {
+    "id": "noon-N53233829A",
+    "name": "Water Flosser For Teeth Cordless 300Ml Portable Oral Irrigator Flosser 5 Cleaning Modes And 6 Jet Tips, Ipx7 Waterproof - Black",
+    "slug": "water-flosser-for-teeth-cordless-300ml-portable-oral-irrigator-flosser-n53233",
+    "description": "This oral irrigator has a feature of compact, portable and lightweight design, it's easy to carry during travelling. Special detachable cup-type water tank, easy-to-fill and clean. Low noise, one-touch control system with 5 adjustable cleaning modes. The water flosser is great for overall dental care, could remove up to 99.9% of plaque on treated areas. Also, water flossing is up 5X more effective than string-flossing, it works great for effective oral irrigation, dental cleansing, preventing periodontitis and other gum line diseases, and for nasal passage cleansing to remove sinusitis and allergic rhinitis. How to use the water flosser? 1. Dismantle the pump casing from the water tank; Pull off the bottom cover. 2. Add water or mouthwash in the water tank up to the MAX line. 3. Pull out the suction pipe from the bottom of the machine. 4. Mounted the water tank onto the machine by turning clockwise until tight. 5. Bend upward the nozzle on the head of machine. 6. Hold the power button for 3-4 seconds until blue light is blinking, slightly press once again, water stream will shoot out.",
+    "short_description": "This oral irrigator has a feature of compact, portable and lightweight design, it's easy to carry during travelling.",
+    "price": 12.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZC107D7CF07FDF3A4993AZ/45/_/1776073379/28099a74-aa59-4ae5-8171-dcaebda1d672.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC107D7CF07FDF3A4993AZ/45/_/1776073379/e8bd0cf0-9505-4ab1-8545-726c18f854ec.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC107D7CF07FDF3A4993AZ/45/_/1776073379/4d5eb574-6c0f-4264-9045-c0e5b9766e41.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZC107D7CF07FDF3A4993AZ/45/_/1776073379/5be5d2a8-f3ce-4b4b-8d15-86e50cb93532.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "h2ofloss",
+    "brand_name": "h2ofloss",
+    "rating": 4.4,
+    "review_count": 864,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "dental",
+      "floss"
+    ]
+  },
+  {
+    "id": "noon-Z421C95DE9193A4B85637Z",
+    "name": "Whitening Mint Toothpaste - 85ml/4.4 oz Packed with Xylitol for Effective Teeth Whitening and Fresh Breath",
+    "slug": "whitening-mint-toothpaste-85ml-4-4-oz-packed-with-xylitol-for-effectiv",
+    "description": "About the product: Transform your smile and teeth-cleaning ritual with the Whitening Mint Toothpaste from luxury Italian toothpaste brand Marvis; a refreshing, creamy teeth-whitening toothpaste in a cool mint flavour that whitens and protects teeth while freshening breath. Developed to keep teeth and gums healthy whilst preventing decay, the toothpaste utilises gentle a xylitol and sorbitan-based formula to cleanse and condition the teeth without irritation. Experience luxurious and contemporary oral hygiene. About the brand: Marvis is a ‘heritage toothpaste’ which first came onto the market in the 1950s. When it comes to dental hygiene, you want the best for your teeth, not simply a fashion product - but Marvis deliver top quality dental hygiene alongside a striking visual style. Ingredients: Glycerin, Hydrated Silica, Water, PEG-32, Tetrasodium Pyrophosphate, Aroma (Flavor), Cellulose Gum, Xylitol, Titanium Dioxide, Sodium Lauryl Sulfate, Sodium Saccharin, Limonene, Eugenol, Bezyl Alcohol. How to use: 1. Brush twice a day for at least two minutes each time. 2. Use in conjunction with mouthwash. 3. Use a soft or medium bristled toothbrush. 4. Replace your toothbrush every 2-3 months. Highlights The flavour is intense and pleasant Traditional creamy white paste Funky addition to your bathrooms This product is cruelty-free, gluten-free, paraben-free and vegan",
+    "short_description": "Transform your smile and teeth-cleaning ritual with the Whitening Mint Toothpaste from luxury Italian toothpaste brand Marvis; a refreshing,…",
+    "price": 3.5,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z421C95DE9193A4B85637Z/45/_/1781166920/4f2970ce-0608-4dbf-99ea-e2552937d48f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z421C95DE9193A4B85637Z/45/_/1782702454/98c19f0e-ecb2-42e2-9b81-36efeb6e8958.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z421C95DE9193A4B85637Z/45/_/1780106490/bad98a53-5cd8-484c-b482-1c77634799a8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z421C95DE9193A4B85637Z/45/_/1780106490/6d808c3f-d6a3-4a85-a2bb-a9b52b31a5d0.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "marvis",
+    "brand_name": "Marvis",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "toothpaste"
+    ]
+  },
+  {
+    "id": "noon-N51929403A",
+    "name": "Water Flosser For Teeth Cordless Portable Oral Irrigator Flosser 5 Cleaning Modes And 6 Jet Tips, Ipx7 Waterproof - Black 300ml",
+    "slug": "water-flosser-for-teeth-cordless-portable-oral-irrigator-flosser-5-cle",
+    "description": "Product Features>>>> Why do we need to use an oral irrigator? This oral irrigator has a feature of compact,portable and lightweight design,it's easy to carry during travelling. Special detachable cup-type water tank,easy-to-fill and clean.Low noise,one-touch control system with 5 adjustable cleaning modes.The water flosser is great for overall dental care,could remove up to 99.9% of plaque on treated areas.Also,water flossing is up 5X more effective than string-flossing,it works great for effective oral irrigation,dental cleansing,preventing periodontitis and other gumline diseases,and for nasal passage cleansing to remove sinusitis and allergic rhinitis. How to use the water flosser? 1. Dismantle the pump casing from the water tank;Pull off the bottom cover. 2. Add water or mouthwash in the water tank up to the MAX line. 3. Pull out the suction pipe from the bottom of the machine. 4. Mounted the water tank onto the machine by turning clockwise until tight. 5. Bend upward the nozzle on the head of machine. 6. Hold the power button for 3-4 seconds until blue light is blinking,slightly press once again, water stream will shoot out.",
+    "short_description": "Product Features>>>> Why do we need to use an oral irrigator? This oral irrigator has a feature of compact,portable and lightweight design,i…",
+    "price": 12.3,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z93801D9ECB75F7598BC4Z/45/_/1779179162/66125dcb-7e23-4d06-81b2-d5ed9ac0ffb5.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z93801D9ECB75F7598BC4Z/45/_/1779179162/72634116-d380-4f8b-9cc9-d1d56a50c9f3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z93801D9ECB75F7598BC4Z/45/_/1779179162/ea56f8a0-95d9-4b05-82f3-6794a3300be8.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z93801D9ECB75F7598BC4Z/45/_/1779179162/5ced1a90-4fa7-42e3-938a-61fd76c0adfb.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "h2ofloss",
+    "brand_name": "h2ofloss",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "dental",
+      "floss"
+    ]
+  },
+  {
+    "id": "noon-Z8E2A415A9B22ABEDC82FZ",
+    "name": "Water Flosser Teeth Pick: 5 Modes Cordless Water Dental Floss 300ML Portable Rechargeable IPX7 Waterproof Electric Water Flossing Cleaning Picks with 6 Jet Tips Oral Irrigator Cleaner, Black",
+    "slug": "water-flosser-teeth-pick-5-modes-cordless-water-dental-floss-300ml-por",
+    "description": "Experience 5 Different Cleaning Modes: Cordless water flosser delivers 1,400 to 1,800 water pulses per minute and features 5 modes and 5 pressure levels: Strong mode- 150 PSI, Normal mode- 120 PSI, Soft mode- 90 PSI, Pulse mode- 70-120 PSI, and Child mode- 50 PSI. This versatility caters to users who need either a gentle or a powerful clean, providing a personalized cleaning experience. 300 ML Large Capacity Wide-Mouth Water Tank, Easy to Clean: The detachable wide-mouth tank solves the cleaning issues associated with narrow-mouth tanks. It includes a built-in gravity ball for efficient water intake, so you don’t have to worry about water flow when the tank is tilted. With a capacity of 300 ml/10.14 oz, you can complete your oral cleaning with just one refill, making the process more efficient and convenient. Upgrade to 40 Days of Battery Life for Worry-Free Travel: A single charge in low-pressure mode lasts up to 40 days, ensuring you don't have to worry about battery life. It comes with a USB-C charging cable compatible with 5V1A power adapters or USB ports (such as power banks or laptops), so no dedicated charger is needed. The cordless design allows for easy use at home or while traveling (adapter not included). 6 Interchangeable Nozzles, 360° Coverage of Every Corner: Concerned that the nozzle may not rotate to clean every corner effectively? No worries! This water flosser includes 6 360° rotatable nozzles that allow you to adjust the angle to clean hard-to-reach areas and enhance cleaning efficiency. It comes with 1 periodontal nozzles, 1 orthodontic nozzle, 1 tongue cleaner, and 3 regular nozzles, so you can share the water flosser with your family. IPX7 Waterproof for Safe Shower Use: Bezvoi rechargeable water flosser features an IPX7 waterproof design, ensuring it operates safely while showering or bathing for a more confident and convenient cleaning experience. (Make sure the silicone cover on the charging port is securely closed during use in the shower to prevent water ingress, which can cause charging issues and affect the flosser's lifespan). Product List & Advice for beginners: 1×Bezvoi Water Flosser; 6×Replacement Nozzles; 1×User Manual; 1×USB-C Charging Cable (Note: adapter not included). Advice for Beginners: (For first-time users, we recommend starting with the child mode and then gradually transitioning to other modes). Usage Tips for Beginners: 1.Before turning on the water flosser, press the “M” button to select a mode. Keep your mouth slightly closed to minimize splashing, but do not keep your mouth too open or too closed. Then press the power button to start. Avoid removing the water flosser from your mouth during use to prevent splashing 2.Ensure the nozzle is firmly attached to the device to prevent leaks and enhance your experience. Answers to buyer's questions: Does it leak when tilted or dropped? Bezvoi water flossing uses a one-piece mold with a tight fit between the tank and the body, so it won't leak when tilted; Are its tips easy to replace? There is a nozzle eject button on the body of the water flosser, which only needs to be lightly pressed, and the nozzles will be ejected,... It is very easy to replace the tips.",
+    "short_description": "Experience 5 Different Cleaning Modes: Cordless water flosser delivers 1,400 to 1,800 water pulses per minute and features 5 modes and 5 pre…",
+    "price": 8.999,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z8E2A415A9B22ABEDC82FZ/45/1750145825/75a90983-79dc-476e-b8a6-a427b8491ec4.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8E2A415A9B22ABEDC82FZ/45/1750145825/77462391-b9e0-4dea-b313-78a9fe4fd740.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8E2A415A9B22ABEDC82FZ/45/1750145825/353ef256-3285-4b11-a8d3-2f5b0d3e52ba.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z8E2A415A9B22ABEDC82FZ/45/1750145827/d19344bc-a411-4f4f-941b-d29d6cd8274e.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "bezvoi",
+    "brand_name": "Bezvoi",
+    "rating": 4.5,
+    "review_count": 761,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "dental",
+      "floss"
+    ]
+  },
+  {
+    "id": "noon-N11293734A",
+    "name": "3D White Deluxe 3 In 1 Enamel Safe Toothpaste Vitalizing Fresh Vitalizing Fresh 75ml",
+    "slug": "3d-white-deluxe-3-in-1-enamel-safe-toothpaste-vitalizing-fresh-vitaliz",
+    "description": "Trust your mouth to the whitening expertise of Crest 3D White Vitalizing Mint whitening toothpaste. 3D White vitalizing mint toothpaste combines 3 benefits in 1 toothpaste, which whitens, strengthens and protects your teeth. The enamel safe formula gently removes surface stains on teeth to reveal a beautiful white smile while the vitalizing mint flavor leaves you with a rejuvenating freshness sensation.",
+    "short_description": "Trust your mouth to the whitening expertise of Crest 3D White Vitalizing Mint whitening toothpaste.",
+    "price": 1.66,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N11293734A/45/_/1758103059/caa0f894-4ddc-4632-b837-fcff13098311.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11293734A/45/_/1758103068/86a2817f-455e-4300-beb2-ededfe192b17.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11293734A/45/_/1758103065/3102dff0-2117-427b-b44f-0ccbeecde20f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N11293734A/45/_/1758103063/f8de57ce-c4a4-422f-97ff-91017bd08d81.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "crest",
+    "brand_name": "Crest",
+    "rating": 4.4,
+    "review_count": 695,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "toothpaste"
+    ]
+  },
+  {
+    "id": "noon-ZDB607701099B5644A241Z",
+    "name": "Portable Water Dental Flosser For Teeth Cleaning Dental Oral Irrigator With 4 Modes Scalable 5 Jet Nozzles IPX7 Water Resistance 300ML",
+    "slug": "portable-water-dental-flosser-for-teeth-cleaning-dental-oral-irrigator",
+    "description": "Professional Water Flosser - A New Lifestyle • We spent over 3 years developing and designing this water flosser. Strong power and complete functions combined in its compact body. Have a try, you will love it. • Let a healthier lifestyle easier, which is our original intention of developing this ultra-portable tooth cleaner. • You can take this ultra-portable water floss anywhere with you, clean your teeth at any time. • Say NO to bad breath, embarrassing food scraps. Keep your smile confident and charming anytime anywhere. Best Choice For Your Teeth Health water dental flosser aims to provide you with healthy oral care.We pursue the concept of simple to use and effective cleaning.We're in the irrigator industry for more than 10 years,which always focus on the customer and constantly improve our products based on voice of customer. The Cordless Collapsible Water Flosser is rechargeable, portable and waterproof, making it perfect for home use,in office,travel,business anytime and anywhere. Compared to traditional ways of cleaning your teeth, the versatile and compact cordless water flosser provides a deep clean in hard-to-reach areas, A super easy and efficient way to improve your oral problems and accentuate your confident and attractive smile. Why Choose Collapsible Water Flosser? Compared with brushing, which can only clean the surface of the teeth, and foreign objects will still remain behind the teeth and between the teeth, dental floss can effectively remove tartar in the gap between teeth. According to the American Academy of Periodontology, brushing and irrigator cleaning combined together is better than using a toothbrush alone. Rechargeable Oral Irrigator, can effectively protect the teeth and gums,improve the efficacy of cleaning plaque. Suitable for first user and sensitive gums.Also applies to the people who have braces or implants",
+    "short_description": "Professional Water Flosser - A New Lifestyle • We spent over 3 years developing and designing this water flosser.",
+    "price": 9.895,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZDB607701099B5644A241Z/45/1746212442/5850dfb7-931b-47c9-ac00-6923ab377f6d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZDB607701099B5644A241Z/45/1746212440/57a6f367-5587-4d86-9975-6a091b812852.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZDB607701099B5644A241Z/45/1746212440/4ff8c3bd-f1df-471a-9201-fe0e3157c63b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZDB607701099B5644A241Z/45/1746212443/faae2343-5c1d-4317-b1d8-c9d87458f03a.jpg?width=1200"
+    ],
+    "category_slug": "oral-hygiene",
+    "category_name": "Oral Hygiene",
+    "brand_slug": "doscher",
+    "brand_name": "DOSCHER",
+    "rating": 4.3,
+    "review_count": 3069,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "oral",
+      "hygiene",
+      "dental",
+      "floss"
+    ]
+  },
+  {
+    "id": "noon-ZA873CF9901C3DC4482A1Z",
+    "name": "BYLSAN Myrrh & Lavender Feminine Wash for Intimate Care – 2 * 100 ml | Soap-Free & Fragrance-Free Natural Formula + Multi-Purpose Natural Ointment",
+    "slug": "bylsan-myrrh-lavender-feminine-wash-for-intimate-care-2-100-ml-soap-fr",
+    "description": "Bylsan Feminine Wash 100ml is a premium natural intimate cleanser proudly crafted by experienced Saudi formulators. Enriched with myrrh, lavender, and lactic acid, it provides gentle yet effective care for sensitive areas. Free from soap and artificial fragrances, this wash helps soothe irritation, prevent unpleasant odors, and maintain hygiene. Ideal for daily use, postpartum care, and recovery after gynecological surgeries, it leaves you feeling fresh, comfortable, and confident. Bylsan Lotion: Natural Care for You: A feminine lotion proudly manufactured by expert Saudi hands, combining natural active ingredients such as bitter, lavender and lactic acid. Free of soap and synthetic fragrances, leaving you feeling comfortable and refreshed with every use",
+    "short_description": "Bylsan Feminine Wash 100ml is a premium natural intimate cleanser proudly crafted by experienced Saudi formulators.",
+    "price": 22.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZA873CF9901C3DC4482A1Z/45/_/1779135401/1cbf0b1d-2c7c-4352-af35-bc975b2f874d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZA873CF9901C3DC4482A1Z/45/_/1779135683/1774eea4-d7af-44ac-9201-cdbb969a0f2f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZA873CF9901C3DC4482A1Z/45/_/1779135683/7f7b1b5b-2c67-433e-ab2f-986423cc0e57.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZA873CF9901C3DC4482A1Z/45/_/1779135683/3652a947-4328-411a-aceb-224c36f7f305.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "bylsan",
+    "brand_name": "Bylsan",
+    "rating": 5,
+    "review_count": 6,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": true,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "female",
+      "moisturizers"
+    ]
+  },
+  {
+    "id": "noon-Z6EA61CF049F25C56A0ACZ",
+    "name": "BYLSAN Myrrh & Lavender Feminine Wash for Intimate Care – 3 * 100 ml | Soap-Free & Fragrance-Free Natural Formula + Multi-Purpose Natural Ointment",
+    "slug": "bylsan-myrrh-lavender-feminine-wash-for-intimate-care-3-100-ml-soap-fr",
+    "description": "Bylsan Feminine Wash 100ml is a premium natural intimate cleanser proudly crafted by experienced Saudi formulators. Enriched with myrrh, lavender, and lactic acid, it provides gentle yet effective care for sensitive areas. Free from soap and artificial fragrances, this wash helps soothe irritation, prevent unpleasant odors, and maintain hygiene. Ideal for daily use, postpartum care, and recovery after gynecological surgeries, it leaves you feeling fresh, comfortable, and confident. Bylsan Lotion: Natural Care for You: A feminine lotion proudly manufactured by expert Saudi hands, combining natural active ingredients such as bitter, lavender and lactic acid. Free of soap and synthetic fragrances, leaving you feeling comfortable and refreshed with every use",
+    "short_description": "Bylsan Feminine Wash 100ml is a premium natural intimate cleanser proudly crafted by experienced Saudi formulators.",
+    "price": 29.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z6EA61CF049F25C56A0ACZ/45/_/1779135494/781f0211-5b1b-43ad-b357-fecc756ab7a3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z6EA61CF049F25C56A0ACZ/45/_/1779135494/783afdb7-8e58-4ebf-9059-945574409b36.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z6EA61CF049F25C56A0ACZ/45/_/1779135494/4c96813a-7e38-41b9-a57f-08f9b4f5ba26.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z6EA61CF049F25C56A0ACZ/45/_/1779135309/c7a88e91-b5f4-4124-baff-70fa2a97b38b.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "bylsan",
+    "brand_name": "Bylsan",
+    "rating": 5,
+    "review_count": 6,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": true,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "female",
+      "moisturizers"
+    ]
+  },
+  {
+    "id": "noon-Z56E77E3F5337FE35D9E6Z",
+    "name": "Bikini Butter Cream Deep Lightening And Freshness Strong Fragrance& Moisturizing 113ml",
+    "slug": "bikini-butter-cream-deep-lightening-and-freshness-strong-fragrance-moi",
+    "description": "Online shopping for bikini butter. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy Free Returns ✓ Cash on Delivery. Shop Now",
+    "short_description": "Online shopping for bikini butter. Trusted Shipping to Riyadh, Jeddah and all KSA ✓ Great Prices ✓ Secure Shopping ✓ 100% Contactless ✓ Easy…",
+    "price": 3.8,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/016b4b6a7b965c0d92ca9e0958b33ca2|pzsku/Z56E77E3F5337FE35D9E6Z/45/1769364995/64ad9a6b-ffe5-4831-af86-4d002bada30e.jpg?width=1200",
+      "https://f.nooncdn.com/p/016b4b6a7b965c0d92ca9e0958b33ca2|pzsku/Z56E77E3F5337FE35D9E6Z/45/1769364995/49ede5ab-d315-444b-8593-56fd8fc47b76.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "bikini-butter",
+    "brand_name": "bikini butter",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "female",
+      "moisturizers"
+    ]
+  },
+  {
+    "id": "noon-N24996301A",
+    "name": "Long Scented Mega Pack 72 Pads white 72 Pads",
+    "slug": "long-scented-mega-pack-72-pads-white-72-pads",
+    "description": "For daily freshness and cleanliness, Freshdays daily liners Long Scented comes with 72 pads. Natural Cotton Feel. Daily Liners Long Scented Size",
+    "short_description": "For daily freshness and cleanliness, Freshdays daily liners Long Scented comes with 72 pads. Natural Cotton Feel.",
+    "price": 2.295,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N24996301A/45/_/1767805802/6eaf5b8c-3adc-4f34-929a-810222275d32.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N24996301A/45/_/1751914714/fe4cc958-28e7-49a2-9c61-b7fab6374ab6.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N24996301A/45/_/1751914715/c8de7098-8ae4-44b5-8417-f5d50b620ab8.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "freshdays",
+    "brand_name": "Freshdays",
+    "rating": 4.5,
+    "review_count": 695,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "panty",
+      "liners"
+    ]
+  },
+  {
+    "id": "noon-ZE2EA371C53BAFF636AC5Z",
+    "name": "Rose Organic Medium Sanitary Pads | 100% Natural Cotton | 12 Pads | Superior Protection All Day",
+    "slug": "rose-organic-medium-sanitary-pads-100-natural-cotton-12-pads-superior",
+    "description": "\"Rose is a Saudi brand carefully crafted from nature for women’s bodies. Rose Organic Pads are made with a 100% natural cotton top sheet and safe breathable layers. They feature high stability with double wings and ultra-thin comfort with ideal absorption—helping you say goodbye to leakage and discomfort throughout the day. Suitable for both heavy and moderate flow days. Advantages of Rose Medium Pads: – 100% natural cotton top sheet. – Superior absorption power for leakage protection. – Four wings for double protection and extra stability. – Organic materials free from chlorine, dyes, and harsh chemicals. Pads per pack: 12 pads. Try Rose now and feel the difference.\"",
+    "short_description": "\"Rose is a Saudi brand carefully crafted from nature for women’s bodies.",
+    "price": 3.141,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/780e8ed2ae354b3b827224ebe3c83957|pzsku/ZE2EA371C53BAFF636AC5Z/45/1769002188/a04219aa-344a-4762-89a6-5181aa39c81d.jpg?width=1200",
+      "https://f.nooncdn.com/p/780e8ed2ae354b3b827224ebe3c83957|pzsku/ZE2EA371C53BAFF636AC5Z/45/1769002188/234496fe-1ad8-48d7-8359-8f716652bb6a.jpg?width=1200",
+      "https://f.nooncdn.com/p/780e8ed2ae354b3b827224ebe3c83957|pzsku/ZE2EA371C53BAFF636AC5Z/45/1769002188/61c0a257-7bf6-4410-9fbd-418fea5fd2d4.jpg?width=1200",
+      "https://f.nooncdn.com/p/780e8ed2ae354b3b827224ebe3c83957|pzsku/ZE2EA371C53BAFF636AC5Z/45/1769002188/aed048db-fb12-4840-8e62-b3467196921e.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "rose",
+    "brand_name": "Rose",
+    "rating": 4.7,
+    "review_count": 21,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "sanitary",
+      "napkins"
+    ]
+  },
+  {
+    "id": "noon-N39356319A",
+    "name": "Sanitary Pads Maxi Pocket Super 50 Pads White 7mm",
+    "slug": "sanitary-pads-maxi-pocket-super-50-pads-white-7mm",
+    "description": "Private Maxi Pocket brings a glamour all the way to feminine protection. Private Maxi Pocket in Super Size comes in 50 Compressed pads, designed with a natural cotton-feel cover to grant ultimate discretion and safety.. Natural Cotton feel. High absorency. No Leakage",
+    "short_description": "Private Maxi Pocket brings a glamour all the way to feminine protection.",
+    "price": 1.592,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N39356319A/45/_/1735276754/724bc10d-1080-4e7c-916d-701716452889.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N39356319A/45/_/1735276756/82e0bc73-2b65-4b16-ab5e-be217a3eae0b.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N39356319A/45/_/1735276757/04a5c85d-a41b-4b95-8cdf-e226d6b943e6.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N39356319A/45/_/1735276755/4089bc86-eaa0-4001-bf8b-43d258766a66.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "private",
+    "brand_name": "Private",
+    "rating": 4.7,
+    "review_count": 496,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "sanitary",
+      "napkins"
+    ]
+  },
+  {
+    "id": "noon-N24996310A",
+    "name": "Classic With Wings Natural Cotton Feel, Super Sanitary, 40 Pads",
+    "slug": "classic-with-wings-natural-cotton-feel-super-sanitary-40-pads",
+    "description": "Helps to maintain hygiene during menstruation. Highly absorbent and prevents leakage. Fit perfectly in the underwear ensuring proper comfort",
+    "short_description": "Helps to maintain hygiene during menstruation. Highly absorbent and prevents leakage.",
+    "price": 0.889,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N24996310A/45/_/1764242471/f8b01538-98a7-4aa1-9681-8fd6f3b6e544.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "fam",
+    "brand_name": "Fam",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "sanitary",
+      "napkins"
+    ]
+  },
+  {
+    "id": "noon-N12276873A",
+    "name": "Long Mega Pack 72 Pads White",
+    "slug": "long-mega-pack-72-pads-white",
+    "description": "About Brand: Freshdays is a brand that manufactures a wide range of womenâ€s health care accessories. The brand specializes in crafting a range of panty liners that rank high in quality and offer women optimal comfort. About Product: Freshdays panty liners long offer you a refreshing feeling all day. It provides you with comfort thanks to its flexibility, softness and odour control protection. Freshdays long ensures optimal security thanks to a higher absorbency.",
+    "short_description": "About Brand: Freshdays is a brand that manufactures a wide range of womenâ€s health care accessories.",
+    "price": 2.575,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N12276873A/45/_/1763559704/cce492bd-86b0-4796-a7f6-5a1719962d2d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N12276873A/45/_/1751914634/898f7560-70e4-465d-8855-65dc0fbcb504.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N12276873A/45/_/1751914635/45b0cc82-13f3-47ed-b561-820a47ba9150.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "freshdays",
+    "brand_name": "Freshdays",
+    "rating": 4.5,
+    "review_count": 751,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "panty",
+      "liners"
+    ]
+  },
+  {
+    "id": "noon-ZD79F3DD1C64801C0AD2AZ",
+    "name": "10 Packs Disposable Medical Female Privacy Section Applicators Sterile Push Tubes Intimate Feminine Care",
+    "slug": "10-packs-disposable-medical-female-privacy-section-applicators-sterile",
+    "description": "10 products. Individually sterilized packaging, length approx. 10 cm. Medical polypropylene raw materials have no peculiar smell, no burrs, and smooth touch. 3 g type, suitable for gels, pastes, liquids, etc.. Printed with a scale for easy reading",
+    "short_description": "10 products. Individually sterilized packaging, length approx. 10 cm.",
+    "price": 5.995,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZD79F3DD1C64801C0AD2AZ/45/1755326533/ee566fbb-289d-494e-8a6f-c52cd3976ee3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZD79F3DD1C64801C0AD2AZ/45/1755326533/8cc841ba-6bd2-437a-9c83-371529d70add.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "generic",
+    "brand_name": "Generic",
+    "rating": 5,
+    "review_count": 5,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "tampons"
+    ]
+  },
+  {
+    "id": "noon-N28962644A",
+    "name": "Sanitary Pads Maxi Folded With Wings Super 50 Pads White 50 Pads",
+    "slug": "sanitary-pads-maxi-folded-with-wings-super-50-pads-white-50-pads",
+    "description": "Gel technology for instant absorption,ensures no leakages. Stretchable wings keep the pad in place. Fresh odourless napkins lock away bad odour",
+    "short_description": "Gel technology for instant absorption,ensures no leakages. Stretchable wings keep the pad in place.",
+    "price": 1.795,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pnsku/N28962644A/45/_/1765276912/7822cc2e-6f7d-4363-8326-1e5bcbe51409.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N28962644A/45/_/1764236073/8e4056b8-ba40-4e22-b251-290c39a8e455.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N28962644A/45/_/1764236072/e60cc01b-520f-4818-a3b0-b4e20ea2cfca.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N28962644A/45/_/1764236071/dfc1e86e-446d-417d-8584-4cb657eb93f2.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "fam",
+    "brand_name": "Fam",
+    "rating": 4.7,
+    "review_count": 838,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "sanitary",
+      "napkins"
+    ]
+  },
+  {
+    "id": "noon-Z4DDB4A6448260BADAA7BZ",
+    "name": "Post Birth Sanitary Pants L/XL",
+    "slug": "post-birth-sanitary-pants-l-xl",
+    "description": "Don’t let postpartum bleeding stop you from cherishing every moment with your newborn. Experience worry-free time with your little one with Kotex. Introducing Kotex Mom Post Birth Disposable Underwear—the ultimate post-partum bleeding protection designed to help mums manage lochia in the first 10 days post-birth. Kotex Mom underwear absorbs 10x more than a regular pad, giving you the protection you need for heavy bleeding after childbirth. Our postpartum pants are designed to offer maximum protection and comfort, so you can focus on adjusting to your new life as a mother and cherish precious moments with your baby, without the need to worry about period leaks and discharge. In addition to providing the ultimate comfort and protection, these post-birth period pants feature an extra-long built-in pad with over 40cm of length, delivering unmatched coverage against leakage. At Kotex, your comfort is our top priority. With super stretchable, breathable and soft materials, our mom pants comfortably hug your post-birth tummy, so you can move around easily and comfortably. We understand that a mother’s body goes through changes after giving birth, which is why our post-birth disposable maternity underwear is designed to accommodate both large and extra-large sizes for your ultimate comfort and protection. If you’re looking to experience uninterrupted bonding time with your baby, Kotex Mom Disposable Pants have got you covered.",
+    "short_description": "Don’t let postpartum bleeding stop you from cherishing every moment with your newborn.",
+    "price": 4.8,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z4DDB4A6448260BADAA7BZ/45/1766030887/388e4c96-a2eb-4bb5-a7a3-82a10f44aa27.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4DDB4A6448260BADAA7BZ/45/1766030887/be953e17-90fb-4299-99ce-cfc19175ca99.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4DDB4A6448260BADAA7BZ/45/1747064598/9bff6941-65c8-47c5-8679-d2c778b7624f.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4DDB4A6448260BADAA7BZ/45/1747064599/a39cbf90-4692-40c2-af90-40e5a475cdac.jpg?width=1200"
+    ],
+    "category_slug": "feminine-care",
+    "category_name": "Feminine Care",
+    "brand_slug": "kotex",
+    "brand_name": "Kotex",
+    "rating": 4.7,
+    "review_count": 167,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "feminine",
+      "sanitary",
+      "napkins"
+    ]
+  },
+  {
+    "id": "noon-N50344778A",
+    "name": "Beard Growth Kit Clear 150ml",
+    "slug": "beard-growth-kit-clear-150ml",
+    "description": "It is used by placing it on the beard and massaging the beard area for one minute. Use it twice in the morning and evening. Helps grow beard hair when regularly. \"Makes your beard a hair follicle\".",
+    "short_description": "It is used by placing it on the beard and massaging the beard area for one minute. Use it twice in the morning and evening.",
+    "price": 16.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/v1684392835/N50344778A_8.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1684392835/N50344778A_9.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1684392835/N50344778A_10.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1684392835/N50344778A_11.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "almond-hair",
+    "brand_name": "Almond Hair",
+    "rating": 4.1,
+    "review_count": 52,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-Z3313051D31D88DCD4AA0Z",
+    "name": "Beard Balm for Men, Strengthens & Softens Beards, Leave in Conditioner Wax for Men, Fast Absorbing, Reduces Itch, Healthy Nourishing - 50g",
+    "slug": "beard-balm-for-men-strengthens-softens-beards-leave-in-conditioner-wax",
+    "description": "Providing deep conditioning that protects your beard. Say goodbye to dryness and frizz as you nourish your facial hair, leaving it soft and manageable.. Specially formulated to soften, condition and moisturise the beard.. Restore, mold and shape your beard with our high quality beard balm treatment. Even the burliest of beards can be smoothed, straightened and controlled.. Massage a pea sized amount of beard balm into your skin at the roots of your beard to prevent flaking all day long!. This product helps tame unruly facial hair, making it easy to maintain a polished appearance.",
+    "short_description": "Providing deep conditioning that protects your beard.",
+    "price": 6.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z3313051D31D88DCD4AA0Z/45/1764907167/bf916c59-3e9d-44bd-983d-1227abad9141.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3313051D31D88DCD4AA0Z/45/1764907167/b31ceae6-c545-4d41-8a6f-ba187aa96772.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3313051D31D88DCD4AA0Z/45/1764907167/dceee990-cbcb-4288-8a1f-d84dc037ef49.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3313051D31D88DCD4AA0Z/45/1764907167/b4af3a73-f8e9-4507-a377-f20e00cdca31.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "generic",
+    "brand_name": "Generic",
+    "rating": 4.5,
+    "review_count": 4,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-N39234215A",
+    "name": "Beard Care Serum Clear 50ml",
+    "slug": "beard-care-serum-clear-50ml",
+    "description": "For a void-free and thick beard, use the beard serum that is made of natural ingredients that nourish and thicken the beard's hair. The serum helps you fill in the gaps and thicken the beard when used regularly, and the serum repairs the weak and dead hair follicles for better growth. How to use the product: After opening the pores with the derma, put 3 to 5 points of the serum on the palm of your hand, then massage it on the edges of the beard, and do not wash it off until two hours have passed. Use it regularly twice a day. Aqua, Apigenin, Biotin, Butylene Glycol, Calcium Pantothenate, Chamomilla Recutita (Matricaria), Citric Acid, Dextran, Equitum Arvins Extract, Flower Extract, Humulus Lupulus (Hops) Extract, Hydrolyzed Soy Protein, Lactose, Larix Europa Wood Extract, Extract Niacinamide Wood Panicum Miliaceum Seed Extract, PEG-40 Hydrogenated Castor Oil, Propylene Glycol, Sodium Citrate, Trifolium Pratense (Alfalfa) Flower Extract, Zinc Chloride, Oleolic Acid, Niacin, Milk Protein. Lawsonia Inermis (Henna) Extract, Ornithine HCl, Panax Ginseng Root Extract, Panthenyl Ethyl Ether, PEG-12 DimethiconePolyquaternium-11, PPG-26-buteth-26, Salvia officinalis (sage) leaf extract, sodium metabisulfite, Urtica dioica (nettle leaf) extract, zinc gluconate, inositol, glycerin, glucosamine HCl, citrulline, camellia leaf extract Sinensis, Biotenoyl Tripeptide-1, Betola Alba Leaf Extract, Arginine, Arctium Majus Root Extract, Arctium Lappa Root Extract, Aloe Barbadensis Leaf Juice, Alcohol Denat, Acetyl Tyrosine, Acetyl Tetrapeptide-3, Acetylmethionine, Acetylcysteine",
+    "short_description": "For a void-free and thick beard, use the beard serum that is made of natural ingredients that nourish and thicken the beard's hair.",
+    "price": 7.4,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/v1684392779/N39234215A_3.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N39234215A/45/_/1695290776/968a9765-34cc-4c0d-8468-9f59b6f6fe73.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N39234215A/45/_/1695290427/31b562db-bdee-4dd4-b518-0b5fbf601c1d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pnsku/N39234215A/45/_/1695290357/bdefc5e7-c430-49c2-9a20-b7c304f82a53.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "almond-hair",
+    "brand_name": "Almond Hair",
+    "rating": 3.9,
+    "review_count": 154,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-Z4239DC04C94DE5C12C95Z",
+    "name": "Beard waterproof filler pen kit",
+    "slug": "beard-waterproof-filler-pen-kit",
+    "description": "Start by drawing the contour ofyourbeard or moustache and continueto color inside evenly alongdesired shape",
+    "short_description": "Start by drawing the contour ofyourbeard or moustache and continueto color inside evenly alongdesired shape",
+    "price": 2.132,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z4239DC04C94DE5C12C95Z/45/_/1666238196/d73b5abd-ba2f-47fc-8485-d464048d9d72.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4239DC04C94DE5C12C95Z/45/_/1666238196/97bbe0dc-4526-4e54-b679-e436891b4c54.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4239DC04C94DE5C12C95Z/45/_/1666238196/234da794-aa9b-4d4a-b9b5-7e348d697f41.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z4239DC04C94DE5C12C95Z/45/_/1666238196/23ce5933-3a51-4b36-8af3-da901d99314b.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "eelhoe",
+    "brand_name": "EELHOE",
+    "rating": 3.4,
+    "review_count": 239,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-Z091774EAE81CC2C57FD6Z",
+    "name": "Beard waterproof filler pen kit",
+    "slug": "beard-waterproof-filler-pen-kit-z09177",
+    "description": "The EELHOE Beard waterproof filler pen kit is for filling in patchy areas and defining the shape of a beard, mustache, or eyebrows to create a fuller and more natural look. Its waterproof and sweat-proof formula is designed for long-lasting wear without smudging or fading throughout the day.",
+    "short_description": "The EELHOE Beard waterproof filler pen kit is for filling in patchy areas and defining the shape of a beard, mustache, or eyebrows to create…",
+    "price": 2.501,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z091774EAE81CC2C57FD6Z/45/1761136873/6897bf96-5914-4fbc-a21a-12cc25acfd34.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z091774EAE81CC2C57FD6Z/45/1761136873/7dfd052c-d28a-40b7-a34e-f92ff8299d58.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z091774EAE81CC2C57FD6Z/45/1761136873/106e7eaf-4d24-42bd-9706-fdb9e7f24d46.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z091774EAE81CC2C57FD6Z/45/1761136873/4d1b95ca-f8ef-4e70-b558-8edfb609a128.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "eelhoe",
+    "brand_name": "EELHOE",
+    "rating": 4.1,
+    "review_count": 16,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-ZEBD3B5C7949BD5F77A59Z",
+    "name": "The King Moustache And Beard Oil Long Lasting Softness",
+    "slug": "the-king-moustache-and-beard-oil-long-lasting-softness",
+    "description": "Beard Oil an oil based formula specially designed for beard care, with beneficial oils that instantly conditions and keeps the beard soft and well-groomed. moisturizes your mustache and beard by nourishing and helps achieve a bright and well-groomed appearance. Prevents eliminate adverse factors such as dryness and dullness by preserving the moisture and rebalancing your mustache and beard. Suitable for daily use. Instructions for use: Apply a sufficient amount of product by massaging the beard from roots to tips. No rinsing required.",
+    "short_description": "Beard Oil an oil based formula specially designed for beard care, with beneficial oils that instantly conditions and keeps the beard soft an…",
+    "price": 3.027,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/ZEBD3B5C7949BD5F77A59Z/45/_/1683453500/e9f8ae4d-cedc-47af-b830-4ce984725fd0.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/ZEBD3B5C7949BD5F77A59Z/45/_/1683453500/913a62b4-a7c8-4115-8853-9a9ad48557aa.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "agiva",
+    "brand_name": "Agiva",
+    "rating": 3.3,
+    "review_count": 12,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-Z3F365D0F200D5C8B2375Z",
+    "name": "Beard Care Serum with SantEnergy™ for Stimulating Beard Growth and Thickness",
+    "slug": "beard-care-serum-with-santenergy-for-stimulating-beard-growth-and-thic",
+    "description": "Overview For a void-free and thick beard, use the beard serum that is made of natural ingredients that nourish and thicken the beard's hair. The serum helps you fill in the gaps and thicken the beard when used regularly, and the serum repairs the weak and dead hair follicles for better growth. How to use the product: After opening the pores with the derma, put 3 to 5 points of the serum on the palm of your hand, then massage it on the edges of the beard, and do not wash it off until two hours have passed. Use it regularly twice a day. Aqua, Apigenin, Biotin, Butylene Glycol, Calcium Pantothenate, Chamomilla Recutita (Matricaria), Citric Acid, Dextran, Equitum Arvins Extract, Flower Extract, Humulus Lupulus (Hops) Extract, Hydrolyzed Soy Protein, Lactose, Larix Europa Wood Extract, Extract Niacinamide Wood Panicum Miliaceum Seed Extract, PEG-40 Hydrogenated Castor Oil, Propylene Glycol, Sodium Citrate, Trifolium Pratense (Alfalfa) Flower Extract, Zinc Chloride, Oleolic Acid, Niacin, Milk Protein. Lawsonia Inermis (Henna) Extract, Ornithine HCl, Panax Ginseng Root Extract, Panthenyl Ethyl Ether, PEG-12 DimethiconePolyquaternium-11, PPG-26-buteth-26, Salvia officinalis (sage) leaf extract, sodium metabisulfite, Urtica dioica (nettle leaf) extract, zinc gluconate, inositol, glycerin, glucosamine HCl, citrulline, camellia leaf extract Sinensis, Biotenoyl Tripeptide-1, Betola Alba Leaf Extract, Arginine, Arctium Majus Root Extract, Arctium Lappa Root Extract, Aloe Barbadensis Leaf Juice, Alcohol Denat, Acetyl Tyrosine, Acetyl Tetrapeptide-3, Acetylmethionine, Acetylcysteine",
+    "short_description": "Overview For a void-free and thick beard, use the beard serum that is made of natural ingredients that nourish and thicken the beard's hair.…",
+    "price": 3.296,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z3F365D0F200D5C8B2375Z/45/1746861124/22f5385f-81e4-486e-a3a8-d44394bcd9e9.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3F365D0F200D5C8B2375Z/45/1746861126/97caa3de-98ac-4ff0-a543-81a1d1dc4f63.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3F365D0F200D5C8B2375Z/45/1746861127/ad7628dc-5568-482c-8861-58e0be11ea33.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z3F365D0F200D5C8B2375Z/45/1746861127/6f944611-1db5-4f46-acc4-32a7746a0b05.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "almond-hair",
+    "brand_name": "Almond Hair",
+    "rating": 4.2,
+    "review_count": 113,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-Z99B7D89C684F0C824D23Z",
+    "name": "BEARD SOFTENER lightweight & deep beard conditioning 100ml",
+    "slug": "beard-softener-lightweight-deep-beard-conditioning-100ml",
+    "description": "Unlock the secret to a perfectly disciplined and touchably soft beard. The King C. Gillette Beard Softener is a premium conditioning treatment designed to deep-cleanse and intensely hydrate your facial hair. Whether used as a rinse-off conditioner in the shower or left on for a few minutes as a deep-conditioning mask, this lightweight formula targets rough, coarse textures to make your beard significantly more manageable and comfortable. Enriched with a powerful blend of natural conditioning agents, it penetrates deep into stubborn hair fibers to soften them from the inside out, while simultaneously soothing the skin underneath. It eliminates stiffness and flyaways without weighing your beard down or leaving a greasy residue. Finished with King C. Gillette’s signature heritage scent, it elevates your grooming routine into a luxury sensory experience.",
+    "short_description": "Unlock the secret to a perfectly disciplined and touchably soft beard. The King C.",
+    "price": 6.995,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z99B7D89C684F0C824D23Z/45/_/1778979994/12fc0e2c-cb00-4a65-b239-d40bb170573e.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "king-c-gillette",
+    "brand_name": "King C. Gillette",
+    "rating": 5,
+    "review_count": 1,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-Z9FC9B86800D9CB2D2C0BZ",
+    "name": "Beard Growth Oil, Beard Oil For Men Growth, Make The Beard More Full, Thick And Smooth, Strengthens And Moisturizes Beard 30ml",
+    "slug": "beard-growth-oil-beard-oil-for-men-growth-make-the-beard-more-full-thi",
+    "description": "30ml Premium Beard Oil - Concentrated formula provides long-lasting nourishment for both skin and facial hair, with just a few drops needed per use.. Post-Shave Skin Recovery - Soothes razor irritation, reduces redness, and moisturizes skin after shaving for maximum comfort.. Promotes Healthier Beard Growth - Enriched with natural oils that strengthen hair follicles and create optimal conditions for fuller beard development.. Dual-Action Hydration - Conditions both skin underneath and beard hair to prevent itchiness, flakiness, and beardruff.. Lightweight & Non-Greasy - Fast-absorbing formula leaves no oily residue while keeping your beard soft and manageable all day.",
+    "short_description": "30ml Premium Beard Oil - Concentrated formula provides long-lasting nourishment for both skin and facial hair, with just a few drops needed…",
+    "price": 2.9,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z9FC9B86800D9CB2D2C0BZ/45/_/1776241034/05332922-ac94-4c6b-9c69-5eab7053c09c.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z9FC9B86800D9CB2D2C0BZ/45/_/1776241034/cff5ce66-9a1c-47b1-a35b-5d6d08a5fd27.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z9FC9B86800D9CB2D2C0BZ/45/_/1776241034/6e90e013-07b0-4276-8d3a-e6e05cdc9469.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z9FC9B86800D9CB2D2C0BZ/45/_/1776241034/915244d2-85ce-421b-9dd2-f5d5c80ad79f.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "lanemay",
+    "brand_name": "LANEMAY",
+    "rating": 4.3,
+    "review_count": 10,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-N25357096A",
+    "name": "Classic Natural And Organic Beard Oil Clear",
+    "slug": "classic-natural-and-organic-beard-oil-clear",
+    "description": "Better than an oil We coined that phrase when we first released our beard balm online years ago. Before then we only sold our products at flea markets, farmers markets, festivals etc. Online was new to us and when looking at was available at that time, it seemed beard products were new to most. Back then you could only find a handful of moustache waxes, a few beard oilsbut you couldnt find another beard balm online or beard waxes for that matter. Now there are hundreds of oils, balms, waxes, and other products available for your beard. So after being asked countless times to make an oil, we set out to make a beard oil that was better than an oil. Lets face it, theres multiple choices out there for a beard oil, some telling you whats in them and most having the same 2 or 3 ingredients. Honest Amishs Classic Blend Oil has over 7 expertly selected premium oils as well as 7 essential oils that target hair growth, conditioning, beard and skin health, and are full of minerals, vitamins, and antioxidants to help nourish your beard and relieve any irritation of new growth. For us bearding is not a current trend, its a way of life. Honest Amish The best for your BEARD! Has the same scent as our best selling beard balm, a blend of 7 essential oils.",
+    "short_description": "Better than an oil We coined that phrase when we first released our beard balm online years ago.",
+    "price": 6.699,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/v1598335847/N25357096A_1.jpg?width=1200",
+      "https://f.nooncdn.com/p/v1557480147/N25357096A_2.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "honest-amish",
+    "brand_name": "Honest Amish",
+    "rating": 3.2,
+    "review_count": 19,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
+    ]
+  },
+  {
+    "id": "noon-Z438D3A44A04394D28F19Z",
+    "name": "Beard Growth Oil Care, Stimulate Beard Growth Serum For Facial Hair Treatment, 30ml",
+    "slug": "beard-growth-oil-care-stimulate-beard-growth-serum-for-facial-hair-tre",
+    "description": "Feature: 1. High-quality beard oil not only helps to soften the beard and relieve itchy beard, but also plays a key role in making facial hair look better. 2. Organic beard growth oil is rich in a variety of natural nourishing ingredients, which can penetrate into the roots of hair follicles, repair and activate dormant hair follicles, increase nutrient absorption and accelerate the growth of men's beard, armpits and required areas. 3. Long-lasting moisturizing beard oil can be used as a humectant, directly enters the hair follicles and prevents the hair from becoming brittle, and prevents the natural moistures of the beard from being reduced due to bad weather. 4. Shiny beard gives it a little shine, improves the appearance of the beard, and makes the beard look healthier. 5. This serum provides deep moistures, makes your brittle, weak and shaved beard cured, easier to handle, and softer. How To Use: 1. After cleansing, apply evenly from the roots of the hair to the tip of the beard, once a time. Morning and evening. 2. Wipe and place it on the place that needs to grow, massage it fully until it is absorbed.",
+    "short_description": "Feature: 1. High-quality beard oil not only helps to soften the beard and relieve itchy beard, but also plays a key role in making facial ha…",
+    "price": 3.975,
+    "compare_at_price": null,
+    "currency": "BHD",
+    "images": [
+      "https://f.nooncdn.com/p/pzsku/Z438D3A44A04394D28F19Z/45/_/1735974118/e8b339fe-1199-431f-b224-afa580a318e1.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z438D3A44A04394D28F19Z/45/_/1735974148/46f25e3e-58a1-4e5b-b4bc-08a018c37c3d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z438D3A44A04394D28F19Z/45/_/1735974158/ff479939-1e70-4cd5-ae9e-8346f395aa5d.jpg?width=1200",
+      "https://f.nooncdn.com/p/pzsku/Z438D3A44A04394D28F19Z/45/_/1735974188/5a06fec7-81ae-4687-a980-7099d02a817b.jpg?width=1200"
+    ],
+    "category_slug": "shaving-hair-removal",
+    "category_name": "Shaving & Hair Removal",
+    "brand_slug": "qanzire",
+    "brand_name": "QANZIRE",
+    "rating": 0,
+    "review_count": 0,
+    "stock_quantity": 0,
+    "in_stock": true,
+    "is_featured": false,
+    "is_new": true,
+    "tags": [
+      "personal",
+      "care",
+      "shaving",
+      "hair",
+      "removal",
+      "men"
     ]
   }
 ];
