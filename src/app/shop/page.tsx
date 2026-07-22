@@ -3,9 +3,13 @@ import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ProductGrid } from "@/components/product/product-grid";
 import { ShopToolbar } from "@/components/shop/shop-toolbar";
+import { Pagination } from "@/components/shop/pagination";
 import { getBrands, getCategories, getProducts, type ProductSort } from "@/lib/data";
 
 export const revalidate = 3600;
+
+/** Products shown per page — a multiple of the 2/3/4-column grid for clean rows. */
+const PAGE_SIZE = 24;
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -50,6 +54,23 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
     ? `Results for “${search}”`
     : activeCategory?.name ?? activeBrand?.name ?? "Shop all";
 
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const requestedPage = Number.parseInt(str(sp.page) ?? "1", 10);
+  const page = Math.min(Math.max(1, Number.isNaN(requestedPage) ? 1 : requestedPage), totalPages);
+  const pageProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Preserves the active filters/sort; page 1 and default sort stay out of the URL.
+  const hrefFor = (target: number) => {
+    const p = new URLSearchParams();
+    if (category) p.set("category", category);
+    if (brand) p.set("brand", brand);
+    if (search) p.set("search", search);
+    if (sort !== "featured") p.set("sort", sort);
+    if (target > 1) p.set("page", String(target));
+    const qs = p.toString();
+    return qs ? `/shop?${qs}` : "/shop";
+  };
+
   return (
     <Container className="py-8 sm:py-10">
       <Breadcrumbs
@@ -60,7 +81,9 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
         <div>
           <h1 className="font-serif text-3xl sm:text-4xl">{heading}</h1>
           <p className="mt-1 text-sm text-muted">
-            {products.length} {products.length === 1 ? "product" : "products"}
+            {products.length > PAGE_SIZE
+              ? `Showing ${(page - 1) * PAGE_SIZE + 1}–${(page - 1) * PAGE_SIZE + pageProducts.length} of ${products.length} products`
+              : `${products.length} ${products.length === 1 ? "product" : "products"}`}
           </p>
         </div>
       </header>
@@ -71,7 +94,10 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
 
       <div className="mt-10">
         {products.length > 0 ? (
-          <ProductGrid products={products} priorityCount={4} />
+          <>
+            <ProductGrid products={pageProducts} priorityCount={4} />
+            <Pagination currentPage={page} totalPages={totalPages} hrefFor={hrefFor} />
+          </>
         ) : (
           <div className="rounded-2xl border border-dashed border-line py-20 text-center">
             <p className="font-serif text-xl">No products found</p>

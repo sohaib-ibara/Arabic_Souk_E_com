@@ -49,23 +49,8 @@ export function ShopToolbar({
     );
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <div className="thin-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-        <Link href={buildHref({ category: undefined })} className={chipClass(!filters.category)}>
-          All
-        </Link>
-        {categories.map((c) => (
-          <Link
-            key={c.id}
-            href={buildHref({ category: c.slug })}
-            className={cn(chipClass(filters.category === c.slug), "whitespace-nowrap")}
-          >
-            {c.name}
-          </Link>
-        ))}
-      </div>
-
-      <div className="flex shrink-0 items-center gap-2">
+    <div className="flex flex-col gap-3">
+      <div className="flex shrink-0 items-center justify-end gap-2">
         <label htmlFor="sort" className="text-sm text-muted">
           Sort by
         </label>
@@ -81,6 +66,21 @@ export function ShopToolbar({
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="thin-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        <Link href={buildHref({ category: undefined })} className={chipClass(!filters.category)}>
+          All
+        </Link>
+        {categories.map((c) => (
+          <Link
+            key={c.id}
+            href={buildHref({ category: c.slug })}
+            className={cn(chipClass(filters.category === c.slug), "whitespace-nowrap")}
+          >
+            {c.name}
+          </Link>
+        ))}
       </div>
     </div>
   );
