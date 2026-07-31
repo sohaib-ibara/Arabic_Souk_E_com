@@ -1,7 +1,7 @@
 import type { Brand, Category, Product, StockCheckResult, StockIssue } from "./types";
 import { sampleBrands, sampleCategories, sampleProducts } from "./sample-data";
 import { importedBrands, importedCategories, importedProducts } from "./imported-data";
-import { getSupabaseServer } from "./supabase/server";
+import { getSupabaseServer, getSupabaseAdmin } from "./supabase/server";
 
 /**
  * Local catalogue source. When a noon capture has been generated into
@@ -238,4 +238,94 @@ export async function checkStock(
   }
 
   return { ok: issues.length === 0, issues };
+}
+
+/** Shopper contact details captured at checkout (all optional). */
+export interface DemandContact {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  area?: string;
+  city?: string;
+  governorate?: string;
+}
+
+/**
+ * Records a checkout attempt — who the shopper is and which items they wanted —
+ * into `demand_signals` / `demand_signal_items`, so the store keeps a demand log
+ * even while everything is out of stock (see the migration for the analytics
+ * view).
+ *
+ * Best-effort by design: if the service-role key isn't configured (demo mode)
+ * or the write fails, it returns `{ recorded: false }` and the caller carries on
+ * — capturing demand must never block or break the checkout response.
+ */
+export async function recordDemand(input: {
+  contact: DemandContact;
+  items: Array<{ productId: string; quantity: number }>;
+  allInStock: boolean;
+}): Promise<{ recorded: boolean; id?: string }> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return { recorded: false };
+
+  try {
+    const products = await loadProducts();
+    const byId = new Map(products.map((p) => [p.id, p]));
+
+    // Resolve each wanted item to authoritative catalogue data (never trust the
+    // client for price/name); slug is the stable key used for analytics.
+    const lineItems = input.items.map((it) => {
+      const p = byId.get(it.productId);
+      return {
+        product_id: it.productId || null,
+        product_slug: p?.slug ?? null,
+        product_name: p?.name ?? "Unknown item",
+        unit_price: p?.price ?? 0,
+        quantity: it.quantity,
+      };
+    });
+    const subtotal = lineItems.reduce((s, li) => s + li.unit_price * li.quantity, 0);
+    const currency = products[0]?.currency ?? "BHD";
+
+    const { data, error } = await admin
+      .from("demand_signals")
+      .insert({
+        full_name: input.contact.fullName ?? null,
+        email: input.contact.email ?? null,
+        phone: input.contact.phone ?? null,
+        shipping_address: {
+          address: input.contact.address ?? null,
+          area: input.contact.area ?? null,
+          city: input.contact.city ?? null,
+          governorate: input.contact.governorate ?? null,
+        },
+        subtotal,
+        currency,
+        all_in_stock: input.allInStock,
+      })
+      .select("id")
+      .single();
+
+    if (error || !data) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`[demand] signal insert failed: ${error?.message ?? "no row returned"}`);
+      }
+      return { recorded: false };
+    }
+
+    const { error: itemsError } = await admin
+      .from("demand_signal_items")
+      .insert(lineItems.map((li) => ({ ...li, signal_id: data.id })));
+    if (itemsError && process.env.NODE_ENV !== "production") {
+      console.warn(`[demand] items insert failed: ${itemsError.message}`);
+    }
+
+    return { recorded: true, id: data.id };
+  } catch (e) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[demand] unexpected error: ${(e as Error).message}`);
+    }
+    return { recorded: false };
+  }
 }

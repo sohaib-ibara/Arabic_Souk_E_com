@@ -23,8 +23,19 @@ export function CheckoutView() {
       : siteConfig.shipping.standardFee;
   const total = subtotal + shipping;
 
-  async function placeOrder(e: React.FormEvent) {
+  async function placeOrder(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Read the typed contact details synchronously (before any await).
+    const fd = new FormData(e.currentTarget);
+    const contact = {
+      fullName: String(fd.get("name") ?? ""),
+      email: String(fd.get("email") ?? ""),
+      phone: String(fd.get("phone") ?? ""),
+      address: String(fd.get("address") ?? ""),
+      area: String(fd.get("area") ?? ""),
+      city: String(fd.get("city") ?? ""),
+      governorate: String(fd.get("governorate") ?? ""),
+    };
     setStatus("checking");
     setIssues([]);
     try {
@@ -33,6 +44,7 @@ export function CheckoutView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          contact,
         }),
       });
       const data = await res.json();
