@@ -2,12 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/lib/config";
-import { CartProvider } from "@/components/cart/cart-provider";
-import { CartDrawer } from "@/components/cart/cart-drawer";
-import { AnnouncementBar } from "@/components/layout/announcement-bar";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { JsonLd } from "@/components/seo/json-ld";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -69,37 +63,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const organizationLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: siteConfig.legalName,
-  url: siteConfig.url,
-  description: siteConfig.description,
-  email: siteConfig.contact.email,
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Manama",
-    addressCountry: "BH",
-  },
-  sameAs: [
-    siteConfig.social.instagram,
-    siteConfig.social.tiktok,
-    siteConfig.social.facebook,
-  ],
-};
-
-const websiteLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: siteConfig.name,
-  url: siteConfig.url,
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${siteConfig.url}/shop?search={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
-};
-
+// Root layout: the true shell (html/body, fonts, global metadata). Per-section
+// chrome lives in the route-group layouts — storefront in app/(store)/layout.tsx,
+// admin console in app/admin/layout.tsx — so /admin doesn't inherit the shop nav.
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -108,16 +74,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-        <JsonLd data={[organizationLd, websiteLd]} />
-        <CartProvider>
-          <AnnouncementBar />
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <CartDrawer />
-        </CartProvider>
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }
