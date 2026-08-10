@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { checkStock, recordDemand, type DemandContact } from "@/lib/data";
+import { getSessionUser } from "@/lib/auth";
+import { createOrderAndIntent } from "@/lib/orders";
+import type { DemandContact } from "@/lib/data";
+
+// Stripe SDK needs the Node runtime.
+export const runtime = "nodejs";
 
 /** Coerce untrusted input to a trimmed, length-capped string (or undefined). */
 function clean(v: unknown, max = 200): string | undefined {
@@ -9,19 +14,16 @@ function clean(v: unknown, max = 200): string | undefined {
 }
 
 /**
- * Checkout endpoint.
- *
- * 1. Validates the cart against real inventory. During the demo phase the
- *    catalogue carries zero stock, so this returns a 409 with the out-of-stock
- *    line items — driving the "sorry, out of stock" experience.
- * 2. Records the attempt (contact + wanted items) as a demand signal, so the
- *    store keeps a log of who wants which product even while out of stock. This
- *    is best-effort and never blocks the response.
- *
- * When real inventory exists in Supabase, in-stock carts pass and the TODO
- * below becomes order creation + payment.
+ * Checkout: create a pending order + Stripe PaymentIntent for the signed-in
+ * customer, and return the client secret for the embedded Payment Element.
+ * Requires an authenticated account. Prices are recomputed server-side.
  */
 export async function POST(req: Request) {
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ ok: false, error: "auth_required" }, { status: 401 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -30,16 +32,9 @@ export async function POST(req: Request) {
   }
 
   const obj = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
-
-  const rawItems = Array.isArray(obj.items)
-    ? (obj.items as Array<Record<string, unknown>>)
-    : [];
-
+  const rawItems = Array.isArray(obj.items) ? (obj.items as Array<Record<string, unknown>>) : [];
   if (rawItems.length === 0) {
-    return NextResponse.json(
-      { ok: false, error: "empty_cart", issues: [] },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "empty_cart" }, { status: 400 });
   }
 
   const items = rawItems.map((i) => ({
@@ -52,28 +47,38 @@ export async function POST(req: Request) {
     unknown
   >;
   const contact: DemandContact = {
-    fullName: clean(rawContact.fullName),
-    email: clean(rawContact.email),
-    phone: clean(rawContact.phone),
+    fullName: clean(rawContact.fullName) ?? user.fullName ?? undefined,
+    email: clean(rawContact.email) ?? user.email,
+    phone: clean(rawContact.phone) ?? user.phone ?? undefined,
     address: clean(rawContact.address),
     area: clean(rawContact.area),
     city: clean(rawContact.city),
     governorate: clean(rawContact.governorate),
   };
 
-  const result = await checkStock(items);
-
-  // Capture demand (best-effort) — records who wanted what, in or out of stock.
-  await recordDemand({ contact, items, allInStock: result.ok });
+  const result = await createOrderAndIntent({
+    userId: user.id,
+    email: user.email,
+    contact,
+    items,
+  });
 
   if (!result.ok) {
-    return NextResponse.json(
-      { ok: false, error: "out_of_stock", issues: result.issues },
-      { status: 409 },
-    );
+    switch (result.error) {
+      case "unavailable":
+        return NextResponse.json({ ok: false, error: "unavailable", issues: result.issues }, { status: 409 });
+      case "not_configured":
+        return NextResponse.json({ ok: false, error: "payment_unavailable" }, { status: 503 });
+      case "empty_cart":
+        return NextResponse.json({ ok: false, error: "empty_cart" }, { status: 400 });
+      default:
+        return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    }
   }
 
-  // TODO (next phase): create the order + order_items in Supabase (service role),
-  // decrement stock, and hand off to a payment provider (BENEFIT / card / Apple Pay).
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    clientSecret: result.clientSecret,
+    orderNumber: result.orderNumber,
+  });
 }

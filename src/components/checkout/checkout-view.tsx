@@ -1,21 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  Elements,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
+import type { StripeElementsOptions } from "@stripe/stripe-js";
 import { useCart } from "@/components/cart/cart-provider";
 import { Container } from "@/components/ui/container";
 import { ProductImage } from "@/components/ui/product-image";
 import { BagIcon } from "@/components/ui/icons";
 import { formatPrice } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
-import type { StockIssue } from "@/lib/types";
+import { getStripePromise } from "@/lib/stripe-client";
 
-type Status = "idle" | "checking" | "out_of_stock" | "error";
+interface CheckoutUser {
+  fullName: string | null;
+  email: string;
+  phone: string | null;
+}
 
-export function CheckoutView() {
+type Status = "idle" | "creating" | "unavailable" | "error";
+
+const stripeAppearance: StripeElementsOptions["appearance"] = {
+  theme: "flat",
+  variables: {
+    colorPrimary: "#a04963",
+    colorText: "#1b1613",
+    colorTextSecondary: "#6f655f",
+    colorBackground: "#ffffff",
+    fontFamily: "inherit",
+    borderRadius: "12px",
+  },
+};
+
+export function CheckoutView({
+  paymentReady,
+  user,
+}: {
+  paymentReady: boolean;
+  user: CheckoutUser;
+}) {
   const { items, subtotal, hydrated } = useCart();
+  const [phase, setPhase] = useState<"details" | "payment">("details");
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>("idle");
-  const [issues, setIssues] = useState<StockIssue[]>([]);
+  const [issues, setIssues] = useState<Array<{ productId: string; name: string }>>([]);
 
   const shipping =
     subtotal === 0 || subtotal >= siteConfig.shipping.freeThreshold
@@ -23,9 +57,10 @@ export function CheckoutView() {
       : siteConfig.shipping.standardFee;
   const total = subtotal + shipping;
 
-  async function placeOrder(e: React.SyntheticEvent<HTMLFormElement>) {
+  const stripePromise = useMemo(() => getStripePromise(), []);
+
+  async function startPayment(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    // Read the typed contact details synchronously (before any await).
     const fd = new FormData(e.currentTarget);
     const contact = {
       fullName: String(fd.get("name") ?? ""),
@@ -36,7 +71,7 @@ export function CheckoutView() {
       city: String(fd.get("city") ?? ""),
       governorate: String(fd.get("governorate") ?? ""),
     };
-    setStatus("checking");
+    setStatus("creating");
     setIssues([]);
     try {
       const res = await fetch("/api/checkout", {
@@ -48,17 +83,26 @@ export function CheckoutView() {
         }),
       });
       const data = await res.json();
-      if (res.status === 409 && data.error === "out_of_stock") {
-        setIssues(data.issues ?? []);
-        setStatus("out_of_stock");
-        // Bring the notice into view.
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else if (res.ok && data.ok) {
-        // Real phase: redirect to payment / confirmation.
-        setStatus("idle");
-      } else {
-        setStatus("error");
+
+      if (res.status === 401) {
+        window.location.href = "/login?next=/checkout";
+        return;
       }
+      if (res.status === 409 && data.error === "unavailable") {
+        setIssues(data.issues ?? []);
+        setStatus("unavailable");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (res.ok && data.clientSecret) {
+        setClientSecret(data.clientSecret);
+        setOrderNumber(data.orderNumber ?? null);
+        setPhase("payment");
+        setStatus("idle");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      setStatus("error");
     } catch {
       setStatus("error");
     }
@@ -68,7 +112,7 @@ export function CheckoutView() {
     return <Container className="py-20 text-center text-muted">Loading checkout…</Container>;
   }
 
-  if (items.length === 0 && status !== "out_of_stock") {
+  if (items.length === 0) {
     return (
       <Container className="flex flex-col items-center py-24 text-center">
         <BagIcon width={44} height={44} className="text-line" />
@@ -86,118 +130,109 @@ export function CheckoutView() {
     );
   }
 
-  const outOfStockNames = new Set(issues.map((i) => i.name));
-
   return (
     <Container className="py-10">
       <h1 className="font-serif text-3xl sm:text-4xl">Checkout</h1>
 
-      {/* Out-of-stock notice */}
-      {status === "out_of_stock" && (
-        <div
-          role="alert"
-          className="mt-6 rounded-2xl border border-brand/30 bg-brand-tint p-5"
-        >
-          <h2 className="font-medium text-brand-dark">
-            Sorry — some items are out of stock
-          </h2>
+      {!paymentReady && (
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Payments aren&rsquo;t configured yet — set the Stripe keys in the environment to
+          enable checkout.
+        </div>
+      )}
+
+      {status === "unavailable" && (
+        <div role="alert" className="mt-6 rounded-2xl border border-brand/30 bg-brand-tint p-5">
+          <h2 className="font-medium text-brand-dark">Some items are no longer available</h2>
           <p className="mt-1 text-sm text-ink/70">
-            We couldn&rsquo;t complete your order because the following{" "}
-            {issues.length === 1 ? "item is" : "items are"} currently unavailable:
+            Please remove {issues.length === 1 ? "this item" : "these items"} to continue:
           </p>
           <ul className="mt-3 space-y-1 text-sm">
             {issues.map((i) => (
               <li key={i.productId} className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" />
                 <span className="font-medium">{i.name}</span>
-                <span className="text-muted">— out of stock</span>
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link
-              href="/shop"
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white hover:bg-brand"
-            >
-              Continue shopping
-            </Link>
-            <Link
-              href="/cart"
-              className="rounded-full border border-ink/15 px-5 py-2.5 text-sm font-medium hover:border-brand hover:text-brand"
-            >
-              Edit bag
-            </Link>
-          </div>
+          <Link
+            href="/cart"
+            className="mt-4 inline-flex rounded-full border border-ink/15 px-5 py-2.5 text-sm font-medium hover:border-brand hover:text-brand"
+          >
+            Edit bag
+          </Link>
         </div>
       )}
 
       {status === "error" && (
         <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          Something went wrong while placing your order. Please try again.
+          Something went wrong. Please try again.
         </div>
       )}
 
-      <form onSubmit={placeOrder} className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
-        {/* Details */}
+      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
+        {/* Left: details form, then payment */}
         <div className="space-y-8">
-          <fieldset>
-            <legend className="font-serif text-xl">Contact</legend>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" name="name" autoComplete="name" />
-              <Field label="Email" name="email" type="email" autoComplete="email" />
-              <Field label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+973" />
-            </div>
-          </fieldset>
+          {phase === "details" ? (
+            <form onSubmit={startPayment} className="space-y-8">
+              <fieldset>
+                <legend className="font-serif text-xl">Contact</legend>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field label="Full name" name="name" autoComplete="name" defaultValue={user.fullName ?? ""} />
+                  <Field label="Email" name="email" type="email" autoComplete="email" defaultValue={user.email} />
+                  <Field label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+973" defaultValue={user.phone ?? ""} />
+                </div>
+              </fieldset>
 
-          <fieldset>
-            <legend className="font-serif text-xl">Delivery address</legend>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Field label="Address / Building" name="address" className="sm:col-span-2" autoComplete="street-address" />
-              <Field label="Area / Block" name="area" />
-              <Field label="City" name="city" defaultValue="Manama" />
-              <Field label="Governorate" name="governorate" placeholder="Capital" />
-            </div>
-            <p className="mt-3 text-xs text-muted">
-              Delivering to the Kingdom of Bahrain only.
-            </p>
-          </fieldset>
+              <fieldset>
+                <legend className="font-serif text-xl">Delivery address</legend>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field label="Address / Building" name="address" className="sm:col-span-2" autoComplete="street-address" />
+                  <Field label="Area / Block" name="area" />
+                  <Field label="City" name="city" defaultValue="Manama" />
+                  <Field label="Governorate" name="governorate" placeholder="Capital" />
+                </div>
+                <p className="mt-3 text-xs text-muted">Delivering to the Kingdom of Bahrain only.</p>
+              </fieldset>
 
-          <fieldset>
-            <legend className="font-serif text-xl">Payment</legend>
-            <div className="mt-4 rounded-xl border border-line bg-white p-4 text-sm text-muted">
-              Payment is set up in the next phase (BENEFIT, card &amp; Apple Pay). For this
-              preview, placing the order runs a live stock check.
-            </div>
-          </fieldset>
+              <button
+                type="submit"
+                disabled={status === "creating" || !paymentReady}
+                className="flex w-full items-center justify-center rounded-full bg-ink py-3.5 text-sm font-medium text-white transition-colors hover:bg-brand disabled:opacity-60 sm:w-auto sm:px-10"
+              >
+                {status === "creating" ? "Preparing payment…" : "Continue to payment"}
+              </button>
+            </form>
+          ) : (
+            clientSecret && (
+              <Elements stripe={stripePromise} options={{ clientSecret, appearance: stripeAppearance }}>
+                <PaymentPanel
+                  total={total}
+                  orderNumber={orderNumber}
+                  onBack={() => {
+                    setPhase("details");
+                    setClientSecret(null);
+                  }}
+                />
+              </Elements>
+            )
+          )}
         </div>
 
-        {/* Summary */}
+        {/* Right: order summary */}
         <aside className="h-fit rounded-2xl border border-line bg-white p-6 lg:sticky lg:top-24">
           <h2 className="font-serif text-xl">Your order ({items.length})</h2>
           <ul className="mt-4 space-y-4">
             {items.map((item) => (
               <li key={item.productId} className="flex gap-3">
                 <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-sand">
-                  <ProductImage
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    sizes="56px"
-                    className="object-cover"
-                  />
+                  <ProductImage src={item.image} alt={item.name} fill sizes="56px" className="object-cover" />
                 </div>
                 <div className="flex flex-1 flex-col">
-                  <span className="line-clamp-2 text-sm font-medium leading-snug">
-                    {item.name}
-                  </span>
+                  <span className="line-clamp-2 text-sm font-medium leading-snug">{item.name}</span>
                   <span className="text-xs text-muted">Qty {item.quantity}</span>
-                  {outOfStockNames.has(item.name) && (
-                    <span className="mt-0.5 text-xs font-medium text-brand">Out of stock</span>
-                  )}
                 </div>
-                <span className="text-sm">
-                  {formatPrice(item.price * item.quantity, item.currency)}
-                </span>
+                <span className="text-sm">{formatPrice(item.price * item.quantity, item.currency)}</span>
               </li>
             ))}
           </ul>
@@ -216,20 +251,75 @@ export function CheckoutView() {
               <dd>{formatPrice(total)}</dd>
             </div>
           </dl>
-
-          <button
-            type="submit"
-            disabled={status === "checking" || items.length === 0}
-            className="mt-6 flex w-full items-center justify-center rounded-full bg-ink py-3.5 text-sm font-medium text-white transition-colors hover:bg-brand disabled:opacity-60"
-          >
-            {status === "checking" ? "Placing order…" : "Place order"}
-          </button>
-          <p className="mt-3 text-center text-xs text-muted">
-            Secure checkout · {siteConfig.shipping.etaDays} delivery
+          <p className="mt-4 text-center text-xs text-muted">
+            Secure payment by Stripe · {siteConfig.shipping.etaDays} delivery
           </p>
         </aside>
-      </form>
+      </div>
     </Container>
+  );
+}
+
+/** Embedded Stripe Payment Element + pay button. Renders inside <Elements>. */
+function PaymentPanel({
+  total,
+  orderNumber,
+  onBack,
+}: {
+  total: number;
+  orderNumber: string | null;
+  onBack: () => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [paying, setPaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function pay(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setPaying(true);
+    setError(null);
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: `${window.location.origin}/checkout/success` },
+    });
+
+    // We only reach here if confirmation failed; success redirects to return_url.
+    setError(error.message ?? "Payment failed. Please try again.");
+    setPaying(false);
+  }
+
+  return (
+    <form onSubmit={pay} className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-serif text-xl">Payment</h2>
+        {orderNumber && <span className="text-xs text-muted">Order {orderNumber}</span>}
+      </div>
+
+      <PaymentElement />
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={!stripe || paying}
+          className="flex items-center justify-center rounded-full bg-ink px-10 py-3.5 text-sm font-medium text-white transition-colors hover:bg-brand disabled:opacity-60"
+        >
+          {paying ? "Processing…" : `Pay ${formatPrice(total)}`}
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={paying}
+          className="text-sm text-muted transition-colors hover:text-ink disabled:opacity-60"
+        >
+          Back to details
+        </button>
+      </div>
+    </form>
   );
 }
 
