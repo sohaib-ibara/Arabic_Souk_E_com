@@ -11,7 +11,9 @@ export function SignOutButton() {
   async function signOut() {
     setBusy(true);
     await createClient().auth.signOut();
-    router.push("/");
+    // `replace`, not `push`: going Back after signing out shouldn't land on a
+    // cached view of the account page.
+    router.replace("/login");
     router.refresh();
   }
 

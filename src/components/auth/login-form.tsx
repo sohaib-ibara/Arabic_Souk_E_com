@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -12,12 +13,14 @@ export function LoginForm({ next }: { next?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isAdminAccount, setIsAdminAccount] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
     setError(null);
+    setIsAdminAccount(false);
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -30,6 +33,23 @@ export function LoginForm({ next }: { next?: string }) {
       );
       setBusy(false);
       return;
+    }
+
+    // Staff accounts don't get a storefront session. The allowlist lives in a
+    // server-only env var, so we ask the server once the session exists rather
+    // than shipping the list of admin emails to the browser.
+    try {
+      const res = await fetch("/api/auth/account-kind", { method: "POST" });
+      const { isAdmin } = (await res.json()) as { isAdmin?: boolean };
+      if (isAdmin) {
+        await supabase.auth.signOut();
+        setIsAdminAccount(true);
+        setBusy(false);
+        return;
+      }
+    } catch {
+      // A failed check shouldn't strand a legitimate shopper — the /account
+      // page re-checks server-side and will redirect a staff account anyway.
     }
 
     router.push(next || "/account");
@@ -60,6 +80,16 @@ export function LoginForm({ next }: { next?: string }) {
           className={field}
         />
       </label>
+
+      {isAdminAccount && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800">
+          That&rsquo;s an administrator account, so it can&rsquo;t be used to shop. Sign in at{" "}
+          <Link href="/admin" className="font-medium underline underline-offset-2">
+            the admin console
+          </Link>{" "}
+          instead.
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 

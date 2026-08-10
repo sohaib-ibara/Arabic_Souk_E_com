@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { getSessionUser } from "@/lib/auth";
+import { isAllowedEmail } from "@/lib/admin-auth";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
 export const metadata: Metadata = { title: "My account" };
@@ -13,6 +14,9 @@ export const dynamic = "force-dynamic";
 export default async function AccountPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/account");
+  // Server-side backstop for the login check: catches staff sessions created
+  // before that check existed, and any case where the client-side call failed.
+  if (isAllowedEmail(user.email)) redirect("/admin");
 
   const firstName = user.fullName?.split(" ")[0] || null;
 
