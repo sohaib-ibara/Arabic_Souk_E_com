@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllProducts, getCategories } from "@/lib/data";
 import { siteConfig } from "@/lib/config";
+import { contentRoutes } from "@/lib/nav";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
@@ -9,6 +10,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, changeFrequency: "daily", priority: 1 },
     { url: `${base}/shop`, changeFrequency: "daily", priority: 0.9 },
+    // Policy / support pages — rarely change, but should still be indexed.
+    ...contentRoutes.map((path) => ({
+      url: `${base}${path}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.3,
+    })),
   ];
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({

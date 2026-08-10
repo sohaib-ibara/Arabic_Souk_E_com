@@ -17,3 +17,27 @@ export const navGroups: NavGroup[] = importedNav.length
 export const footerCategories: Array<{ name: string; slug: string }> = navGroups
   .flatMap((g) => (g.items.length ? g.items : [{ name: g.name, slug: g.slug }]))
   .slice(0, 6);
+
+/**
+ * Static content pages, declared once so the footer, the sitemap and any future
+ * nav all stay in step. Adding a page here is enough to surface it everywhere.
+ */
+export const supportLinks = [
+  { name: "Contact us", href: "/contact" },
+  { name: "Shipping & delivery", href: "/shipping" },
+  { name: "Returns & refunds", href: "/returns" },
+  { name: "Track your order", href: "/account" },
+  { name: "FAQs", href: "/faq" },
+] as const;
+
+export const legalLinks = [
+  { name: "About us", href: "/about" },
+  { name: "Privacy policy", href: "/privacy" },
+  { name: "Terms & conditions", href: "/terms" },
+] as const;
+
+/** Every indexable static page, for the sitemap. `/account` is excluded — it's private. */
+export const contentRoutes: string[] = [
+  ...supportLinks.filter((l) => l.href !== "/account").map((l) => l.href),
+  ...legalLinks.map((l) => l.href),
+];

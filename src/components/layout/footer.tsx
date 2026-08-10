@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/config";
-import { footerCategories } from "@/lib/nav";
+import { footerCategories, legalLinks, supportLinks } from "@/lib/nav";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/icons";
-
-const careLinks = [
-  { name: "Contact us", href: `mailto:${siteConfig.contact.email}` },
-  { name: "Shipping & delivery", href: "/shop" },
-  { name: "Returns & exchanges", href: "/shop" },
-  { name: "Track your order", href: "/shop" },
-  { name: "FAQs", href: "/shop" },
-];
 
 export function Footer() {
   const year = 2026;
@@ -81,11 +73,11 @@ export function Footer() {
               Customer care
             </h3>
             <ul className="mt-4 space-y-2.5">
-              {careLinks.map((item) => (
-                <li key={item.name}>
-                  <a href={item.href} className="text-sm text-muted hover:text-brand">
+              {supportLinks.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-sm text-muted hover:text-brand">
                     {item.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -106,7 +98,18 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-line pt-6 text-xs text-muted sm:flex-row">
+        <nav
+          aria-label="Legal"
+          className="mt-12 flex flex-wrap gap-x-5 gap-y-2 border-t border-line pt-6 text-xs"
+        >
+          {legalLinks.map((item) => (
+            <Link key={item.href} href={item.href} className="text-muted hover:text-brand">
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-muted sm:flex-row">
           <p>
             © {year} {siteConfig.legalName}. All rights reserved.
           </p>
