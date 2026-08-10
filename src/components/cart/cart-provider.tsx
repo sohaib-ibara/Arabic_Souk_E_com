@@ -6,9 +6,11 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { CartItem } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
 
 interface CartContextValue {
   items: CartItem[];
@@ -25,37 +27,75 @@ interface CartContextValue {
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "arabicsouk.cart.v1";
+
+// The cart is stored PER IDENTITY so one shopper's bag never bleeds into
+// another's on a shared device, and a returning customer gets their own bag
+// back. The key suffix is the Supabase user id, or "guest" when signed out.
+const STORAGE_PREFIX = "arabicsouk.cart.v1";
+const LEGACY_KEY = "arabicsouk.cart.v1"; // the old single, un-scoped bucket
+const keyFor = (identity: string) => `${STORAGE_PREFIX}.${identity}`;
+const hasSupabase = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  // null until we know who the shopper is (a user id, or "guest").
+  const [identity, setIdentity] = useState<string | null>(null);
 
-  // Load the persisted cart once on mount. Reading localStorage must happen
-  // after mount (not during render) to avoid an SSR hydration mismatch, so the
-  // setState-in-effect here is intentional.
+  const activeKey = useRef<string | null>(null);
+  const skipPersist = useRef(false);
+
+  // Resolve the current identity from Supabase auth and follow sign in / out.
   useEffect(() => {
-    let restored: typeof items | null = null;
+    if (!hasSupabase) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIdentity("guest");
+      return;
+    }
+    const supabase = createClient();
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIdentity(session?.user?.id ?? "guest");
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  // Load the bag for the active identity whenever it resolves or changes.
+  // Reading localStorage after mount (not during render) avoids an SSR
+  // hydration mismatch, so the setState-in-effect here is intentional.
+  useEffect(() => {
+    if (identity === null) return;
+    const key = keyFor(identity);
+    let restored: CartItem[] = [];
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(key);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) restored = parsed;
       }
+      localStorage.removeItem(LEGACY_KEY); // discard the old un-scoped cart
     } catch {
-      /* ignore malformed storage */
+      /* ignore malformed / unavailable storage */
     }
+    activeKey.current = key;
+    skipPersist.current = true; // the load below must not rewrite storage
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (restored) setItems(restored);
+    setItems(restored);
     setHydrated(true);
-  }, []);
+  }, [identity]);
 
-  // Persist on change (after hydration to avoid clobbering).
+  // Persist on change — but skip the write that immediately follows a load, so
+  // a just-loaded bag is never copied onto a different identity's key.
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !activeKey.current) return;
+    if (skipPersist.current) {
+      skipPersist.current = false;
+      return;
+    }
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(activeKey.current, JSON.stringify(items));
     } catch {
       /* storage may be unavailable (private mode) */
     }

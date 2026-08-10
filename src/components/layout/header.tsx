@@ -6,7 +6,7 @@ import { useState } from "react";
 import { siteConfig } from "@/lib/config";
 import { navGroups } from "@/lib/nav";
 import { CartButton } from "@/components/cart/cart-button";
-import { ChevronRightIcon, CloseIcon, MenuIcon, SearchIcon } from "@/components/ui/icons";
+import { ChevronRightIcon, CloseIcon, MenuIcon, SearchIcon, UserIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 
 export function Header() {
@@ -15,7 +15,7 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  function submitSearch(e: React.FormEvent) {
+  function submitSearch(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     const q = query.trim();
     setSearchOpen(false);
@@ -97,6 +97,13 @@ export function Header() {
             >
               {searchOpen ? <CloseIcon width={22} height={22} /> : <SearchIcon width={22} height={22} />}
             </button>
+            <Link
+              href="/account"
+              aria-label="My account"
+              className="grid h-10 w-10 place-items-center rounded-full text-ink hover:text-brand"
+            >
+              <UserIcon width={22} height={22} />
+            </Link>
             <CartButton />
           </div>
         </div>
