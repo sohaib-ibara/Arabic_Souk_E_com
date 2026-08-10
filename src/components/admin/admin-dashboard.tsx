@@ -1,7 +1,6 @@
 import { Container } from "@/components/ui/container";
 import { formatPrice } from "@/lib/format";
 import type { AdminOverview } from "@/lib/admin-data";
-import { LogoutButton } from "./logout-button";
 
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
@@ -21,20 +20,14 @@ function fmtDate(iso: string | null): string {
     : d.toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export function AdminDashboard({ overview, email }: { overview: AdminOverview; email: string }) {
+export function AdminDashboard({ overview }: { overview: AdminOverview }) {
   const { catalogue, demandAvailable, demandError, stats, topWanted, recent } = overview;
 
   return (
     <Container className="py-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl sm:text-4xl">Admin dashboard</h1>
-          <p className="mt-1 text-sm text-muted">Catalogue and customer-demand monitoring.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-muted sm:inline">{email}</span>
-          <LogoutButton />
-        </div>
+      <div>
+        <h1 className="font-serif text-3xl sm:text-4xl">Overview</h1>
+        <p className="mt-1 text-sm text-muted">Catalogue and customer-demand monitoring.</p>
       </div>
 
       {/* KPIs */}

@@ -94,3 +94,16 @@ export async function getAdminEmail(): Promise<string | null> {
 export async function isAdmin(): Promise<boolean> {
   return (await getAdminEmail()) !== null;
 }
+
+/**
+ * Asserts an admin session and returns the email, throwing otherwise.
+ *
+ * Every server action must call this. The layout gate only controls what gets
+ * rendered — server actions are reachable by direct POST regardless of what the
+ * UI shows, so authorisation has to be re-checked inside each one.
+ */
+export async function requireAdmin(): Promise<string> {
+  const email = await getAdminEmail();
+  if (!email) throw new Error("Unauthorized");
+  return email;
+}

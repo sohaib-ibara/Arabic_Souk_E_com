@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { getAdminEmail, adminConfigured } from "@/lib/admin-auth";
 import { getAdminOverview } from "@/lib/admin-data";
-import { AdminLogin } from "@/components/admin/admin-login";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { isAdmin } from "@/lib/admin-auth";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -13,10 +12,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const email = await getAdminEmail();
-  if (!email) {
-    return <AdminLogin configured={adminConfigured()} />;
-  }
+  // The layout renders the sign-in screen when there's no session; bail out here
+  // too so the overview query never runs for an anonymous request.
+  if (!(await isAdmin())) return null;
+
   const overview = await getAdminOverview();
-  return <AdminDashboard overview={overview} email={email} />;
+  return <AdminDashboard overview={overview} />;
 }
