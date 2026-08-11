@@ -70,12 +70,42 @@ function warnFallback(table: string, error: { message: string } | null) {
   }
 }
 
+/**
+ * Explicit column list rather than `*`.
+ *
+ * `products.cost_price` is revoked from the anon role (migration 0005) because
+ * the table's public-read policy is per-row and can't hide a column. Selecting
+ * `*` with the anon key would ask for it and be refused, taking the whole
+ * storefront down — so the public read names exactly what it needs.
+ */
+const PUBLIC_PRODUCT_COLUMNS = [
+  "id",
+  "name",
+  "slug",
+  "description",
+  "short_description",
+  "price",
+  "compare_at_price",
+  "currency",
+  "images",
+  "category_id",
+  "brand_id",
+  "rating",
+  "review_count",
+  "stock_quantity",
+  "in_stock",
+  "is_featured",
+  "is_new",
+  "tags",
+  "created_at",
+].join(",");
+
 async function loadProducts(): Promise<Product[]> {
   const sb = getSupabaseServer();
   if (sb) {
     const { data, error } = await sb
       .from("products")
-      .select("*, category:categories(name,slug), brand:brands(name,slug)")
+      .select(`${PUBLIC_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`)
       .order("created_at", { ascending: false });
     if (!error && data && data.length) return data.map(mapProductRow);
     warnFallback("products", error);

@@ -7,6 +7,7 @@ import { formatPrice } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
 import { getSessionUser } from "@/lib/auth";
 import { getSupabaseUserServer } from "@/lib/supabase/user-server";
+import { confirmOrderFromIntent } from "@/lib/orders";
 import { ClearCart } from "@/components/checkout/clear-cart";
 
 export const metadata: Metadata = {
@@ -34,6 +35,16 @@ export default async function CheckoutSuccessPage({
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
+  const failed = Boolean(redirect_status && redirect_status !== "succeeded");
+
+  // Settle the order from Stripe's own record before reading it back. Normally
+  // the webhook has already done this; locally it hasn't unless `stripe listen`
+  // is running, and without this the page would thank the customer for an order
+  // still sitting at "pending". Idempotent, and scoped to this user's order.
+  if (payment_intent && !failed) {
+    await confirmOrderFromIntent(payment_intent, user.id);
+  }
+
   // The order belongs to the signed-in user, so per-user RLS lets us read it.
   let order: OrderRow | null = null;
   if (payment_intent) {
@@ -47,8 +58,6 @@ export default async function CheckoutSuccessPage({
       order = (data as OrderRow | null) ?? null;
     }
   }
-
-  const failed = redirect_status && redirect_status !== "succeeded";
 
   return (
     <Container className="flex flex-col items-center py-20 text-center">

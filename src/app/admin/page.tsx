@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getAdminOverview } from "@/lib/admin-data";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { isAdmin } from "@/lib/admin-auth";
+import { getInventoryStats, getInventoryStatus, type InventoryStats } from "@/lib/inventory";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -16,6 +17,16 @@ export default async function AdminPage() {
   // too so the overview query never runs for an anonymous request.
   if (!(await isAdmin())) return null;
 
-  const overview = await getAdminOverview();
-  return <AdminDashboard overview={overview} />;
+  const [overview, inventoryStatus] = await Promise.all([
+    getAdminOverview(),
+    getInventoryStatus(),
+  ]);
+
+  // Only query stock once migration 0005 is in — otherwise the overview would
+  // show a scary error for a feature that simply isn't installed yet.
+  const inventory: InventoryStats | null = inventoryStatus.ready
+    ? await getInventoryStats()
+    : null;
+
+  return <AdminDashboard overview={overview} inventory={inventory} />;
 }

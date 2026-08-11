@@ -1,4 +1,5 @@
 import type { BulkUpdateResult, ValidationResult } from "./admin-products";
+import type { StockCsvResult } from "./inventory";
 
 /**
  * Form state shapes and their initial values for the admin's `useActionState`
@@ -30,3 +31,23 @@ export type PricingState =
   | { kind: "validated"; result: ValidationResult };
 
 export const emptyPricingState: PricingState = { kind: "idle" };
+
+export interface StockAdjustState {
+  ok: boolean;
+  message: string | null;
+  error: string | null;
+}
+
+export const emptyStockAdjustState: StockAdjustState = {
+  ok: false,
+  message: null,
+  error: null,
+};
+
+export type StockCsvState =
+  | { kind: "idle" }
+  | { kind: "error"; message: string }
+  | { kind: "preview"; result: StockCsvResult }
+  | { kind: "applied"; result: StockCsvResult };
+
+export const emptyStockCsvState: StockCsvState = { kind: "idle" };

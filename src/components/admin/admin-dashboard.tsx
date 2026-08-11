@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { formatPrice } from "@/lib/format";
 import type { AdminOverview } from "@/lib/admin-data";
+import type { InventoryStats } from "@/lib/inventory";
 
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
@@ -20,8 +22,16 @@ function fmtDate(iso: string | null): string {
     : d.toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export function AdminDashboard({ overview }: { overview: AdminOverview }) {
+export function AdminDashboard({
+  overview,
+  inventory,
+}: {
+  overview: AdminOverview;
+  /** Null until migration 0005 is applied — the inventory tiles just don't render. */
+  inventory: InventoryStats | null;
+}) {
   const { catalogue, demandAvailable, demandError, stats, topWanted, recent } = overview;
+  const needsAttention = inventory ? inventory.lowCount + inventory.oversoldCount : 0;
 
   return (
     <Container className="py-10">
@@ -39,6 +49,29 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
         <Stat label="Categories" value={catalogue.categories} />
         <Stat label="Brands" value={catalogue.brands} />
       </div>
+
+      {/* Stock needing attention is the thing worth interrupting for, so it sits
+          above the analytics rather than buried on the inventory tab. */}
+      {inventory && needsAttention > 0 && (
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+          <p>
+            <strong>
+              {inventory.oversoldCount > 0 && `${inventory.oversoldCount} product(s) need buying`}
+              {inventory.oversoldCount > 0 && inventory.lowCount > 0 && " · "}
+              {inventory.lowCount > 0 && `${inventory.lowCount} running low`}
+            </strong>
+            <span className="mt-0.5 block text-xs text-amber-800">
+              Sold more than you held, or close to it.
+            </span>
+          </p>
+          <Link
+            href={`/admin/inventory?filter=${inventory.oversoldCount > 0 ? "oversold" : "low"}`}
+            className="rounded-full border border-amber-300 bg-white px-5 py-2.5 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100"
+          >
+            Review inventory
+          </Link>
+        </div>
+      )}
 
       {/* Demand unavailable notice */}
       {!demandAvailable && (

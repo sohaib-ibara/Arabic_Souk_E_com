@@ -23,6 +23,14 @@ interface CheckoutUser {
   phone: string | null;
 }
 
+/** What the card is debited, when that isn't the BHD total (see lib/stripe.ts). */
+interface Payment {
+  currency: string;
+  amount: number;
+  rate: number;
+  converted: boolean;
+}
+
 type Status = "idle" | "creating" | "unavailable" | "error";
 
 const stripeAppearance: StripeElementsOptions["appearance"] = {
@@ -48,6 +56,7 @@ export function CheckoutView({
   const [phase, setPhase] = useState<"details" | "payment">("details");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [payment, setPayment] = useState<Payment | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [issues, setIssues] = useState<Array<{ productId: string; name: string }>>([]);
 
@@ -97,6 +106,7 @@ export function CheckoutView({
       if (res.ok && data.clientSecret) {
         setClientSecret(data.clientSecret);
         setOrderNumber(data.orderNumber ?? null);
+        setPayment(data.payment ?? null);
         setPhase("payment");
         setStatus("idle");
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -208,6 +218,7 @@ export function CheckoutView({
               <Elements stripe={stripePromise} options={{ clientSecret, appearance: stripeAppearance }}>
                 <PaymentPanel
                   total={total}
+                  payment={payment}
                   orderNumber={orderNumber}
                   onBack={() => {
                     setPhase("details");
@@ -263,10 +274,12 @@ export function CheckoutView({
 /** Embedded Stripe Payment Element + pay button. Renders inside <Elements>. */
 function PaymentPanel({
   total,
+  payment,
   orderNumber,
   onBack,
 }: {
   total: number;
+  payment: Payment | null;
   orderNumber: string | null;
   onBack: () => void;
 }) {
@@ -297,6 +310,20 @@ function PaymentPanel({
         <h2 className="font-serif text-xl">Payment</h2>
         {orderNumber && <span className="text-xs text-muted">Order {orderNumber}</span>}
       </div>
+
+      {/* Said before the card is entered, not after: the statement will show a
+          different currency from the one the shop quotes in. */}
+      {payment?.converted && (
+        <p className="rounded-xl border border-line bg-sand/60 p-4 text-xs text-muted">
+          Your card will be charged{" "}
+          <strong className="text-ink">
+            {formatPrice(payment.amount, payment.currency)}
+          </strong>
+          , the equivalent of {formatPrice(total)} at a fixed rate of 1{" "}
+          {siteConfig.currency} = {payment.rate} {payment.currency}. That is the amount
+          that will appear on your statement.
+        </p>
+      )}
 
       <PaymentElement />
 

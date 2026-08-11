@@ -80,5 +80,6 @@ export async function POST(req: Request) {
     ok: true,
     clientSecret: result.clientSecret,
     orderNumber: result.orderNumber,
+    payment: result.payment,
   });
 }

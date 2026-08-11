@@ -191,7 +191,7 @@ export function ProductForm({
         </section>
 
         <section className="rounded-2xl border border-line bg-sand/40 p-5 sm:p-6">
-          <h2 className="font-serif text-lg">Pricing &amp; stock</h2>
+          <h2 className="font-serif text-lg">Pricing</h2>
           <p className="mt-1 text-xs text-muted">
             Prices are in BHD, which uses three decimal places (1 dinar = 1000 fils).
           </p>
@@ -224,17 +224,106 @@ export function ProductForm({
               />
             </Field>
 
-            <Field label="Stock quantity" htmlFor="stock_quantity" error={err.stock_quantity}>
+            <Field
+              label="Cost price"
+              htmlFor="cost_price"
+              error={err.cost_price}
+              hint="What you pay. Drives margin and stock valuation."
+            >
               <input
-                id="stock_quantity"
-                name="stock_quantity"
-                inputMode="numeric"
-                defaultValue={product ? String(product.stock_quantity) : "0"}
+                id="cost_price"
+                name="cost_price"
+                inputMode="decimal"
+                defaultValue={product?.cost_price != null ? String(product.cost_price) : ""}
+                placeholder="—"
                 className={inputClass}
               />
             </Field>
           </div>
+        </section>
 
+        <section className="rounded-2xl border border-line bg-sand/40 p-5 sm:p-6">
+          <h2 className="font-serif text-lg">Inventory</h2>
+          <p className="mt-1 text-xs text-muted">
+            Stock is a record of what you hold — it never blocks an order on its own. Use{" "}
+            <em>Listed for sale</em> below to take a product off the store.
+          </p>
+
+          <div className="mt-5 grid gap-5 sm:grid-cols-3">
+            <Field label="SKU" htmlFor="sku" error={err.slug} hint="Optional, must be unique.">
+              <input
+                id="sku"
+                name="sku"
+                defaultValue={product?.sku ?? ""}
+                placeholder="—"
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Barcode" htmlFor="barcode" hint="EAN / UPC, optional.">
+              <input
+                id="barcode"
+                name="barcode"
+                defaultValue={product?.barcode ?? ""}
+                placeholder="—"
+                className={inputClass}
+              />
+            </Field>
+
+            <Field
+              label="Low-stock threshold"
+              htmlFor="low_stock_threshold"
+              error={err.low_stock_threshold}
+              hint="Flagged when on hand drops to this."
+            >
+              <input
+                id="low_stock_threshold"
+                name="low_stock_threshold"
+                inputMode="numeric"
+                defaultValue={String(product?.low_stock_threshold ?? 5)}
+                className={inputClass}
+              />
+            </Field>
+
+            {isEdit ? (
+              <Field label="On hand" htmlFor="on_hand_display">
+                <div
+                  id="on_hand_display"
+                  className="flex items-center justify-between rounded-xl border border-line bg-white/60 px-3.5 py-2.5 text-sm"
+                >
+                  <span className="font-medium">{product!.stock_quantity}</span>
+                  <Link
+                    href={`/admin/inventory/${product!.id}`}
+                    className="text-xs text-brand hover:underline"
+                  >
+                    Adjust →
+                  </Link>
+                </div>
+                <p className="mt-1.5 text-xs text-muted">
+                  Changed from the inventory screen, so every movement is recorded.
+                </p>
+              </Field>
+            ) : (
+              <Field
+                label="Opening stock"
+                htmlFor="opening_stock"
+                error={err.opening_stock}
+                hint="Recorded as an opening-balance movement."
+              >
+                <input
+                  id="opening_stock"
+                  name="opening_stock"
+                  inputMode="numeric"
+                  defaultValue="0"
+                  className={inputClass}
+                />
+              </Field>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-line bg-sand/40 p-5 sm:p-6">
+          <h2 className="font-serif text-lg">Merchandising</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <Check
               name="in_stock"

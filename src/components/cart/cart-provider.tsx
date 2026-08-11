@@ -173,3 +173,15 @@ export function useCart() {
   if (!ctx) throw new Error("useCart must be used within a CartProvider");
   return ctx;
 }
+
+/**
+ * The cart if there is one, null otherwise.
+ *
+ * For components where the cart is incidental rather than the point — a missing
+ * provider should make them do nothing, not take the page down with them. Any
+ * component that renders a bag should keep using `useCart`, so a real wiring
+ * mistake still surfaces loudly.
+ */
+export function useCartOptional() {
+  return useContext(CartContext);
+}

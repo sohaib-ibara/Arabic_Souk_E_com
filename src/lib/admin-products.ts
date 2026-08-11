@@ -22,7 +22,11 @@ export interface AdminProductRow {
   slug: string;
   price: number;
   compare_at_price: number | null;
+  cost_price: number | null;
   currency: string;
+  sku: string | null;
+  barcode: string | null;
+  low_stock_threshold: number;
   stock_quantity: number;
   in_stock: boolean;
   is_featured: boolean;
@@ -57,7 +61,11 @@ function mapRow(row: any): AdminProductRow {
     slug: row.slug,
     price: Number(row.price),
     compare_at_price: row.compare_at_price != null ? Number(row.compare_at_price) : null,
+    cost_price: row.cost_price != null ? Number(row.cost_price) : null,
     currency: row.currency ?? "BHD",
+    sku: row.sku ?? null,
+    barcode: row.barcode ?? null,
+    low_stock_threshold: Number(row.low_stock_threshold ?? 5),
     stock_quantity: Number(row.stock_quantity ?? 0),
     in_stock: Boolean(row.in_stock),
     is_featured: Boolean(row.is_featured),
@@ -195,16 +203,28 @@ export function slugify(input: string): string {
     .slice(0, 80);
 }
 
+/**
+ * Editable product fields.
+ *
+ * `stock_quantity` is deliberately absent. Once the movement ledger exists
+ * (migration 0005) every change to on-hand has to go through
+ * `apply_stock_movement`, or the audit trail silently develops holes. Stock is
+ * set from the inventory screen instead; an opening balance at creation time is
+ * passed separately and recorded as an 'initial' movement.
+ */
 export interface ProductInput {
   name: string;
   slug: string;
   price: number;
   compare_at_price: number | null;
+  cost_price: number | null;
+  sku: string | null;
+  barcode: string | null;
+  low_stock_threshold: number;
   short_description: string | null;
   description: string | null;
   category_id: string | null;
   brand_id: string | null;
-  stock_quantity: number;
   in_stock: boolean;
   is_featured: boolean;
   is_new: boolean;
@@ -217,7 +237,14 @@ export async function insertProduct(input: ProductInput): Promise<{ id: string }
   if (!admin) throw new Error("Supabase service role isn't configured.");
   const { data, error } = await admin
     .from("products")
-    .insert({ ...input, price: round3(input.price) })
+    .insert({
+      ...input,
+      price: round3(input.price),
+      cost_price: input.cost_price == null ? null : round3(input.cost_price),
+      // New products start empty; an opening balance is posted as a movement so
+      // even the first number has a ledger entry behind it.
+      stock_quantity: 0,
+    })
     .select("id")
     .single();
   if (error || !data) throw new Error(error?.message ?? "Insert failed.");
@@ -229,7 +256,11 @@ export async function updateProductRow(id: string, input: ProductInput): Promise
   if (!admin) throw new Error("Supabase service role isn't configured.");
   const { error } = await admin
     .from("products")
-    .update({ ...input, price: round3(input.price) })
+    .update({
+      ...input,
+      price: round3(input.price),
+      cost_price: input.cost_price == null ? null : round3(input.cost_price),
+    })
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -246,7 +277,24 @@ export async function deleteProductRow(id: string): Promise<void> {
 /* ------------------------------------------------------------------ */
 
 /** Header aliases accepted for the product identifier column. */
-const ID_KEYS = ["id", "product_id", "productid", "slug", "sku", "handle"];
+export const ID_KEYS = ["id", "product_id", "productid", "slug", "sku", "handle"];
+
+/** Split CSV keys into UUIDs and non-UUIDs (slugs/SKUs) for separate lookups. */
+export function splitKeys(keys: string[]): { ids: string[]; slugs: string[] } {
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const unique = [...new Set(keys)];
+  return {
+    ids: unique.filter((k) => uuid.test(k)),
+    slugs: unique.filter((k) => !uuid.test(k)),
+  };
+}
+
+/** Chunk an array so a large sheet doesn't build an over-long request URL. */
+export function chunk<T>(arr: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size),
+  );
+}
 /** Header aliases accepted for the price column. */
 const PRICE_KEYS = [
   "price",
@@ -332,15 +380,7 @@ async function resolveKeys(keys: string[]): Promise<Map<string, AdminProductRow>
   const found = new Map<string, AdminProductRow>();
   if (!admin || !keys.length) return found;
 
-  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const ids = [...new Set(keys.filter((k) => uuid.test(k)))];
-  const slugs = [...new Set(keys.filter((k) => !uuid.test(k)))];
-
-  // Chunked so a very large sheet doesn't build an over-long URL.
-  const chunk = <T,>(arr: T[], size: number) =>
-    Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-      arr.slice(i * size, i * size + size),
-    );
+  const { ids, slugs } = splitKeys(keys);
 
   for (const part of chunk(ids, 200)) {
     const { data } = await admin.from("products").select(SELECT).in("id", part);
