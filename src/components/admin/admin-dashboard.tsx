@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 import type { AdminOverview } from "@/lib/admin-data";
 import type { InventoryStats } from "@/lib/inventory";
 
@@ -14,13 +14,7 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
   );
 }
 
-function fmtDate(iso: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-}
+const fmtDate = formatDateShort;
 
 export function AdminDashboard({
   overview,

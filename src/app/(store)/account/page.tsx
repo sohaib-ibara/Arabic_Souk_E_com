@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/container";
 import { getSessionUser } from "@/lib/auth";
 import { isAllowedEmail } from "@/lib/admin-auth";
 import { getMyOrders } from "@/lib/customer-orders";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDate } from "@/lib/format";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
 export const metadata: Metadata = { title: "My account" };
@@ -18,12 +18,7 @@ const statusLabels: Record<string, { label: string; className: string }> = {
   cancelled: { label: "Cancelled", className: "bg-red-50 text-red-700 border-red-200" },
 };
 
-function orderDate(iso: string): string {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
+const orderDate = formatDate;
 
 // Reads the auth cookie — must not be cached.
 export const dynamic = "force-dynamic";

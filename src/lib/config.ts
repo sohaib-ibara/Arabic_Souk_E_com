@@ -16,6 +16,15 @@ export const siteConfig = {
   currency: "BHD",
   country: "Bahrain",
   countryCode: "BH",
+  /**
+   * Every date shown to a human is rendered in this zone.
+   *
+   * Server Components format on the server, which on Vercel runs in UTC — so
+   * without pinning this, the admin in Manama would read every order three
+   * hours behind the clock on the wall. The store serves one country, so one
+   * fixed zone is correct and beats guessing per viewer.
+   */
+  timeZone: "Asia/Bahrain",
   contact: {
     email: "hello@arabicsouk.com",
     phone: "+973 1700 0000",

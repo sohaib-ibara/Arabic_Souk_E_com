@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { ProductForm } from "@/components/admin/product-form";
 import { isAdmin } from "@/lib/admin-auth";
+import { formatDateTime } from "@/lib/format";
 import { getAdminProduct, getBrandOptions, getCategoryOptions } from "@/lib/admin-products";
 
 export const metadata: Metadata = {
@@ -41,9 +42,7 @@ export default async function EditProductPage({
       <h1 className="mt-3 font-serif text-3xl sm:text-4xl">{product.name}</h1>
       <p className="mt-1 text-sm text-muted">
         {product.slug}
-        {product.updated_at && (
-          <> · last updated {new Date(product.updated_at).toLocaleString("en-GB")}</>
-        )}
+        {product.updated_at && <> · last updated {formatDateTime(product.updated_at)}</>}
       </p>
 
       <ProductForm

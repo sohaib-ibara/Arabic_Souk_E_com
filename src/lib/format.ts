@@ -13,6 +13,52 @@ export function formatPrice(amount: number, currency: string = siteConfig.curren
   return `${currency} ${n}`;
 }
 
+/**
+ * Dates, always in the store's timezone (see siteConfig.timeZone).
+ *
+ * Both accept the ISO strings Supabase returns and degrade to an em dash rather
+ * than "Invalid Date" for null or malformed input.
+ */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("en-GB", {
+    timeZone: siteConfig.timeZone,
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-GB", {
+    timeZone: siteConfig.timeZone,
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/** Compact form for dense tables — no year. */
+export function formatDateShort(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("en-GB", {
+    timeZone: siteConfig.timeZone,
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 /** Percentage saved when there is a compare-at (was) price. */
 export function discountPercent(price: number, compareAt: number | null | undefined): number | null {
   if (!compareAt || compareAt <= price) return null;

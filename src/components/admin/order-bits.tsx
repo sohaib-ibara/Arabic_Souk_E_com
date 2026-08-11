@@ -22,19 +22,8 @@ export function StatusBadge({ status }: { status: OrderStatus }) {
   );
 }
 
-export function formatDateTime(iso: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-}
+/** Re-exported so existing admin imports keep working; pinned to the store's zone. */
+export { formatDateTime } from "@/lib/format";
 
 /**
  * Status control. A plain form posting to a server action, so it works without
