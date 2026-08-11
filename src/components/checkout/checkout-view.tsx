@@ -287,6 +287,11 @@ function PaymentPanel({
   const elements = useElements();
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The card fields live in a Stripe iframe that can fail to appear — a bad
+  // publishable key, a blocked script, no network. Until it reports ready there
+  // is nothing to submit, so the pay button stays disabled rather than throwing.
+  const [ready, setReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   async function pay(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -294,14 +299,23 @@ function PaymentPanel({
     setPaying(true);
     setError(null);
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: { return_url: `${window.location.origin}/checkout/success` },
-    });
-
-    // We only reach here if confirmation failed; success redirects to return_url.
-    setError(error.message ?? "Payment failed. Please try again.");
-    setPaying(false);
+    try {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: `${window.location.origin}/checkout/success` },
+      });
+      // We only reach here if confirmation failed; success redirects away.
+      setError(error.message ?? "Payment failed. Please try again.");
+    } catch (err) {
+      // confirmPayment throws (rather than resolving with an error) on
+      // integration faults such as no mounted element. Without this the button
+      // would sit on "Processing…" for ever with nothing explaining why.
+      setError(
+        err instanceof Error ? err.message : "Payment couldn't be started. Please try again.",
+      );
+    } finally {
+      setPaying(false);
+    }
   }
 
   return (
@@ -325,14 +339,36 @@ function PaymentPanel({
         </p>
       )}
 
-      <PaymentElement />
+      <PaymentElement
+        onReady={() => {
+          setReady(true);
+          setLoadFailed(false);
+        }}
+        onLoadError={() => setLoadFailed(true)}
+      />
+
+      {loadFailed && (
+        <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <p className="font-medium">The payment form couldn&rsquo;t load</p>
+          <p className="mt-1">
+            This is usually an ad blocker or privacy extension blocking Stripe. Try again with
+            those disabled, or in a private window. Your order is saved — nothing has been
+            charged.
+          </p>
+        </div>
+      )}
+
+      {!ready && !loadFailed && (
+        <p className="text-sm text-muted">Loading secure payment form…</p>
+      )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
-          disabled={!stripe || paying}
+          disabled={!stripe || paying || !ready}
+          title={ready ? undefined : "Waiting for the payment form to load"}
           className="flex items-center justify-center rounded-full bg-ink px-10 py-3.5 text-sm font-medium text-white transition-colors hover:bg-brand disabled:opacity-60"
         >
           {paying ? "Processing…" : `Pay ${formatPrice(total)}`}
