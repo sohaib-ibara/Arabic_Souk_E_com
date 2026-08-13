@@ -6,6 +6,7 @@ import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { AddToCartButton } from "./add-to-cart-button";
 import { discountPercent } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 export function ProductCard({
   product,
@@ -16,6 +17,7 @@ export function ProductCard({
 }) {
   const dp = discountPercent(product.price, product.compare_at_price);
   const href = `/product/${product.slug}`;
+  const unavailable = !product.in_stock;
 
   return (
     <article className="group flex flex-col">
@@ -27,13 +29,24 @@ export function ProductCard({
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             priority={priority}
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className={cn(
+              "object-cover transition-transform duration-500 group-hover:scale-105",
+              // Faded rather than hidden: the product stays browsable and its
+              // page keeps working, it just reads as not-for-sale at a glance.
+              unavailable && "opacity-45 saturate-50",
+            )}
           />
         </Link>
 
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
-          {product.is_new && <Badge tone="brand">New</Badge>}
-          {dp ? <Badge tone="sale">-{dp}%</Badge> : null}
+          {unavailable ? (
+            <Badge tone="neutral">Out of stock</Badge>
+          ) : (
+            <>
+              {product.is_new && <Badge tone="brand">New</Badge>}
+              {dp ? <Badge tone="sale">-{dp}%</Badge> : null}
+            </>
+          )}
         </div>
 
         {/* Hover add-to-bag (desktop) */}

@@ -75,12 +75,25 @@ function commaList(fd: FormData, key: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Every storefront surface a product appears on.
+ *
+ * Category pages are matched by route pattern rather than by slug: a product
+ * can move between categories, and the page it just left needs refreshing as
+ * much as the one it joined. Storefront pages cache for an hour, so anything
+ * missed here stays wrong to shoppers for up to that long.
+ */
+function revalidateStorefront(slug?: string | null) {
+  revalidatePath("/");
+  revalidatePath("/shop");
+  revalidatePath("/category/[slug]", "page");
+  if (slug) revalidatePath(`/product/${slug}`);
+}
+
 /** Invalidate the admin list plus the storefront surfaces a product appears on. */
 function revalidateProduct(slug?: string | null) {
   revalidatePath("/admin/products");
-  revalidatePath("/shop");
-  revalidatePath("/");
-  if (slug) revalidatePath(`/product/${slug}`);
+  revalidateStorefront(slug);
 }
 
 /* ---------------------------- product form ---------------------------- */
@@ -245,8 +258,7 @@ export async function pricingCsvAction(
     const result = await bulkUpdatePrices(text, { apply });
     if (apply) {
       revalidatePath("/admin/products");
-      revalidatePath("/shop");
-      revalidatePath("/");
+      revalidateStorefront();
       for (const c of result.changes) revalidatePath(`/product/${c.slug}`);
       return { kind: "applied", result };
     }
@@ -264,6 +276,16 @@ function revalidateInventory(slug?: string | null) {
   revalidatePath("/admin/products");
   revalidatePath("/admin");
   if (slug) revalidatePath(`/product/${slug}`);
+}
+
+/**
+ * Taking a product off sale changes how it looks everywhere it's listed, not
+ * just on its own page — so this clears the whole storefront, unlike a plain
+ * quantity change which only affects the admin.
+ */
+function revalidateAvailability(slug?: string | null) {
+  revalidateInventory(slug);
+  revalidateStorefront(slug);
 }
 
 /**
@@ -349,8 +371,7 @@ export async function setAvailabilityAction(formData: FormData): Promise<void> {
 
   const available = str(formData, "available") === "1";
   await setProductAvailability(productId, available);
-  revalidateInventory(optStr(formData, "slug"));
-  revalidatePath("/shop");
+  revalidateAvailability(optStr(formData, "slug"));
 }
 
 /**

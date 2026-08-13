@@ -29,6 +29,40 @@ export function ProductBuyBox({ product }: { product: Product }) {
     window.setTimeout(() => setAdded(false), 1400);
   }
 
+  // Off sale: no quantity, no buttons. The checkout would refuse this order
+  // anyway, so the honest place to say so is before anything is added.
+  if (!product.in_stock) {
+    return (
+      <div className="mt-6 space-y-4">
+        <div
+          role="status"
+          className="rounded-2xl border border-line bg-sand/60 p-5 text-sm"
+        >
+          <p className="font-medium text-ink">Currently unavailable</p>
+          <p className="mt-1 text-muted">
+            We can&rsquo;t source this one at the moment, so it can&rsquo;t be ordered. Do get in
+            touch if you&rsquo;d like us to look for it.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            type="button"
+            disabled
+            className="inline-flex flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-full border border-line bg-sand px-6 py-3.5 text-sm font-medium text-muted"
+          >
+            <BagIcon width={18} height={18} /> Unavailable
+          </button>
+          <Link
+            href="/shop"
+            className="inline-flex flex-1 items-center justify-center rounded-full border border-brand px-6 py-3.5 text-sm font-medium text-brand transition-colors hover:bg-brand hover:text-white"
+          >
+            Browse similar
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-6 space-y-4">
       <div className="flex items-center gap-4">

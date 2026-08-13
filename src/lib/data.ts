@@ -169,8 +169,11 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   let items = await loadProducts();
   if (q.category) items = items.filter((p) => p.category_slug === q.category);
   if (q.brand) items = items.filter((p) => p.brand_slug === q.brand);
-  if (q.featured) items = items.filter((p) => p.is_featured);
-  if (q.isNew) items = items.filter((p) => p.is_new);
+  // Curated shelves are a recommendation, so they only carry things a shopper
+  // can actually buy. Category, search and the full shop still list everything,
+  // marked unavailable — those are places people go looking for a specific item.
+  if (q.featured) items = items.filter((p) => p.is_featured && p.in_stock);
+  if (q.isNew) items = items.filter((p) => p.is_new && p.in_stock);
   if (q.excludeId) items = items.filter((p) => p.id !== q.excludeId);
   if (q.search) {
     const s = q.search.toLowerCase().trim();
@@ -199,12 +202,11 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
 export async function getRelatedProducts(product: Product, limit = 4): Promise<Product[]> {
   const items = await loadProducts();
-  const sameCategory = items.filter(
-    (p) => p.id !== product.id && p.category_slug === product.category_slug,
-  );
-  const others = items.filter(
-    (p) => p.id !== product.id && p.category_slug !== product.category_slug,
-  );
+  // Recommendations, so only things that can be bought — suggesting an
+  // unavailable product to someone already looking at one is no help.
+  const candidates = items.filter((p) => p.id !== product.id && p.in_stock);
+  const sameCategory = candidates.filter((p) => p.category_slug === product.category_slug);
+  const others = candidates.filter((p) => p.category_slug !== product.category_slug);
   return [...sameCategory, ...others].slice(0, limit);
 }
 

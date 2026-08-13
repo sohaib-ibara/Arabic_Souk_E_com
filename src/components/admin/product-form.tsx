@@ -328,7 +328,7 @@ export function ProductForm({
             <Check
               name="in_stock"
               label="Listed for sale"
-              hint="Uncheck to hide from the storefront."
+              hint="Uncheck and it still appears, marked “Out of stock” and not orderable."
               defaultChecked={product ? product.in_stock : true}
             />
             <Check name="is_featured" label="Featured" defaultChecked={product?.is_featured} />

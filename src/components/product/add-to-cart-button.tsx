@@ -20,6 +20,24 @@ export function AddToCartButton({
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
 
+  // Taken off sale by the admin. Say so here rather than letting the shopper
+  // discover it at the payment step, which is where the order is refused.
+  if (!product.in_stock) {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-label={`${product.name} is currently unavailable`}
+        className={cn(
+          "inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-full border border-line bg-sand px-5 py-3 text-sm font-medium text-muted",
+          className,
+        )}
+      >
+        Unavailable
+      </button>
+    );
+  }
+
   function handleAdd() {
     addItem(
       {
