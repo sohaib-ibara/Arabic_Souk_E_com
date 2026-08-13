@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { siteConfig } from "@/lib/config";
 import { getSessionUser } from "@/lib/auth";
+import { isAdmin } from "@/lib/admin-auth";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -17,6 +18,13 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
+
+  // Staff and shoppers hold separate sessions, so a signed-in admin has no
+  // customer session and would otherwise be shown a sign-in form — including
+  // when they press Back out of the console. Send them to their own console
+  // instead; the only way to see this page again is to sign out.
+  if (await isAdmin()) redirect("/admin");
+
   const user = await getSessionUser();
   if (user) redirect(next || "/account");
 

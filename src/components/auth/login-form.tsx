@@ -52,7 +52,10 @@ export function LoginForm({ next }: { next?: string }) {
       // page re-checks server-side and will redirect a staff account anyway.
     }
 
-    router.push(next || "/account");
+    // `replace`, not `push`: the sign-in page shouldn't sit in history behind
+    // the account it just opened, or Back lands the shopper on a form they've
+    // already completed.
+    router.replace(next || "/account");
     router.refresh();
   }
 

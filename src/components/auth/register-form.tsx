@@ -47,7 +47,8 @@ export function RegisterForm({ next }: { next?: string }) {
       return;
     }
 
-    router.push(next || "/account");
+    // `replace`, not `push` — see the note in login-form.tsx.
+    router.replace(next || "/account");
     router.refresh();
   }
 

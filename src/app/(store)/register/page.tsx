@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { siteConfig } from "@/lib/config";
 import { getSessionUser } from "@/lib/auth";
+import { isAdmin } from "@/lib/admin-auth";
 import { RegisterForm } from "@/components/auth/register-form";
 
 export const metadata: Metadata = { title: "Create account" };
@@ -17,6 +18,11 @@ export default async function RegisterPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
+
+  // A signed-in admin holds no customer session; without this they'd be offered
+  // an account form. See the note in login/page.tsx.
+  if (await isAdmin()) redirect("/admin");
+
   const user = await getSessionUser();
   if (user) redirect(next || "/account");
 

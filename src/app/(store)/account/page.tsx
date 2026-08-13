@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { getSessionUser } from "@/lib/auth";
-import { isAllowedEmail } from "@/lib/admin-auth";
+import { isAdmin, isAllowedEmail } from "@/lib/admin-auth";
 import { getMyOrders } from "@/lib/customer-orders";
 import { formatPrice, formatDate } from "@/lib/format";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -24,6 +24,10 @@ const orderDate = formatDate;
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
+  // Checked before the customer session: an admin has none, so without this
+  // they'd bounce to /login and only then be sent to the console.
+  if (await isAdmin()) redirect("/admin");
+
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/account");
   // Server-side backstop for the login check: catches staff sessions created
