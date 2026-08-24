@@ -44,6 +44,12 @@ export interface Product {
   is_featured: boolean;
   is_new: boolean;
   tags: string[];
+  /**
+   * Last edit, straight from the database trigger. Drives <lastmod> in the
+   * sitemap so crawlers re-fetch what actually changed. Optional because the
+   * bundled sample and imported catalogues carry no timestamps.
+   */
+  updated_at?: string | null;
 }
 
 /** A single line in the shopping cart (persisted client-side). */

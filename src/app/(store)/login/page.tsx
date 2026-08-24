@@ -7,7 +7,12 @@ import { getSessionUser } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin-auth";
 import { LoginForm } from "@/components/auth/login-form";
 
-export const metadata: Metadata = { title: "Sign in" };
+// Nothing here for a searcher, and an indexed sign-in form only competes with
+// the pages that should rank. Links are still followed.
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: { index: false, follow: true },
+};
 
 // Reads the auth cookie — must not be cached.
 export const dynamic = "force-dynamic";

@@ -8,7 +8,10 @@ import { getMyOrders } from "@/lib/customer-orders";
 import { formatPrice, formatDate } from "@/lib/format";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
-export const metadata: Metadata = { title: "My account" };
+export const metadata: Metadata = {
+  title: "My account",
+  robots: { index: false, follow: false },
+};
 
 /** Order status as the customer should read it — not the internal vocabulary. */
 const statusLabels: Record<string, { label: string; className: string }> = {

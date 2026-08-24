@@ -24,13 +24,22 @@ export async function generateMetadata({
   const sp = await searchParams;
   const search = str(sp.search);
   const title = search ? `Search: “${search}”` : "Shop all products";
+
+  // Page 2 carries different products from page 1, so it has to canonicalise to
+  // itself — pointing every page at /shop tells Google the rest is a duplicate
+  // and the products only listed there may never be crawled from here.
+  const pageNum = Number.parseInt(str(sp.page) ?? "1", 10);
+  const page = Number.isFinite(pageNum) && pageNum > 1 ? pageNum : 1;
+
   return {
     title,
     description:
       "Browse premium skincare, makeup, fragrance, hair and body care — delivered across Bahrain.",
-    alternates: { canonical: "/shop" },
-    // Filtered/searched permutations shouldn't be indexed as duplicates.
-    robots: search || sp.category || sp.brand ? { index: false, follow: true } : undefined,
+    alternates: { canonical: page > 1 ? `/shop?page=${page}` : "/shop" },
+    // Filtered and searched permutations shouldn't be indexed as duplicates,
+    // and a sort is the same products in a different order — pure duplication.
+    robots:
+      search || sp.category || sp.brand || sp.sort ? { index: false, follow: true } : undefined,
   };
 }
 

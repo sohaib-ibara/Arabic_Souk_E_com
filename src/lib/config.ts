@@ -4,6 +4,22 @@
  * The store is a placeholder premium-beauty brand for the demo phase.
  * To rebrand, change `name` / `legalName` / colors here and in globals.css.
  */
+/**
+ * The public origin, cleaned of anything a dashboard paste might have added.
+ *
+ * A trailing newline in NEXT_PUBLIC_SITE_URL is invisible and poisonous: the
+ * `new URL()` behind `metadataBase` silently strips it, so canonical and OG
+ * tags look perfect, while every raw `${siteConfig.url}/...` interpolation —
+ * sitemap entries, the robots Sitemap: line, JSON-LD offer URLs — embeds the
+ * newline mid-URL and is rejected by crawlers. That shipped once; normalising
+ * here means it cannot happen again whatever is pasted into Vercel.
+ */
+function resolveSiteUrl(): string {
+  const raw = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").trim();
+  // Drop trailing slashes so callers can append "/path" without doubling up.
+  return raw.replace(/\/+$/, "");
+}
+
 export const siteConfig = {
   name: "Arabic Souk",
   legalName: "Arabic Souk",
@@ -11,7 +27,7 @@ export const siteConfig = {
   description:
     "Discover premium skincare, makeup, fragrance and beauty essentials at Arabic Souk. Authentic brands, an elegant experience and fast delivery across Bahrain.",
   // Used for canonical URLs, sitemap and Open Graph. Override with NEXT_PUBLIC_SITE_URL in production.
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  url: resolveSiteUrl(),
   locale: "en_BH",
   currency: "BHD",
   country: "Bahrain",

@@ -51,6 +51,7 @@ function mapProductRow(row: any): Product {
     is_featured: Boolean(row.is_featured),
     is_new: Boolean(row.is_new),
     tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
+    updated_at: row.updated_at ?? row.created_at ?? null,
   };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -98,6 +99,7 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "is_new",
   "tags",
   "created_at",
+  "updated_at",
 ].join(",");
 
 async function loadProducts(): Promise<Product[]> {

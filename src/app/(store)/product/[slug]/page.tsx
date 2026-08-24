@@ -18,6 +18,18 @@ import { siteConfig } from "@/lib/config";
 
 export const revalidate = 3600;
 
+/**
+ * Google ignores — or ages out — an Offer with no `priceValidUntil`.
+ *
+ * Read the clock once at module load rather than per render: calling `Date.now`
+ * inside a component breaks React's purity rule, and a date a year out doesn't
+ * need to be precise. Every deploy refreshes it, and even a long-lived server
+ * process leaves it comfortably in the future.
+ */
+const PRICE_VALID_UNTIL = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+  .toISOString()
+  .slice(0, 10);
+
 type Params = Promise<{ slug: string }>;
 
 export async function generateStaticParams() {
@@ -56,13 +68,19 @@ export default async function ProductPage({ params }: { params: Params }) {
   const dp = discountPercent(product.price, product.compare_at_price);
   const categoryHref = `/category/${product.category_slug}`;
 
+  const productUrl = `${siteConfig.url}/product/${product.slug}`;
+
   const productLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
     description: product.description ?? product.short_description ?? undefined,
     image: product.images,
-    sku: product.id,
+    url: productUrl,
+    // Our internal UUID, not a manufacturer code. Declaring it as `sku` invites
+    // Merchant Center to match it against a real one and fail; `productID` is
+    // the honest field for an identifier that is ours alone.
+    productID: product.id,
     ...(product.brand_name
       ? { brand: { "@type": "Brand", name: product.brand_name } }
       : {}),
@@ -79,10 +97,53 @@ export default async function ProductPage({ params }: { params: Params }) {
       "@type": "Offer",
       priceCurrency: product.currency,
       price: product.price.toFixed(3),
+      priceValidUntil: PRICE_VALID_UNTIL,
+      itemCondition: "https://schema.org/NewCondition",
       availability: product.in_stock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
-      url: `${siteConfig.url}/product/${product.slug}`,
+      url: productUrl,
+      seller: { "@type": "Organization", name: siteConfig.legalName },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        // The standard fee. Orders over the free-delivery threshold pay
+        // nothing, but a single entry can't express both and quoting the
+        // higher of the two is the safe direction to be imprecise in.
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: siteConfig.shipping.standardFee,
+          currency: siteConfig.currency,
+        },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: siteConfig.countryCode,
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "DAY",
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 1,
+            maxValue: 2,
+            unitCode: "DAY",
+          },
+        },
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: siteConfig.countryCode,
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 14,
+        returnMethod: ["https://schema.org/ReturnByMail", "https://schema.org/ReturnInStore"],
+        // `returnFees` is deliberately absent: the returns page doesn't say who
+        // pays the courier, and guessing "free" here would be a claim we can't
+        // honour. Add it once the client confirms.
+      },
     },
   };
 

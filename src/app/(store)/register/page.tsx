@@ -7,7 +7,10 @@ import { getSessionUser } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin-auth";
 import { RegisterForm } from "@/components/auth/register-form";
 
-export const metadata: Metadata = { title: "Create account" };
+export const metadata: Metadata = {
+  title: "Create account",
+  robots: { index: false, follow: true },
+};
 
 // Reads the auth cookie — must not be cached.
 export const dynamic = "force-dynamic";
