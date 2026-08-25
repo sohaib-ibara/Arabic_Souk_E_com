@@ -84,6 +84,29 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
                           </span>
                         </>
                       )}
+
+                      {/* The fulfilment step: staff buy this line from the
+                          supplier once the order is paid. */}
+                      {item.sourceUrl ? (
+                        <a
+                          href={item.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+                        >
+                          Buy from supplier ↗
+                        </a>
+                      ) : item.productId ? (
+                        <span className="mt-1 block text-xs text-amber-700">
+                          No supplier link —{" "}
+                          <Link
+                            href={`/admin/products/${item.productId}`}
+                            className="underline hover:no-underline"
+                          >
+                            add one
+                          </Link>
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 text-right text-muted">
                       {formatPrice(item.unitPrice, order.currency)}

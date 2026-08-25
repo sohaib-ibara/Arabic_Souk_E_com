@@ -323,6 +323,32 @@ export function ProductForm({
         </section>
 
         <section className="rounded-2xl border border-line bg-sand/40 p-5 sm:p-6">
+          <h2 className="font-serif text-lg">Sourcing</h2>
+          <p className="mt-1 text-xs text-muted">
+            Internal only — never shown to customers. When an order comes in, this is the link
+            staff open to buy the item.
+          </p>
+          <div className="mt-5">
+            <Field
+              label="Supplier product page"
+              htmlFor="source_url"
+              error={err.source_url}
+              hint="Full link, starting with https://"
+            >
+              <input
+                id="source_url"
+                name="source_url"
+                type="url"
+                inputMode="url"
+                defaultValue={product?.source_url ?? ""}
+                placeholder="https://www.noon.com/…"
+                className={cn(inputClass, "font-mono text-xs")}
+              />
+            </Field>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-line bg-sand/40 p-5 sm:p-6">
           <h2 className="font-serif text-lg">Merchandising</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <Check

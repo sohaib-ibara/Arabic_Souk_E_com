@@ -39,6 +39,11 @@ export interface AdminProductRow {
   short_description: string | null;
   description: string | null;
   tags: string[];
+  /**
+   * Supplier product page, used to fulfil an order. Staff-only — revoked from
+   * the public key in migration 0007 and never selected by the storefront.
+   */
+  source_url: string | null;
   updated_at: string | null;
 }
 
@@ -78,6 +83,7 @@ function mapRow(row: any): AdminProductRow {
     short_description: row.short_description ?? null,
     description: row.description ?? null,
     tags: Array.isArray(row.tags) ? row.tags : [],
+    source_url: row.source_url ?? null,
     updated_at: row.updated_at ?? null,
   };
 }
@@ -230,6 +236,8 @@ export interface ProductInput {
   is_new: boolean;
   images: string[];
   tags: string[];
+  /** Supplier product page — internal only. See AdminProductRow.source_url. */
+  source_url: string | null;
 }
 
 export async function insertProduct(input: ProductInput): Promise<{ id: string }> {

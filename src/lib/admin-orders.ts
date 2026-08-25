@@ -24,6 +24,13 @@ export interface OrderItemRow {
   unitPrice: number;
   quantity: number;
   productId: string | null;
+  /**
+   * Where staff go to buy this line, read live from the product rather than
+   * copied onto the order: fulfilment happens within days, and correcting a
+   * wrong link on the product should fix every order still open. Null when the
+   * product has no link yet, or has since been deleted from the catalogue.
+   */
+  sourceUrl: string | null;
 }
 
 export interface OrderRow {
@@ -81,6 +88,7 @@ function mapOrder(row: any, withItems = false): OrderRow {
       unitPrice: Number(i.unit_price ?? 0),
       quantity: Number(i.quantity ?? 0),
       productId: i.product_id ?? null,
+      sourceUrl: i.product?.source_url ?? null,
     }));
     order.itemCount = order.items.reduce((s, i) => s + i.quantity, 0);
   } else {
@@ -192,7 +200,9 @@ export async function getOrder(id: string): Promise<OrderRow | null> {
   if (!admin) return null;
   const { data, error } = await admin
     .from("orders")
-    .select("*, items:order_items(id,name,unit_price,quantity,product_id)")
+    .select(
+      "*, items:order_items(id,name,unit_price,quantity,product_id,product:products(source_url))",
+    )
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;

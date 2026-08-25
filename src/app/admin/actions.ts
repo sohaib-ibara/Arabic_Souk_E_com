@@ -123,6 +123,7 @@ export async function saveProductAction(
   // Opening balance only applies when creating; edits go via the ledger.
   const openingRaw = str(formData, "opening_stock");
   const opening = openingRaw === "" ? 0 : num(formData, "opening_stock");
+  const sourceUrl = optStr(formData, "source_url");
 
   const fieldErrors: Record<string, string> = {};
   if (!name) fieldErrors.name = "Name is required.";
@@ -141,6 +142,11 @@ export async function saveProductAction(
   }
   if (!id && (!Number.isFinite(opening) || opening < 0)) {
     fieldErrors.opening_stock = "Opening stock must be 0 or more.";
+  }
+  // The database rejects anything that isn't http(s) (migration 0007); catching
+  // it here turns a raw constraint violation into a field-level message.
+  if (sourceUrl !== null && !/^https?:\/\//i.test(sourceUrl)) {
+    fieldErrors.source_url = "Paste the full link, starting with https://";
   }
 
   if (Object.keys(fieldErrors).length) {
@@ -166,6 +172,7 @@ export async function saveProductAction(
     is_new: bool(formData, "is_new"),
     images: lines(formData, "images"),
     tags: commaList(formData, "tags"),
+    source_url: sourceUrl,
   };
 
   let newId: string | null = null;
