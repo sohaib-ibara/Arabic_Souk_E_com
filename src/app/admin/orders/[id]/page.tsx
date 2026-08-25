@@ -59,8 +59,10 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
             Cash on delivery — {formatPrice(order.total, order.currency)} to collect
           </p>
           <p className="mt-1 text-sky-800">
-            Buy the items below, deliver, then set the status to <strong>Paid</strong> once the
-            courier has the money. It isn&rsquo;t counted as revenue until you do.
+            {/* Explicit space: this JSX transform drops the one that would
+                otherwise sit between </strong> and the text after it. */}
+            Buy the items below, deliver, then set the status to <strong>Paid</strong>{" "}
+            once the courier has the money. It isn&rsquo;t counted as revenue until you do.
           </p>
         </div>
       )}
@@ -82,51 +84,56 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
               <tbody>
                 {(order.items ?? []).map((item) => (
                   <tr key={item.id} className="border-t border-line">
-                    <td className="px-4 py-3">
-                      {item.productId ? (
-                        <Link
-                          href={`/admin/products/${item.productId}`}
-                          className="text-ink hover:text-brand"
-                        >
-                          {item.name}
-                        </Link>
-                      ) : (
-                        <>
-                          {item.name}
-                          <span className="block text-xs text-muted">
-                            product no longer in catalogue
-                          </span>
-                        </>
-                      )}
-
-                      {/* The fulfilment step: staff buy this line from the
-                          supplier once the order is paid. */}
-                      {item.sourceUrl ? (
-                        <a
-                          href={item.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
-                        >
-                          Buy from supplier ↗
-                        </a>
-                      ) : item.productId ? (
-                        <span className="mt-1 block text-xs text-amber-700">
-                          No supplier link —{" "}
+                    {/* Column stack, not inline: product names here run to a
+                        full line of text, and anything following them inline
+                        collides with the last word. */}
+                    <td className="px-4 py-3 align-top">
+                      <div className="flex flex-col items-start gap-2">
+                        {item.productId ? (
                           <Link
                             href={`/admin/products/${item.productId}`}
-                            className="underline hover:no-underline"
+                            className="text-ink hover:text-brand"
                           >
-                            add one
+                            {item.name}
                           </Link>
-                        </span>
-                      ) : null}
+                        ) : (
+                          <span>
+                            {item.name}
+                            <span className="block text-xs text-muted">
+                              product no longer in catalogue
+                            </span>
+                          </span>
+                        )}
+
+                        {/* The fulfilment step: staff buy this line from the
+                            supplier once the order is paid. */}
+                        {item.sourceUrl ? (
+                          <a
+                            href={item.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-brand hover:text-brand"
+                          >
+                            Buy from supplier ↗
+                          </a>
+                        ) : item.productId ? (
+                          <span className="text-xs text-amber-700">
+                            No supplier link —{" "}
+                            <Link
+                              href={`/admin/products/${item.productId}`}
+                              className="underline hover:no-underline"
+                            >
+                              add one
+                            </Link>
+                          </span>
+                        ) : null}
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-right text-muted">
+                    <td className="px-4 py-3 text-right align-top text-muted">
                       {formatPrice(item.unitPrice, order.currency)}
                     </td>
-                    <td className="px-4 py-3 text-right">{item.quantity}</td>
-                    <td className="px-4 py-3 text-right font-medium">
+                    <td className="px-4 py-3 text-right align-top">{item.quantity}</td>
+                    <td className="px-4 py-3 text-right align-top font-medium">
                       {formatPrice(item.unitPrice * item.quantity, order.currency)}
                     </td>
                   </tr>
