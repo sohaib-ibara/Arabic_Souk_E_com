@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { formatPrice } from "@/lib/format";
+import { siteConfig } from "@/lib/config";
 import { setAvailabilityAction } from "@/app/admin/actions";
 import type { InventoryFilter, InventoryList, InventoryRow } from "@/lib/inventory";
 import { cn } from "@/lib/cn";
 
+// "Running low" is gone: with nothing held on a shelf it matched 293 of 301
+// products, which is noise rather than a filter.
 const filters: Array<{ key: InventoryFilter; label: string }> = [
   { key: "all", label: "All products" },
-  { key: "oversold", label: "Need buying" },
-  { key: "low", label: "Running low" },
-  { key: "unavailable", label: "Switched off" },
+  { key: "oversold", label: `To buy from ${siteConfig.supplier}` },
+  { key: "unavailable", label: "Not sold" },
 ];
 
 function hrefFor(p: { filter: string; search: string; page?: number }) {
@@ -21,21 +22,21 @@ function hrefFor(p: { filter: string; search: string; page?: number }) {
 }
 
 /**
- * On-hand, with the sign carrying the meaning: a negative figure is what's been
- * sold beyond what was held, i.e. the number to buy.
+ * How many units still need ordering from the supplier.
+ *
+ * The underlying figure is on-hand, which goes negative as paid orders consume
+ * stock that was never held. Showing "-3" and asking staff to invert it in
+ * their head served no one, so the sign is resolved here: a shortfall reads as
+ * the number to buy, and anything else is simply nothing to do.
  */
 function StockCell({ row }: { row: InventoryRow }) {
-  if (row.stockQuantity < 0) {
-    return (
-      <span className="font-medium text-red-700">
-        {row.stockQuantity}
-        <span className="block text-xs font-normal">buy {Math.abs(row.stockQuantity)}</span>
-      </span>
-    );
+  const toBuy = row.stockQuantity < 0 ? Math.abs(row.stockQuantity) : 0;
+  if (toBuy > 0) return <span className="font-medium text-red-700">{toBuy}</span>;
+  // A genuine holding is rare but worth showing rather than hiding as "—".
+  if (row.stockQuantity > 0) {
+    return <span className="text-muted">{row.stockQuantity} held</span>;
   }
-  return (
-    <span className={cn("font-medium", row.isLow && "text-amber-700")}>{row.stockQuantity}</span>
-  );
+  return <span className="text-muted">—</span>;
 }
 
 /** One-click on/off. A plain form, so it works without client JS. */
@@ -128,8 +129,7 @@ export function InventoryTable({
             <tr>
               <th className="px-4 py-3 font-medium">Product</th>
               <th className="px-4 py-3 font-medium">SKU</th>
-              <th className="px-4 py-3 font-medium text-right">In stock</th>
-              <th className="px-4 py-3 font-medium text-right">Value</th>
+              <th className="px-4 py-3 font-medium text-right">To buy</th>
               <th className="px-4 py-3 font-medium">Sold on the store</th>
               <th className="px-4 py-3 font-medium text-right">Stock history</th>
             </tr>
@@ -137,7 +137,7 @@ export function InventoryTable({
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-14 text-center text-muted">
+                <td colSpan={5} className="px-4 py-14 text-center text-muted">
                   No products match this filter.
                 </td>
               </tr>
@@ -160,9 +160,6 @@ export function InventoryTable({
                   </td>
                   <td className="px-4 py-3 text-right">
                     <StockCell row={row} />
-                  </td>
-                  <td className="px-4 py-3 text-right text-muted whitespace-nowrap">
-                    {row.costPrice != null ? formatPrice(row.stockValue, row.currency) : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">

@@ -2,23 +2,20 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/format";
 import type { AdminProductRow, ListResult, Option } from "@/lib/admin-products";
 
+/**
+ * Two states, because there are only two.
+ *
+ * A sale is gated by the `in_stock` switch alone (see orders.ts) — quantity is
+ * never consulted, since stock is bought from the supplier after the order is
+ * paid. This column used to read from the quantity instead, and so labelled 299
+ * of 301 products "Out of stock" while every one of them was on sale.
+ */
 function StockPill({ product }: { product: AdminProductRow }) {
   if (!product.in_stock) {
-    return (
-      <span className="rounded-full bg-sand px-2 py-0.5 text-xs text-muted">Unlisted</span>
-    );
-  }
-  if (product.stock_quantity <= 0) {
-    return (
-      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
-        Out of stock
-      </span>
-    );
+    return <span className="rounded-full bg-sand px-2 py-0.5 text-xs text-muted">Not sold</span>;
   }
   return (
-    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">
-      {product.stock_quantity} in stock
-    </span>
+    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">On sale</span>
   );
 }
 

@@ -1,4 +1,4 @@
-import type { Brand, Category, Product, StockCheckResult, StockIssue } from "./types";
+import type { Brand, Category, Product } from "./types";
 import { sampleBrands, sampleCategories, sampleProducts } from "./sample-data";
 import { importedBrands, importedCategories, importedProducts } from "./imported-data";
 import { getSupabaseServer, getSupabaseAdmin } from "./supabase/server";
@@ -228,55 +228,6 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 export async function getBrands(): Promise<Brand[]> {
   return loadBrands();
-}
-
-/**
- * Server-side stock validation used by the checkout API.
- *
- * Because the demo catalogue ships with `stock_quantity: 0`, every line item
- * comes back flagged as out of stock — which is exactly the behaviour the
- * checkout flow is meant to demonstrate. Once real inventory is set in
- * Supabase, this same function will correctly let in-stock orders through.
- */
-export async function checkStock(
-  items: Array<{ productId: string; quantity: number }>,
-): Promise<StockCheckResult> {
-  const products = await loadProducts();
-  const byId = new Map(products.map((p) => [p.id, p]));
-  const issues: StockIssue[] = [];
-
-  for (const it of items) {
-    const p = byId.get(it.productId);
-    if (!p) {
-      issues.push({
-        productId: it.productId,
-        name: "Unknown item",
-        requested: it.quantity,
-        available: 0,
-        reason: "not_found",
-      });
-      continue;
-    }
-    if (!p.in_stock || p.stock_quantity <= 0) {
-      issues.push({
-        productId: p.id,
-        name: p.name,
-        requested: it.quantity,
-        available: p.stock_quantity,
-        reason: "out_of_stock",
-      });
-    } else if (p.stock_quantity < it.quantity) {
-      issues.push({
-        productId: p.id,
-        name: p.name,
-        requested: it.quantity,
-        available: p.stock_quantity,
-        reason: "insufficient",
-      });
-    }
-  }
-
-  return { ok: issues.length === 0, issues };
 }
 
 /** Shopper contact details captured at checkout (all optional). */

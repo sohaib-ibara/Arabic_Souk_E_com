@@ -153,7 +153,12 @@ export async function getInventoryStatus(): Promise<InventoryStatus> {
 
 /* -------------------------------- listing ------------------------------- */
 
-export type InventoryFilter = "all" | "low" | "oversold" | "unavailable";
+/**
+ * No "low" filter. `is_low` is still computed by the view and still returned on
+ * each row, but stock sits at zero by design here, so filtering by it matched
+ * 293 of 301 products — a filter that selects almost everything isn't one.
+ */
+export type InventoryFilter = "all" | "oversold" | "unavailable";
 
 export interface InventoryQuery {
   search?: string;
@@ -183,9 +188,6 @@ export async function listInventory(q: InventoryQuery = {}): Promise<InventoryLi
     query = query.or(`name.ilike.%${s}%,slug.ilike.%${s}%,sku.ilike.%${s}%,barcode.ilike.%${s}%`);
   }
   switch (q.filter) {
-    case "low":
-      query = query.eq("is_low", true);
-      break;
     case "oversold":
       query = query.eq("is_oversold", true);
       break;

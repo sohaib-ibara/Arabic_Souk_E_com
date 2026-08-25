@@ -41,6 +41,12 @@ export const siteConfig = {
    * fixed zone is correct and beats guessing per viewer.
    */
   timeZone: "Asia/Bahrain",
+  /**
+   * Where stock is bought from once a customer has paid. Named in the admin so
+   * staff read "To buy from noon" rather than an abstract stock figure; kept
+   * here so switching supplier is one edit rather than a hunt through labels.
+   */
+  supplier: "noon",
   contact: {
     email: "hello@arabicsouk.com",
     phone: "+973 1700 0000",

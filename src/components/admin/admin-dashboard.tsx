@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { formatPrice, formatDateShort } from "@/lib/format";
+import { siteConfig } from "@/lib/config";
 import type { AdminOverview } from "@/lib/admin-data";
 import type { InventoryStats } from "@/lib/inventory";
 
@@ -25,7 +26,10 @@ export function AdminDashboard({
   inventory: InventoryStats | null;
 }) {
   const { catalogue, demandAvailable, demandError, stats, topWanted, recent } = overview;
-  const needsAttention = inventory ? inventory.lowCount + inventory.oversoldCount : 0;
+  // Only a genuine shortfall is worth interrupting for. This used to add the
+  // low-stock count, which for a shop holding no stock was almost the whole
+  // catalogue — a banner that is always on is a banner nobody reads.
+  const toBuy = inventory?.oversoldCount ?? 0;
 
   return (
     <Container className="py-10">
@@ -46,23 +50,21 @@ export function AdminDashboard({
 
       {/* Stock needing attention is the thing worth interrupting for, so it sits
           above the analytics rather than buried on the inventory tab. */}
-      {inventory && needsAttention > 0 && (
+      {toBuy > 0 && (
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
           <p>
             <strong>
-              {inventory.oversoldCount > 0 && `${inventory.oversoldCount} product(s) need buying`}
-              {inventory.oversoldCount > 0 && inventory.lowCount > 0 && " · "}
-              {inventory.lowCount > 0 && `${inventory.lowCount} running low`}
+              {toBuy} product{toBuy === 1 ? "" : "s"} to buy from {siteConfig.supplier}
             </strong>
             <span className="mt-0.5 block text-xs text-amber-800">
-              Sold more than you held, or close to it.
+              Paid for by customers, not yet ordered.
             </span>
           </p>
           <Link
-            href={`/admin/inventory?filter=${inventory.oversoldCount > 0 ? "oversold" : "low"}`}
+            href="/admin/inventory?filter=oversold"
             className="rounded-full border border-amber-300 bg-white px-5 py-2.5 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100"
           >
-            Review inventory
+            Review
           </Link>
         </div>
       )}

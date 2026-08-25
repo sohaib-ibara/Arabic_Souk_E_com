@@ -13,7 +13,7 @@ import {
   type InventoryFilter,
   type InventoryList,
 } from "@/lib/inventory";
-import { formatPrice } from "@/lib/format";
+import { siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Inventory · Admin",
@@ -26,7 +26,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 const str = (v: string | string[] | undefined): string => (Array.isArray(v) ? v[0] : v) ?? "";
 
-const FILTERS: InventoryFilter[] = ["all", "low", "oversold", "unavailable"];
+const FILTERS: InventoryFilter[] = ["all", "oversold", "unavailable"];
 
 function Stat({
   label,
@@ -96,45 +96,51 @@ export default async function AdminInventoryPage({
         <div>
           <h1 className="font-serif text-3xl sm:text-4xl">Inventory</h1>
           <p className="mt-1 text-sm text-muted">
-            Stock levels, movements and counts. Every change is recorded.
+            What&rsquo;s been sold and still needs ordering, and what&rsquo;s on sale. Every change
+            is recorded.
           </p>
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/*
+        Three cards, not four. "Running low" counted every product at or below
+        its threshold, which for a shop that holds no stock meant 293 of 301 —
+        an alarm on almost the whole catalogue is worse than no alarm. Stock
+        value has no meaning until cost prices exist, so it appears only then.
+      */}
+      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
         <Stat
-          label="Need buying"
+          label={`To buy from ${siteConfig.supplier}`}
           value={stats.oversoldCount}
           tone={stats.oversoldCount > 0 ? "danger" : undefined}
-          hint="Sold more than you held"
+          hint="Sold, not yet ordered"
         />
-        <Stat
-          label="Running low"
-          value={stats.lowCount}
-          tone={stats.lowCount > 0 ? "warning" : undefined}
-          hint="At or below threshold"
-        />
-        <Stat
-          label="Switched off"
-          value={stats.unavailableCount}
-          hint="Not sold on the store"
-        />
-        <Stat
-          label="Stock value"
-          value={stats.valuationIncomplete ? "—" : formatPrice(stats.totalValue)}
-          hint={
-            stats.valuationIncomplete
-              ? "Add cost prices to value stock"
-              : `${stats.totalUnits} units at cost`
-          }
-        />
+        <Stat label="On sale" value={stats.productCount - stats.unavailableCount} hint="Customers can buy these" />
+        <Stat label="Not sold" value={stats.unavailableCount} hint="Switched off, still browsable" />
       </div>
 
+      {/*
+        Every space that touches a tag or an {expression} is written as an
+        explicit {" "} on its own line. This transform drops the leading space of
+        text that follows one, which is what produced "noonafter" here and
+        "storeswitch" in the copy this replaces. Verified in the rendered page,
+        not assumed — the behaviour is inconsistent enough that reading the JSX
+        doesn't tell you which spaces survive.
+      */}
       <Notice tone="info" className="mt-8">
-        <strong className="text-ink">How this works.</strong> Whether a product can be ordered is
-        the <em>Sold on the store</em> switch — flip it off when you can&rsquo;t get something. The
-        stock number is a record of what you hold: it goes down as orders are paid, and a negative
-        figure is simply what you need to buy. It never blocks a sale on its own.
+        <strong className="text-ink">How this works.</strong>
+        {" "}
+        Stock is bought from{" "}
+        {siteConfig.supplier}
+        {" "}
+        after a customer pays, so there&rsquo;s nothing on a shelf to count. The only thing that
+        decides whether a product can be ordered is the{" "}
+        <em>Sold on the store</em>
+        {" "}
+        switch &mdash; turn it off when you can&rsquo;t get something. The{" "}
+        <em>To buy</em>
+        {" "}
+        figure is what customers have paid for and staff still need to order.
       </Notice>
 
       <InventoryTable result={result} filter={filter} search={search} />

@@ -64,16 +64,12 @@ export interface CartItem {
   quantity: number;
 }
 
-/** Result of a server-side stock validation at checkout. */
-export interface StockIssue {
-  productId: string;
-  name: string;
-  requested: number;
-  available: number;
-  reason: "out_of_stock" | "insufficient" | "not_found";
-}
-
-export interface StockCheckResult {
-  ok: boolean;
-  issues: StockIssue[];
-}
+/*
+ * StockIssue / StockCheckResult removed along with checkStock().
+ *
+ * That was the original demo gate: it refused an order whose stock_quantity was
+ * 0, which described a shop with a warehouse. This one buys from the supplier
+ * after the customer pays, so a sale is gated by the `in_stock` switch alone
+ * (see orders.ts). Nothing had called it for some time; leaving it in only
+ * invited someone to wire quantity back into checkout by mistake.
+ */
