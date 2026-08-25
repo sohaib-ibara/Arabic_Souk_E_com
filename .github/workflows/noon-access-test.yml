@@ -1,0 +1,46 @@
+# Measures whether noon answers from a datacentre IP.
+#
+# We know from testing on a residential connection that a real browser works
+# and plain HTTP is dropped. This answers the remaining question — whether that
+# still holds from CI — which decides between free hosting and a paid scraping
+# service. Diagnostic only: five product pages, nothing written, nothing
+# published, and it never runs on a schedule.
+name: noon access test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [test/noon-access]
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Only Playwright is needed; the app's dependencies are irrelevant here.
+      - name: Install Playwright + Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm i --no-save playwright@1.61.1
+          npx playwright install --with-deps chromium
+
+      - name: Headless Chromium
+        run: node scripts/import/noon-access-test.mjs
+        env:
+          LIMIT: 5
+
+      # A headed browser reports itself differently and clears some bot checks
+      # that headless does not, so it's worth measuring separately. xvfb gives
+      # the runner a display to open a real window on.
+      - name: Headed Chromium (xvfb)
+        if: always()
+        run: xvfb-run -a node scripts/import/noon-access-test.mjs
+        env:
+          HEADED: "1"
+          LIMIT: 5
