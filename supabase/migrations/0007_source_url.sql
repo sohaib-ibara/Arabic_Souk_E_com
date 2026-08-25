@@ -16,6 +16,12 @@ comment on column public.products.source_url is
   'Supplier product page used to fulfil an order. Staff-only — never rendered on the storefront.';
 
 /*
+  ⚠️  SUPERSEDED BY 0008. The revoke below does nothing on its own — a
+  table-level GRANT SELECT covers every column, and a column-level REVOKE
+  doesn't carve an exception out of it. 0008 drops the table grant and grants
+  the public columns back explicitly, which is what actually closes this.
+  Left here because it ran; harmless, just not sufficient.
+
   Why a column-level revoke rather than RLS.
 
   `products` carries a "public read" policy for select using (true), which is

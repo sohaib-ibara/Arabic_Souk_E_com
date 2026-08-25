@@ -74,10 +74,15 @@ function warnFallback(table: string, error: { message: string } | null) {
 /**
  * Explicit column list rather than `*`.
  *
- * `products.cost_price` is revoked from the anon role (migration 0005) because
- * the table's public-read policy is per-row and can't hide a column. Selecting
- * `*` with the anon key would ask for it and be refused, taking the whole
- * storefront down — so the public read names exactly what it needs.
+ * The table's public-read policy is per-row and can't hide a column, so the
+ * staff-only ones — cost_price, source_url, sku, barcode, low_stock_threshold —
+ * are withheld by grant instead: migration 0008 drops the blanket table grant
+ * and grants back exactly this list. `select *` as anon is therefore refused,
+ * which is the intended tripwire.
+ *
+ * This list and the grant in 0008 must stay in step. Adding a column here that
+ * isn't granted there takes the storefront down; granting one there that isn't
+ * needed here is a quiet leak.
  */
 const PUBLIC_PRODUCT_COLUMNS = [
   "id",

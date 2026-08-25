@@ -40,8 +40,9 @@ export interface AdminProductRow {
   description: string | null;
   tags: string[];
   /**
-   * Supplier product page, used to fulfil an order. Staff-only — revoked from
-   * the public key in migration 0007 and never selected by the storefront.
+   * Supplier product page, used to fulfil an order. Staff-only — withheld from
+   * the public key by the column grants in migration 0008, and never selected
+   * by the storefront.
    */
   source_url: string | null;
   updated_at: string | null;
