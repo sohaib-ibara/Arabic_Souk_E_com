@@ -44,7 +44,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     page,
   });
 
-  const awaiting = result.countsByStatus.paid;
+  // A cash order needs buying and delivering exactly like a paid one — the only
+  // difference is when the money arrives — so it counts as awaiting fulfilment.
+  const awaiting = result.countsByStatus.paid + result.countsByStatus.confirmed;
 
   return (
     <Container className="py-10">
@@ -66,13 +68,13 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             <Stat
               label="Awaiting fulfilment"
               value={awaiting}
-              hint="Paid, not yet fulfilled"
+              hint="Paid or cash, not yet delivered"
             />
             <Stat label="Fulfilled" value={result.countsByStatus.fulfilled} />
             <Stat
               label="Revenue"
               value={formatPrice(result.revenue)}
-              hint="Paid + fulfilled orders"
+              hint="Money collected — excludes unpaid cash orders"
             />
           </div>
 

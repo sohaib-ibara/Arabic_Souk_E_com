@@ -47,6 +47,13 @@ export const siteConfig = {
    * here so switching supplier is one edit rather than a hunt through labels.
    */
   supplier: "noon",
+  payments: {
+    /**
+     * Cash collected by the courier at the door. Turning this off hides the
+     * option at checkout; orders already placed against it are unaffected.
+     */
+    cashOnDelivery: true,
+  },
   contact: {
     email: "hello@arabicsouk.com",
     phone: "+973 1700 0000",

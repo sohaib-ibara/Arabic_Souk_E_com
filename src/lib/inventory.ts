@@ -393,7 +393,13 @@ interface OrderLine {
 }
 
 /** Statuses in which an order is considered to be consuming stock. */
-const CONSUMING_STATUSES = new Set(["paid", "fulfilled"]);
+/**
+ * 'confirmed' is a cash-on-delivery order: unpaid, but committed. It consumes
+ * stock like a paid one, because staff must buy the goods from the supplier as
+ * soon as the order lands — holding off until the courier collects the money
+ * would mean holding off ordering the stock.
+ */
+const CONSUMING_STATUSES = new Set(["confirmed", "paid", "fulfilled"]);
 
 /**
  * Brings the ledger in line with an order's current status.

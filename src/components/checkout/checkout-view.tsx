@@ -32,6 +32,7 @@ interface Payment {
 }
 
 type Status = "idle" | "creating" | "unavailable" | "error";
+type Method = "card" | "cod";
 
 const stripeAppearance: StripeElementsOptions["appearance"] = {
   theme: "flat",
@@ -47,12 +48,17 @@ const stripeAppearance: StripeElementsOptions["appearance"] = {
 
 export function CheckoutView({
   paymentReady,
+  codEnabled,
   user,
 }: {
   paymentReady: boolean;
+  codEnabled: boolean;
   user: CheckoutUser;
 }) {
   const { items, subtotal, hydrated } = useCart();
+  // Cash is the fallback when cards aren't configured, so the shop can still
+  // take an order rather than showing a dead checkout.
+  const [method, setMethod] = useState<Method>(paymentReady ? "card" : "cod");
   const [phase, setPhase] = useState<"details" | "payment">("details");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
@@ -89,6 +95,7 @@ export function CheckoutView({
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
           contact,
+          paymentMethod: method,
         }),
       });
       const data = await res.json();
@@ -101,6 +108,12 @@ export function CheckoutView({
         setIssues(data.issues ?? []);
         setStatus("unavailable");
         window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      // Cash: the order is already placed, so there's no second step. Straight
+      // to the confirmation page, which clears the bag.
+      if (res.ok && data.paymentMethod === "cod" && data.orderNumber) {
+        window.location.href = `/checkout/success?order=${encodeURIComponent(data.orderNumber)}`;
         return;
       }
       if (res.ok && data.clientSecret) {
@@ -146,8 +159,9 @@ export function CheckoutView({
 
       {!paymentReady && (
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Payments aren&rsquo;t configured yet — set the Stripe keys in the environment to
-          enable checkout.
+          {codEnabled
+            ? "Card payments are unavailable at the moment — you can still order and pay cash on delivery."
+            : "Payments aren’t configured yet — set the Stripe keys in the environment to enable checkout."}
         </div>
       )}
 
@@ -205,12 +219,43 @@ export function CheckoutView({
                 <p className="mt-3 text-xs text-muted">Delivering to the Kingdom of Bahrain only.</p>
               </fieldset>
 
+              {codEnabled && (
+                <fieldset>
+                  <legend className="font-serif text-xl">Payment</legend>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <MethodOption
+                      checked={method === "card"}
+                      onSelect={() => setMethod("card")}
+                      disabled={!paymentReady}
+                      title="Pay by card"
+                      hint={
+                        paymentReady
+                          ? "Card or wallet, paid securely now."
+                          : "Unavailable — card payments aren’t configured."
+                      }
+                    />
+                    <MethodOption
+                      checked={method === "cod"}
+                      onSelect={() => setMethod("cod")}
+                      title="Cash on delivery"
+                      hint={`Pay the courier when your order arrives, within ${siteConfig.shipping.etaDays}.`}
+                    />
+                  </div>
+                </fieldset>
+              )}
+
               <button
                 type="submit"
-                disabled={status === "creating" || !paymentReady}
+                disabled={status === "creating" || (method === "card" && !paymentReady)}
                 className="flex w-full items-center justify-center rounded-full bg-ink py-3.5 text-sm font-medium text-white transition-colors hover:bg-brand disabled:opacity-60 sm:w-auto sm:px-10"
               >
-                {status === "creating" ? "Preparing payment…" : "Continue to payment"}
+                {status === "creating"
+                  ? method === "cod"
+                    ? "Placing order…"
+                    : "Preparing payment…"
+                  : method === "cod"
+                    ? `Place order · ${formatPrice(total)}`
+                    : "Continue to payment"}
               </button>
             </form>
           ) : (
@@ -263,11 +308,53 @@ export function CheckoutView({
             </div>
           </dl>
           <p className="mt-4 text-center text-xs text-muted">
-            Secure payment by Stripe · {siteConfig.shipping.etaDays} delivery
+            {method === "cod" ? "Pay cash on delivery" : "Secure payment by Stripe"}
+            {" · "}
+            {siteConfig.shipping.etaDays} delivery
           </p>
         </aside>
       </div>
     </Container>
+  );
+}
+
+/** One payment choice. A label wrapping a radio, so the whole card is clickable. */
+function MethodOption({
+  checked,
+  onSelect,
+  disabled,
+  title,
+  hint,
+}: {
+  checked: boolean;
+  onSelect: () => void;
+  disabled?: boolean;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-colors ${
+        disabled
+          ? "cursor-not-allowed border-line bg-sand/40 opacity-60"
+          : checked
+            ? "border-brand bg-brand-tint/40"
+            : "border-line bg-white hover:border-brand/50"
+      }`}
+    >
+      <input
+        type="radio"
+        name="payment_method"
+        checked={checked}
+        onChange={onSelect}
+        disabled={disabled}
+        className="mt-0.5 h-4 w-4 accent-brand"
+      />
+      <span>
+        <span className="block text-sm font-medium text-ink">{title}</span>
+        <span className="mt-0.5 block text-xs text-muted">{hint}</span>
+      </span>
+    </label>
   );
 }
 

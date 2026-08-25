@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { createOrderAndIntent } from "@/lib/orders";
+import { createCodOrder, createOrderAndIntent } from "@/lib/orders";
 import type { DemandContact } from "@/lib/data";
+import { siteConfig } from "@/lib/config";
 
 // Stripe SDK needs the Node runtime.
 export const runtime = "nodejs";
@@ -56,12 +57,16 @@ export async function POST(req: Request) {
     governorate: clean(rawContact.governorate),
   };
 
-  const result = await createOrderAndIntent({
-    userId: user.id,
-    email: user.email,
-    contact,
-    items,
-  });
+  // Cash is only ever accepted because the server says so — a client asking for
+  // it while the option is switched off is refused, not quietly given a free
+  // order.
+  const wantsCash = obj.paymentMethod === "cod";
+  if (wantsCash && !siteConfig.payments.cashOnDelivery) {
+    return NextResponse.json({ ok: false, error: "payment_unavailable" }, { status: 503 });
+  }
+
+  const args = { userId: user.id, email: user.email, contact, items };
+  const result = wantsCash ? await createCodOrder(args) : await createOrderAndIntent(args);
 
   if (!result.ok) {
     switch (result.error) {
@@ -78,6 +83,9 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
+    paymentMethod: wantsCash ? "cod" : "card",
+    // Absent for cash: there is nothing to collect in the browser, so the
+    // client goes straight to the confirmation page.
     clientSecret: result.clientSecret,
     orderNumber: result.orderNumber,
     payment: result.payment,

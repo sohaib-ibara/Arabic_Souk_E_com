@@ -16,6 +16,10 @@ export const metadata: Metadata = {
 /** Order status as the customer should read it — not the internal vocabulary. */
 const statusLabels: Record<string, { label: string; className: string }> = {
   pending: { label: "Awaiting payment", className: "bg-amber-50 text-amber-800 border-amber-200" },
+  confirmed: {
+    label: "Confirmed · pay on delivery",
+    className: "bg-sky-50 text-sky-800 border-sky-200",
+  },
   paid: { label: "Paid", className: "bg-emerald-50 text-emerald-800 border-emerald-200" },
   fulfilled: { label: "Delivered", className: "bg-emerald-50 text-emerald-800 border-emerald-200" },
   cancelled: { label: "Cancelled", className: "bg-red-50 text-red-700 border-red-200" },

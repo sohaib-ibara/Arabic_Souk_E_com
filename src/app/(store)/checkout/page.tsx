@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { siteConfig } from "@/lib/config";
 import { CheckoutView } from "@/components/checkout/checkout-view";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default async function CheckoutPage() {
   return (
     <CheckoutView
       paymentReady={paymentReady}
+      codEnabled={siteConfig.payments.cashOnDelivery}
       user={{ fullName: user.fullName, email: user.email, phone: user.phone }}
     />
   );

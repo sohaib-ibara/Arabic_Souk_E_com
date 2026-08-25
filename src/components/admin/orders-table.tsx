@@ -138,6 +138,9 @@ export function OrdersTable({
                   <td className="px-4 py-3 text-right">{o.itemCount}</td>
                   <td className="px-4 py-3 text-right font-medium whitespace-nowrap">
                     {formatPrice(o.total, o.currency)}
+                    {o.paymentMethod === "cod" && (
+                      <span className="block text-xs font-normal text-muted">cash</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={o.status} />

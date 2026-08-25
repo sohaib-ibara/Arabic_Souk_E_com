@@ -23,14 +23,15 @@ interface OrderRow {
   total: number;
   currency: string;
   status: string;
+  payment_method: string;
 }
 
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ payment_intent?: string; redirect_status?: string }>;
+  searchParams: Promise<{ payment_intent?: string; redirect_status?: string; order?: string }>;
 }) {
-  const { payment_intent, redirect_status } = await searchParams;
+  const { payment_intent, redirect_status, order: orderParam } = await searchParams;
 
   const user = await getSessionUser();
   if (!user) redirect("/login");
@@ -45,19 +46,23 @@ export default async function CheckoutSuccessPage({
     await confirmOrderFromIntent(payment_intent, user.id);
   }
 
-  // The order belongs to the signed-in user, so per-user RLS lets us read it.
+  // The order belongs to the signed-in user, so per-user RLS lets us read it —
+  // which is also what stops an order number guessed from the URL showing
+  // somebody else's order.
   let order: OrderRow | null = null;
-  if (payment_intent) {
+  if (payment_intent || orderParam) {
     const sb = await getSupabaseUserServer();
     if (sb) {
-      const { data } = await sb
-        .from("orders")
-        .select("order_number, total, currency, status")
-        .eq("stripe_payment_intent", payment_intent)
-        .maybeSingle();
+      const columns = "order_number, total, currency, status, payment_method";
+      const query = payment_intent
+        ? sb.from("orders").select(columns).eq("stripe_payment_intent", payment_intent)
+        : sb.from("orders").select(columns).eq("order_number", orderParam!);
+      const { data } = await query.maybeSingle();
       order = (data as OrderRow | null) ?? null;
     }
   }
+
+  const isCash = order?.payment_method === "cod";
 
   return (
     <Container className="flex flex-col items-center py-20 text-center">
@@ -96,10 +101,20 @@ export default async function CheckoutSuccessPage({
                 <span className="font-medium">{order.order_number}</span>
               </div>
               <div className="mt-2 flex justify-between">
-                <span className="text-muted">Total paid</span>
+                <span className="text-muted">{isCash ? "Due on delivery" : "Total paid"}</span>
                 <span className="font-medium">{formatPrice(order.total, order.currency)}</span>
               </div>
             </div>
+          )}
+
+          {/* Said plainly, and only to cash customers: the courier expects the
+              money at the door, so the amount shouldn't be a surprise. */}
+          {isCash && order && (
+            <p className="mt-5 max-w-md rounded-2xl border border-line bg-sand/60 p-4 text-xs text-muted">
+              Please have{" "}
+              <strong className="text-ink">{formatPrice(order.total, order.currency)}</strong>{" "}
+              ready in cash for the courier when your order arrives.
+            </p>
           )}
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">

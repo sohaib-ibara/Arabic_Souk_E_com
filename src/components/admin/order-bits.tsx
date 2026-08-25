@@ -4,9 +4,18 @@ import { updateOrderStatusAction } from "@/app/admin/actions";
 
 const statusStyles: Record<OrderStatus, string> = {
   pending: "bg-amber-50 text-amber-700",
+  confirmed: "bg-sky-50 text-sky-700",
   paid: "bg-emerald-50 text-emerald-700",
   fulfilled: "bg-blue-50 text-blue-700",
   cancelled: "bg-sand text-muted",
+};
+
+/**
+ * "Confirmed" alone doesn't say what a member of staff should do about it, so
+ * the cash order spells it out.
+ */
+const statusLabels: Partial<Record<OrderStatus, string>> = {
+  confirmed: "Cash due",
 };
 
 export function StatusBadge({ status }: { status: OrderStatus }) {
@@ -17,7 +26,7 @@ export function StatusBadge({ status }: { status: OrderStatus }) {
         statusStyles[status],
       )}
     >
-      {status}
+      {statusLabels[status] ?? status}
     </span>
   );
 }

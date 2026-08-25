@@ -10,9 +10,18 @@ import { getSupabaseAdmin } from "./supabase/server";
  * caller must already have passed the admin session check.
  */
 
-/** Mirrors the CHECK constraint on `orders.status` in migration 0001. */
-export const ORDER_STATUSES = ["pending", "paid", "fulfilled", "cancelled"] as const;
+/** Mirrors the CHECK constraint on `orders.status` (0001, extended in 0009). */
+export const ORDER_STATUSES = [
+  "pending",
+  "confirmed",
+  "paid",
+  "fulfilled",
+  "cancelled",
+] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+/** Mirrors the CHECK constraint on `orders.payment_method` (0009). */
+export type OrderPaymentMethod = "card" | "cod";
 
 export function isOrderStatus(v: string): v is OrderStatus {
   return (ORDER_STATUSES as readonly string[]).includes(v);
@@ -50,6 +59,7 @@ export interface OrderRow {
   shippingFee: number;
   total: number;
   currency: string;
+  paymentMethod: OrderPaymentMethod;
   stripePaymentIntent: string | null;
   createdAt: string;
   itemCount: number;
@@ -75,6 +85,7 @@ function mapOrder(row: any, withItems = false): OrderRow {
     shippingFee: Number(row.shipping_fee ?? 0),
     total: Number(row.total ?? 0),
     currency: row.currency ?? "BHD",
+    paymentMethod: row.payment_method === "cod" ? "cod" : "card",
     stripePaymentIntent: row.stripe_payment_intent ?? null,
     createdAt: row.created_at,
     itemCount: 0,
@@ -120,6 +131,7 @@ export interface OrdersResult {
 
 const EMPTY_COUNTS: Record<OrderStatus, number> = {
   pending: 0,
+  confirmed: 0,
   paid: 0,
   fulfilled: 0,
   cancelled: 0,

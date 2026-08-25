@@ -51,6 +51,20 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
         <StatusForm id={order.id} status={order.status} />
       </div>
 
+      {/* Cash orders carry an instruction a card order doesn't: someone has to
+          come back and record that the money arrived. Said once, at the top. */}
+      {order.paymentMethod === "cod" && order.status === "confirmed" && (
+        <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-5 text-sm text-sky-900">
+          <p className="font-medium">
+            Cash on delivery — {formatPrice(order.total, order.currency)} to collect
+          </p>
+          <p className="mt-1 text-sky-800">
+            Buy the items below, deliver, then set the status to <strong>Paid</strong> once the
+            courier has the money. It isn&rsquo;t counted as revenue until you do.
+          </p>
+        </div>
+      )}
+
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {/* Line items */}
         <section className="lg:col-span-2">
@@ -177,16 +191,21 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
           <section className="rounded-2xl border border-line bg-white p-5">
             <h2 className="font-serif text-lg">Payment</h2>
             <div className="mt-3">
+              <Row label="Method">
+                {order.paymentMethod === "cod" ? "Cash on delivery" : "Card (Stripe)"}
+              </Row>
               <Row label="Status">
                 <StatusBadge status={order.status} />
               </Row>
-              <Row label="Stripe intent">
-                {order.stripePaymentIntent ? (
-                  <code className="text-xs break-all">{order.stripePaymentIntent}</code>
-                ) : (
-                  "—"
-                )}
-              </Row>
+              {order.paymentMethod === "card" && (
+                <Row label="Stripe intent">
+                  {order.stripePaymentIntent ? (
+                    <code className="text-xs break-all">{order.stripePaymentIntent}</code>
+                  ) : (
+                    "—"
+                  )}
+                </Row>
+              )}
             </div>
           </section>
         </aside>

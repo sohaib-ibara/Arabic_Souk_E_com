@@ -24,6 +24,9 @@ export interface CreateOrderResult {
   issues?: Array<{ productId: string; name: string; available?: number }>;
 }
 
+/** How the customer intends to pay. */
+export type PaymentMethod = "card" | "cod";
+
 /** Intent states where nobody has paid yet, so the intent is still ours to use. */
 const OPEN_INTENT_STATUSES = new Set([
   "requires_payment_method",
@@ -32,6 +35,110 @@ const OPEN_INTENT_STATUSES = new Set([
 ]);
 
 type LineItem = { product_id: string; name: string; unit_price: number; quantity: number };
+
+interface PricedOrder {
+  lineItems: LineItem[];
+  currency: string;
+  subtotal: number;
+  shipping: number;
+  total: number;
+}
+
+/**
+ * Turns a basket of product ids into money, from the catalogue rather than the
+ * client. Shared by both payment routes so a cash order can never be priced
+ * differently from a card one.
+ *
+ * Availability is the `in_stock` switch, not the quantity. Stock is sourced per
+ * order, so an on-hand of zero is normal; the admin turns a product off when
+ * they genuinely can't get it. The sale still posts to the ledger, which is how
+ * the shortfall to buy becomes visible.
+ */
+async function priceOrder(
+  items: CreateOrderInput["items"],
+): Promise<
+  | { ok: true; priced: PricedOrder }
+  | { ok: false; error: "empty_cart" | "unavailable"; issues?: Array<{ productId: string; name: string }> }
+> {
+  const products = await getAllProducts();
+  const byId = new Map(products.map((p) => [p.id, p]));
+
+  const unavailable: Array<{ productId: string; name: string }> = [];
+  const lineItems: LineItem[] = [];
+
+  for (const it of items) {
+    const p = byId.get(it.productId);
+    if (!p || !p.in_stock) {
+      unavailable.push({ productId: it.productId, name: p?.name ?? "Unknown item" });
+      continue;
+    }
+    const quantity = Math.max(1, Math.min(99, Math.floor(it.quantity) || 1));
+    lineItems.push({ product_id: p.id, name: p.name, unit_price: p.price, quantity });
+  }
+
+  if (unavailable.length) return { ok: false, error: "unavailable", issues: unavailable };
+  if (!lineItems.length) return { ok: false, error: "empty_cart" };
+
+  const currency = (products[0]?.currency ?? siteConfig.currency).toUpperCase();
+  const subtotal = round3(lineItems.reduce((s, li) => s + li.unit_price * li.quantity, 0));
+  const shipping =
+    subtotal >= siteConfig.shipping.freeThreshold ? 0 : siteConfig.shipping.standardFee;
+
+  return {
+    ok: true,
+    priced: { lineItems, currency, subtotal, shipping, total: round3(subtotal + shipping) },
+  };
+}
+
+/**
+ * Writes the order row and its lines, rolling the order back if the lines fail
+ * so a headless order can't survive the attempt.
+ */
+async function writeOrder(
+  admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  input: CreateOrderInput,
+  priced: PricedOrder,
+  opts: { status: "pending" | "confirmed"; paymentMethod: PaymentMethod },
+): Promise<{ id: string; order_number: string } | null> {
+  const { data: order, error } = await admin
+    .from("orders")
+    .insert({
+      user_id: input.userId,
+      email: input.email,
+      full_name: input.contact.fullName ?? null,
+      phone: input.contact.phone ?? null,
+      shipping_address: {
+        address: input.contact.address ?? null,
+        area: input.contact.area ?? null,
+        city: input.contact.city ?? null,
+        governorate: input.contact.governorate ?? null,
+      },
+      subtotal: priced.subtotal,
+      shipping_fee: priced.shipping,
+      total: priced.total,
+      currency: priced.currency,
+      status: opts.status,
+      payment_method: opts.paymentMethod,
+    })
+    .select("id, order_number")
+    .single();
+  if (error || !order) return null;
+
+  const { error: itemsError } = await admin.from("order_items").insert(
+    priced.lineItems.map((li) => ({
+      order_id: order.id,
+      product_id: li.product_id,
+      name: li.name,
+      unit_price: li.unit_price,
+      quantity: li.quantity,
+    })),
+  );
+  if (itemsError) {
+    await admin.from("orders").delete().eq("id", order.id); // rollback (items cascade)
+    return null;
+  }
+  return order as { id: string; order_number: string };
+}
 
 /** Stable signature of a cart, so two attempts at the same basket compare equal. */
 function cartSignature(lines: Array<{ product_id: string | null; quantity: number; unit_price: number }>) {
@@ -165,33 +272,9 @@ export async function createOrderAndIntent(input: CreateOrderInput): Promise<Cre
   if (!admin || !stripe) return { ok: false, error: "not_configured" };
   if (!input.items.length) return { ok: false, error: "empty_cart" };
 
-  const products = await getAllProducts();
-  const byId = new Map(products.map((p) => [p.id, p]));
-
-  const unavailable: Array<{ productId: string; name: string }> = [];
-  const lineItems: Array<{ product_id: string; name: string; unit_price: number; quantity: number }> = [];
-
-  // Availability is the `in_stock` switch, not the quantity. Stock is sourced
-  // per order, so an on-hand of zero is normal; the admin turns a product off
-  // when they genuinely can't get it. The sale still posts to the ledger, which
-  // is how the shortfall to buy becomes visible.
-  for (const it of input.items) {
-    const p = byId.get(it.productId);
-    if (!p || !p.in_stock) {
-      unavailable.push({ productId: it.productId, name: p?.name ?? "Unknown item" });
-      continue;
-    }
-    const quantity = Math.max(1, Math.min(99, Math.floor(it.quantity) || 1));
-    lineItems.push({ product_id: p.id, name: p.name, unit_price: p.price, quantity });
-  }
-
-  if (unavailable.length) return { ok: false, error: "unavailable", issues: unavailable };
-  if (!lineItems.length) return { ok: false, error: "empty_cart" };
-
-  const currency = (products[0]?.currency ?? siteConfig.currency).toUpperCase();
-  const subtotal = round3(lineItems.reduce((s, li) => s + li.unit_price * li.quantity, 0));
-  const shipping = subtotal >= siteConfig.shipping.freeThreshold ? 0 : siteConfig.shipping.standardFee;
-  const total = round3(subtotal + shipping);
+  const pricing = await priceOrder(input.items);
+  if (!pricing.ok) return { ok: false, error: pricing.error, issues: pricing.issues };
+  const { lineItems, currency, total } = pricing.priced;
 
   // Resolve the charge before writing anything: if the account can't present in
   // this currency and no conversion is configured, there's no order to create.
@@ -214,42 +297,11 @@ export async function createOrderAndIntent(input: CreateOrderInput): Promise<Cre
   await supersedeOpenOrders(admin, stripe, input.userId);
 
   // 1) Pending order (service role bypasses RLS).
-  const { data: order, error } = await admin
-    .from("orders")
-    .insert({
-      user_id: input.userId,
-      email: input.email,
-      full_name: input.contact.fullName ?? null,
-      phone: input.contact.phone ?? null,
-      shipping_address: {
-        address: input.contact.address ?? null,
-        area: input.contact.area ?? null,
-        city: input.contact.city ?? null,
-        governorate: input.contact.governorate ?? null,
-      },
-      subtotal,
-      shipping_fee: shipping,
-      total,
-      currency,
-      status: "pending",
-    })
-    .select("id, order_number")
-    .single();
-  if (error || !order) return { ok: false, error: "server_error" };
-
-  const { error: itemsError } = await admin.from("order_items").insert(
-    lineItems.map((li) => ({
-      order_id: order.id,
-      product_id: li.product_id,
-      name: li.name,
-      unit_price: li.unit_price,
-      quantity: li.quantity,
-    })),
-  );
-  if (itemsError) {
-    await admin.from("orders").delete().eq("id", order.id); // rollback (items cascade)
-    return { ok: false, error: "server_error" };
-  }
+  const order = await writeOrder(admin, input, pricing.priced, {
+    status: "pending",
+    paymentMethod: "card",
+  });
+  if (!order) return { ok: false, error: "server_error" };
 
   // 2) PaymentIntent for the total; link it back to the order via metadata.
   //    The order row keeps the BHD figures — the business record is in the
@@ -286,6 +338,85 @@ export async function createOrderAndIntent(input: CreateOrderInput): Promise<Cre
     await admin.from("orders").delete().eq("id", order.id); // rollback order + items
     return { ok: false, error: "server_error" };
   }
+}
+
+/**
+ * Places a cash-on-delivery order: no Stripe, no payment, just a commitment.
+ *
+ * The order lands as 'confirmed' rather than 'pending' — the customer has
+ * committed and the goods are owed, where 'pending' means an abandoned card
+ * checkout that the app is free to supersede. 'confirmed' consumes stock, so
+ * the line appears in "To buy" straight away: staff have to order it from the
+ * supplier now, not after the courier collects the cash.
+ *
+ * Prices and availability are recomputed from the catalogue by the same
+ * `priceOrder` the card route uses, so the two can't drift apart.
+ */
+export async function createCodOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return { ok: false, error: "not_configured" };
+  if (!siteConfig.payments.cashOnDelivery) return { ok: false, error: "not_configured" };
+  if (!input.items.length) return { ok: false, error: "empty_cart" };
+
+  const pricing = await priceOrder(input.items);
+  if (!pricing.ok) return { ok: false, error: pricing.error, issues: pricing.issues };
+
+  // There's no PaymentIntent to key on here, so a double submit would simply
+  // write a second order — and unlike an abandoned card checkout, both would be
+  // real commitments that staff would go and buy stock for. An identical basket
+  // placed in the last few minutes is treated as the same order.
+  const reused = await findRecentCodOrder(admin, input.userId, pricing.priced);
+  if (reused) return { ok: true, orderNumber: reused };
+
+  const order = await writeOrder(admin, input, pricing.priced, {
+    status: "confirmed",
+    paymentMethod: "cod",
+  });
+  if (!order) return { ok: false, error: "server_error" };
+
+  // Post the sale so the shortfall to buy is visible immediately. Best-effort:
+  // the customer's order stands whether or not the ledger write lands, and a
+  // failure here must not lose an order that has already been placed.
+  try {
+    await reconcileOrderStock({ orderId: order.id, status: "confirmed" });
+  } catch (e) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[inventory] cash order ${order.id} not posted: ${(e as Error).message}`);
+    }
+  }
+
+  return { ok: true, orderNumber: order.order_number };
+}
+
+/** Window in which a repeat cash submission is the same order, not a new one. */
+const COD_DEDUPE_MS = 10 * 60 * 1000;
+
+async function findRecentCodOrder(
+  admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  userId: string,
+  priced: PricedOrder,
+): Promise<string | null> {
+  const since = new Date(Date.now() - COD_DEDUPE_MS).toISOString();
+  const { data } = await admin
+    .from("orders")
+    .select("order_number, total, currency, order_items(product_id,quantity,unit_price)")
+    .eq("user_id", userId)
+    .eq("status", "confirmed")
+    .eq("payment_method", "cod")
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const wanted = cartSignature(priced.lineItems);
+  for (const row of data ?? []) {
+    if (round3(Number(row.total)) !== priced.total) continue;
+    if (String(row.currency).toUpperCase() !== priced.currency) continue;
+    const lines = Array.isArray(row.order_items) ? row.order_items : [];
+    if (lines.length !== priced.lineItems.length) continue;
+    if (cartSignature(lines as never) !== wanted) continue;
+    return row.order_number as string;
+  }
+  return null;
 }
 
 /**
