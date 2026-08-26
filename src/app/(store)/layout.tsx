@@ -5,6 +5,7 @@ import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { JsonLd } from "@/components/seo/json-ld";
+import { getFooterCategories, getNavGroups } from "@/lib/nav";
 
 const organizationLd = {
   "@context": "https://schema.org",
@@ -40,16 +41,24 @@ const websiteLd = {
 // Storefront chrome (announcement bar, header, footer, cart). Lives here so the
 // customer-facing shell wraps every shop route but NOT /admin, which has its own
 // layout outside this route group.
-export default function StoreLayout({
+export default async function StoreLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Resolved here rather than imported as a constant: the menu has to be built
+  // from the live catalogue so it can't offer a category that isn't there. The
+  // header is a client component, so it takes the result as a prop.
+  const [navGroups, footerCategories] = await Promise.all([
+    getNavGroups(),
+    getFooterCategories(),
+  ]);
+
   return (
     <CartProvider>
       <JsonLd data={[organizationLd, websiteLd]} />
       <AnnouncementBar />
-      <Header />
+      <Header groups={navGroups} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer categories={footerCategories} />
       <CartDrawer />
     </CartProvider>
   );

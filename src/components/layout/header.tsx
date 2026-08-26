@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { siteConfig } from "@/lib/config";
-import { navGroups } from "@/lib/nav";
+import type { NavGroup } from "@/lib/types";
 import { CartButton } from "@/components/cart/cart-button";
 import { ChevronRightIcon, CloseIcon, MenuIcon, SearchIcon, UserIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 
-export function Header() {
+/** Menu built from the live catalogue by the store layout — see lib/nav.ts. */
+export function Header({ groups }: { groups: NavGroup[] }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -47,7 +48,7 @@ export function Header() {
 
           {/* Desktop nav — departments with sub-category dropdowns */}
           <nav className="mx-auto hidden items-center gap-6 lg:flex">
-            {navGroups.map((group) =>
+            {groups.map((group) =>
               group.items.length ? (
                 <div key={group.slug} className="group relative">
                   <button
@@ -188,7 +189,7 @@ export function Header() {
           </form>
 
           <nav className="flex flex-col gap-1 overflow-y-auto px-2 py-2">
-            {navGroups.map((group) =>
+            {groups.map((group) =>
               group.items.length ? (
                 <div key={group.slug} className="px-3 py-1.5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">

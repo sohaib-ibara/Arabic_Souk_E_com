@@ -5,6 +5,7 @@ import { OrdersTable } from "@/components/admin/orders-table";
 import { isAdmin } from "@/lib/admin-auth";
 import { listOrders, isOrderStatus, type OrderStatus } from "@/lib/admin-orders";
 import { formatPrice } from "@/lib/format";
+import { emailConfigured } from "@/lib/email";
 
 export const metadata: Metadata = {
   title: "Orders · Admin",
@@ -56,6 +57,18 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           Every order placed through checkout, with customer contact details.
         </p>
       </div>
+
+      {/* Said here because this is where someone would otherwise assume it was
+          working. Confirmations failing silently is the kind of thing nobody
+          notices until a customer asks why they never heard anything. */}
+      {!emailConfigured() && (
+        <Notice tone="warning" title="Order confirmation emails are switched off" className="mt-6">
+          Customers are not being emailed when they place an order. Set{" "}
+          <code className="rounded bg-sand px-1">RESEND_API_KEY</code> and{" "}
+          <code className="rounded bg-sand px-1">ORDER_EMAIL_FROM</code> in the environment to
+          turn them on. Orders themselves are unaffected.
+        </Notice>
+      )}
 
       {result.error ? (
         <Notice tone="warning" title="Orders aren’t available" className="mt-6">

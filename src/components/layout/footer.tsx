@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/config";
-import { footerCategories, legalLinks, supportLinks } from "@/lib/nav";
+import { legalLinks, supportLinks } from "@/lib/nav";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/icons";
 import { PaymentMarks } from "@/components/ui/payment-marks";
 
-export function Footer() {
+/** Category links come from the store layout, built from the live catalogue. */
+export function Footer({ categories }: { categories: Array<{ name: string; slug: string }> }) {
   const year = 2026;
   return (
     <footer className="mt-20 border-t border-line bg-sand/60">
@@ -50,7 +51,7 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">Shop</h3>
             <ul className="mt-4 space-y-2.5">
-              {footerCategories.map((item) => (
+              {categories.map((item) => (
                 <li key={item.slug}>
                   <Link
                     href={`/category/${item.slug}`}
