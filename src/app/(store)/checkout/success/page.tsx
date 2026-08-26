@@ -170,10 +170,20 @@ export default async function CheckoutSuccessPage({
           )}
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {/* The order number is carried over, so tracking it later is one
+                field, not a hunt through an inbox. */}
+            {order && (
+              <Link
+                href={`/track?order=${encodeURIComponent(order.order_number)}`}
+                className="rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-white transition-colors hover:bg-brand"
+              >
+                Track this order
+              </Link>
+            )}
             {user && (
               <Link
                 href="/account"
-                className="rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-white transition-colors hover:bg-brand"
+                className="rounded-full border border-ink/15 px-7 py-3.5 text-sm font-medium transition-colors hover:border-brand hover:text-brand"
               >
                 View my orders
               </Link>
@@ -185,6 +195,13 @@ export default async function CheckoutSuccessPage({
               Continue shopping
             </Link>
           </div>
+
+          {order && (
+            <p className="mt-6 max-w-md text-xs text-muted">
+              Keep your order number, <strong className="text-ink">{order.order_number}</strong> —
+              it&rsquo;s all you need (with your email) to check on this order at any time.
+            </p>
+          )}
         </>
       )}
     </Container>

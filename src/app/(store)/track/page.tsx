@@ -18,7 +18,13 @@ export const metadata: Metadata = {
  * page for an account they never made — and guests are now the majority of
  * orders. The order number and email are the credential instead.
  */
-export default function TrackOrderPage() {
+export default async function TrackOrderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ order?: string }>;
+}) {
+  const { order } = await searchParams;
+
   return (
     <Container className="py-10 sm:py-14">
       <div className="mx-auto max-w-2xl">
@@ -31,7 +37,7 @@ export default function TrackOrderPage() {
           </p>
         </header>
 
-        <TrackOrderForm />
+        <TrackOrderForm defaultOrderNumber={order?.slice(0, 40)} />
 
         <p className="mt-8 text-center text-sm text-muted">
           Have an account?{" "}

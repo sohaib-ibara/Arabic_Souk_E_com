@@ -226,6 +226,15 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             >
               Shop all
             </Link>
+            {/* The announcement bar's tracking link is hidden on small screens,
+                so the mobile menu carries it instead. */}
+            <Link
+              href="/track"
+              onClick={() => setMenuOpen(false)}
+              className="rounded-lg border-t border-line px-3 py-3 text-[15px] text-ink hover:bg-brand-tint hover:text-brand"
+            >
+              Track your order
+            </Link>
           </nav>
         </div>
       </div>

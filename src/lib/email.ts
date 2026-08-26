@@ -77,6 +77,11 @@ function addressLines(a: OrderEmail["address"]): string[] {
   );
 }
 
+/** Where this order can be checked on later. The number is prefilled. */
+function trackUrl(orderNumber: string): string {
+  return `${siteConfig.url}/track?order=${encodeURIComponent(orderNumber)}`;
+}
+
 function renderText(o: OrderEmail): string {
   const money = (n: number) => formatPrice(n, o.currency);
   const lines = o.items.map(
@@ -101,6 +106,11 @@ function renderText(o: OrderEmail): string {
     "",
     ...(addr.length ? ["Delivering to:", ...addr.map((l) => `  ${l}`), ""] : []),
     `We deliver across ${siteConfig.country} within ${siteConfig.shipping.etaDays}.`,
+    "",
+    // This email is where someone comes back to days later, so it carries the
+    // way to check on the order rather than assuming they'll find the site.
+    `Track your order: ${trackUrl(o.orderNumber)}`,
+    `(You'll need this order number and this email address.)`,
     "",
     `${siteConfig.name} — ${siteConfig.url}`,
   ].join("\n");
@@ -169,6 +179,16 @@ function renderHtml(o: OrderEmail): string {
              </p>`
           : ""
       }
+
+      <div style="margin-top:26px;padding-top:22px;border-top:1px solid #ece7e0;text-align:center">
+        <a href="${esc(trackUrl(o.orderNumber))}"
+           style="display:inline-block;padding:13px 30px;border-radius:999px;background:#1b1613;color:#ffffff;font-size:14px;font-weight:500;text-decoration:none">
+          Track your order
+        </a>
+        <p style="margin:12px 0 0;font-size:12px;color:#6f655f">
+          Check on this order any time with your order number and this email address.
+        </p>
+      </div>
     </div>
 
     <p style="margin:20px 0 0;font-size:12px;color:#6f655f;text-align:center">

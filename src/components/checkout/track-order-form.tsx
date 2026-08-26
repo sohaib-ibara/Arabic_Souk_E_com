@@ -31,8 +31,13 @@ const initialState: TrackState = {
   values: { orderNumber: "", email: "" },
 };
 
-export function TrackOrderForm() {
-  const [state, formAction, pending] = useActionState(trackOrderAction, initialState);
+export function TrackOrderForm({ defaultOrderNumber }: { defaultOrderNumber?: string }) {
+  const [state, formAction, pending] = useActionState(trackOrderAction, {
+    ...initialState,
+    // Arriving from a confirmation page or email, the order number is already
+    // known — only the email is left to type.
+    values: { ...initialState.values, orderNumber: defaultOrderNumber ?? "" },
+  });
   const order = state.order;
   const status = order ? describeStatus(order.status, order.paymentMethod) : null;
   const reached = status?.step ? TRACKING_STEPS.indexOf(status.step) : -1;
