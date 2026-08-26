@@ -1,29 +1,36 @@
+import nodemailer from "nodemailer";
 import { siteConfig } from "./config";
 import { formatPrice } from "./format";
 
 /**
- * Transactional email, via Resend's HTTP API.
+ * Transactional email, over SMTP.
  *
- * Called over `fetch` rather than through their SDK: one endpoint, one JSON
- * body, and nothing worth a dependency for. Supabase Auth already sends the
- * account-confirmation mail; this covers the messages Supabase knows nothing
- * about, starting with order confirmations.
+ * Supabase Auth already sends the account-confirmation mail; this covers the
+ * messages Supabase knows nothing about, starting with order confirmations.
  *
- * Unconfigured is a supported state. With no RESEND_API_KEY the send is skipped
- * and reported, exactly as checkout degrades without Stripe keys — an order must
- * never fail because a mail server is down or a key hasn't been issued yet.
+ * SMTP rather than a provider's own HTTP API because it's the one interface
+ * every provider speaks. Gmail and Google Workspace today; Resend, SES or
+ * Postmark later by changing four environment variables and touching no code.
+ *
+ * Unconfigured is a supported state. With no credentials the send is skipped
+ * and reported, exactly as checkout degrades without Stripe keys — an order
+ * must never fail because a mail server is down or a key hasn't been issued.
  *
  * To switch it on:
- *   RESEND_API_KEY   from resend.com
- *   ORDER_EMAIL_FROM "Arabic Souk <orders@yourdomain.com>" — the domain must be
- *                    verified with Resend. Falls back to Resend's shared test
- *                    sender, which only delivers to the account owner.
+ *   SMTP_USER        the mailbox to send as
+ *   SMTP_PASS        an app password, NOT the account password
+ *   SMTP_HOST/PORT   optional; defaults to Gmail on implicit TLS
+ *   ORDER_EMAIL_FROM optional display name; defaults to the store name at
+ *                    SMTP_USER. Gmail rewrites this to the authenticated
+ *                    mailbox unless the address is a verified alias, so
+ *                    inventing a from-address it doesn't own achieves nothing.
  */
 
-const RESEND_ENDPOINT = "https://api.resend.com/emails";
-
-/** Resend's shared sender: fine for a smoke test, useless for real customers. */
-const FALLBACK_FROM = "Arabic Souk <onboarding@resend.dev>";
+const DEFAULT_HOST = "smtp.gmail.com";
+/** Implicit TLS. 587 (STARTTLS) also works if a network blocks 465. */
+const DEFAULT_PORT = 465;
+/** A slow mail server must not hold a checkout response open. */
+const SMTP_TIMEOUT_MS = 10_000;
 
 export interface OrderEmailLine {
   name: string;
@@ -52,7 +59,12 @@ export interface OrderEmail {
 export type SendResult = { ok: true } | { ok: false; reason: string };
 
 export function emailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY);
+  return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+/** Who the message is from. See the note above on why Gmail may override this. */
+function sender(user: string): string {
+  return process.env.ORDER_EMAIL_FROM || `${siteConfig.name} <${user}>`;
 }
 
 const esc = (s: string) =>
@@ -173,28 +185,45 @@ function renderHtml(o: OrderEmail): string {
  * and losing the email is far better than losing the order.
  */
 export async function sendOrderConfirmation(order: OrderEmail): Promise<SendResult> {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return { ok: false, reason: "not_configured" };
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!user || !pass) return { ok: false, reason: "not_configured" };
   if (!order.email) return { ok: false, reason: "no_recipient" };
 
+  const port = Number(process.env.SMTP_PORT || DEFAULT_PORT);
+
   try {
-    const res = await fetch(RESEND_ENDPOINT, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: process.env.ORDER_EMAIL_FROM || FALLBACK_FROM,
-        to: [order.email],
-        subject: `Your ${siteConfig.name} order ${order.orderNumber}`,
-        html: renderHtml(order),
-        text: renderText(order),
-      }),
-      // A slow mail API must not hold the checkout response open.
-      signal: AbortSignal.timeout(10_000),
+    // Built per send rather than pooled: on Vercel each invocation is its own
+    // short-lived process, so a pooled connection has nothing to be reused by.
+    const transport = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || DEFAULT_HOST,
+      port,
+      secure: port === 465, // implicit TLS on 465, STARTTLS on 587
+      auth: { user, pass },
+      connectionTimeout: SMTP_TIMEOUT_MS,
+      greetingTimeout: SMTP_TIMEOUT_MS,
+      socketTimeout: SMTP_TIMEOUT_MS,
     });
 
-    if (!res.ok) return { ok: false, reason: `http_${res.status}` };
+    await transport.sendMail({
+      from: sender(user),
+      to: order.email,
+      // Replies belong with whoever reads the shop's mail, which need not be
+      // the mailbox doing the sending.
+      replyTo: siteConfig.contact.email,
+      subject: `Your ${siteConfig.name} order ${order.orderNumber}`,
+      text: renderText(order),
+      html: renderHtml(order),
+    });
+
     return { ok: true };
   } catch (e) {
-    return { ok: false, reason: (e as Error)?.name === "TimeoutError" ? "timeout" : "network" };
+    // Surfaced rather than swallowed: bad credentials and a blocked port look
+    // identical from the outside, and the difference is the whole diagnosis.
+    const err = e as { code?: string; responseCode?: number; message?: string };
+    return {
+      ok: false,
+      reason: err.code || (err.responseCode ? `smtp_${err.responseCode}` : err.message) || "send_failed",
+    };
   }
 }

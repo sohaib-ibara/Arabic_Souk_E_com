@@ -64,9 +64,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       {!emailConfigured() && (
         <Notice tone="warning" title="Order confirmation emails are switched off" className="mt-6">
           Customers are not being emailed when they place an order. Set{" "}
-          <code className="rounded bg-sand px-1">RESEND_API_KEY</code> and{" "}
-          <code className="rounded bg-sand px-1">ORDER_EMAIL_FROM</code> in the environment to
-          turn them on. Orders themselves are unaffected.
+          <code className="rounded bg-sand px-1">SMTP_USER</code> and{" "}
+          <code className="rounded bg-sand px-1">SMTP_PASS</code> in the environment to turn
+          them on. Orders themselves are unaffected.
         </Notice>
       )}
 
