@@ -63,7 +63,10 @@ export const supportLinks = [
   { name: "Contact us", href: "/contact" },
   { name: "Shipping & delivery", href: "/shipping" },
   { name: "Returns & refunds", href: "/returns" },
-  { name: "Track your order", href: "/account" },
+  // Was /account, which sent guests to a login page for an account they never
+  // made — and most orders are guest orders now. /track takes the order number
+  // and email instead.
+  { name: "Track your order", href: "/track" },
   { name: "FAQs", href: "/faq" },
 ] as const;
 
@@ -74,7 +77,9 @@ export const legalLinks = [
 ] as const;
 
 /** Every indexable static page, for the sitemap. `/account` is excluded — it's private. */
+const PRIVATE_ROUTES = new Set(["/account"]);
+
 export const contentRoutes: string[] = [
-  ...supportLinks.filter((l) => l.href !== "/account").map((l) => l.href),
+  ...supportLinks.filter((l) => !PRIVATE_ROUTES.has(l.href)).map((l) => l.href),
   ...legalLinks.map((l) => l.href),
 ];
