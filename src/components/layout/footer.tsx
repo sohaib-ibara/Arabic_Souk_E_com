@@ -3,6 +3,7 @@ import { siteConfig } from "@/lib/config";
 import { footerCategories, legalLinks, supportLinks } from "@/lib/nav";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/icons";
+import { PaymentMarks } from "@/components/ui/payment-marks";
 
 export function Footer() {
   const year = 2026;
@@ -109,15 +110,14 @@ export function Footer() {
           ))}
         </nav>
 
-        <div className="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-muted sm:flex-row">
+        <div className="mt-4 flex flex-col items-center justify-between gap-4 text-xs text-muted sm:flex-row">
           <p>
             © {year} {siteConfig.legalName}. All rights reserved.
           </p>
-          <p className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
             <span>Prices in Bahraini Dinar (BHD)</span>
-            <span aria-hidden>·</span>
-            <span>Visa · Mastercard · BENEFIT · Apple Pay · Cash on delivery</span>
-          </p>
+            <PaymentMarks />
+          </div>
         </div>
       </div>
     </footer>

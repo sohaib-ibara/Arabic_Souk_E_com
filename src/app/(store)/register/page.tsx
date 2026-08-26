@@ -18,9 +18,9 @@ export const dynamic = "force-dynamic";
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; email?: string }>;
 }) {
-  const { next } = await searchParams;
+  const { next, email } = await searchParams;
 
   // A signed-in admin holds no customer session; without this they'd be offered
   // an account form. See the note in login/page.tsx.
@@ -39,7 +39,9 @@ export default async function RegisterPage({
           Join {siteConfig.name} to order and track your deliveries.
         </p>
 
-        <RegisterForm next={next} />
+        {/* Prefilled when a guest arrives from their order confirmation, so
+            "save my details" is a password and nothing else. */}
+        <RegisterForm next={next} defaultEmail={email} />
 
         <p className="mt-6 text-center text-sm text-muted">
           Already have an account?{" "}

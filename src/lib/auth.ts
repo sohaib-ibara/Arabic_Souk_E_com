@@ -5,6 +5,8 @@ export interface SessionUser {
   email: string;
   fullName: string | null;
   phone: string | null;
+  /** Supabase has seen this address prove itself. Gates claiming guest orders. */
+  emailConfirmed: boolean;
 }
 
 /**
@@ -27,5 +29,6 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     email: user.email ?? "",
     fullName: typeof meta.full_name === "string" ? meta.full_name : null,
     phone: typeof meta.phone === "string" ? meta.phone : null,
+    emailConfirmed: Boolean(user.email_confirmed_at),
   };
 }

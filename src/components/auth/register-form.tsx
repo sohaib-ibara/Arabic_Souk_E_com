@@ -7,10 +7,10 @@ import { createClient } from "@/lib/supabase/client";
 const field =
   "rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none transition-colors focus:border-brand";
 
-export function RegisterForm({ next }: { next?: string }) {
+export function RegisterForm({ next, defaultEmail }: { next?: string; defaultEmail?: string }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(defaultEmail ?? "");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

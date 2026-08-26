@@ -31,7 +31,7 @@ interface Payment {
   converted: boolean;
 }
 
-type Status = "idle" | "creating" | "unavailable" | "error";
+type Status = "idle" | "creating" | "unavailable" | "error" | "missing";
 type Method = "card" | "cod";
 
 const stripeAppearance: StripeElementsOptions["appearance"] = {
@@ -53,7 +53,8 @@ export function CheckoutView({
 }: {
   paymentReady: boolean;
   codEnabled: boolean;
-  user: CheckoutUser;
+  /** null when checking out as a guest. */
+  user: CheckoutUser | null;
 }) {
   const { items, subtotal, hydrated } = useCart();
   // Cash is the fallback when cards aren't configured, so the shop can still
@@ -65,6 +66,7 @@ export function CheckoutView({
   const [payment, setPayment] = useState<Payment | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [issues, setIssues] = useState<Array<{ productId: string; name: string }>>([]);
+  const [missing, setMissing] = useState<string[]>([]);
 
   const shipping =
     subtotal === 0 || subtotal >= siteConfig.shipping.freeThreshold
@@ -88,6 +90,7 @@ export function CheckoutView({
     };
     setStatus("creating");
     setIssues([]);
+    setMissing([]);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -100,13 +103,17 @@ export function CheckoutView({
       });
       const data = await res.json();
 
-      if (res.status === 401) {
-        window.location.href = "/login?next=/checkout";
-        return;
-      }
       if (res.status === 409 && data.error === "unavailable") {
         setIssues(data.issues ?? []);
         setStatus("unavailable");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      // The server checks the contact details too — the form's `required`
+      // attributes are a convenience, not the rule.
+      if (res.status === 400 && data.error === "missing_details") {
+        setMissing(Array.isArray(data.missing) ? data.missing : []);
+        setStatus("missing");
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
@@ -188,6 +195,14 @@ export function CheckoutView({
         </div>
       )}
 
+      {status === "missing" && (
+        <div role="alert" className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          {missing.length
+            ? `Please fill in your ${missing.join(", ")} so we can confirm and deliver your order.`
+            : "Please complete your contact and delivery details."}
+        </div>
+      )}
+
       {status === "error" && (
         <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           Something went wrong. Please try again.
@@ -199,13 +214,42 @@ export function CheckoutView({
         <div className="space-y-8">
           {phase === "details" ? (
             <form onSubmit={startPayment} className="space-y-8">
+              {/* Offered, not imposed. A guest can complete the whole order
+                  below; this is only here for customers who already have an
+                  account and would rather not retype their details. */}
+              {!user && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-sand/50 p-4 text-sm">
+                  <span className="text-muted">
+                    Checking out as a guest — no account needed.
+                  </span>
+                  <Link
+                    href="/login?next=/checkout"
+                    className="rounded-full border border-line bg-white px-4 py-2 text-xs font-medium transition-colors hover:border-brand hover:text-brand"
+                  >
+                    Sign in instead
+                  </Link>
+                </div>
+              )}
+
               <fieldset>
                 <legend className="font-serif text-xl">Contact</legend>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <Field label="Full name" name="name" autoComplete="name" defaultValue={user.fullName ?? ""} />
-                  <Field label="Email" name="email" type="email" autoComplete="email" defaultValue={user.email} />
-                  <Field label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+973" defaultValue={user.phone ?? ""} />
+                  <Field label="Full name" name="name" autoComplete="name" defaultValue={user?.fullName ?? ""} />
+                  <Field
+                    label="Email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    defaultValue={user?.email ?? ""}
+                    // Signed in, the account's own address is the one we use —
+                    // it's verified, and it's where the order history lives.
+                    readOnly={Boolean(user)}
+                  />
+                  <Field label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+973" defaultValue={user?.phone ?? ""} />
                 </div>
+                <p className="mt-3 text-xs text-muted">
+                  We use these to confirm your order and arrange delivery.
+                </p>
               </fieldset>
 
               <fieldset>
@@ -413,16 +457,21 @@ function PaymentPanel({
       </div>
 
       {/* Said before the card is entered, not after: the statement will show a
-          different currency from the one the shop quotes in. */}
+          different currency from the one the shop quotes in.
+
+          Ordered to lead with the figure the customer recognises. Opening on
+          the converted amount read as a price change — the shopper sees a
+          number they never agreed to, in a currency they weren't shopping in,
+          and has to work backwards to find out nothing has changed. */}
       {payment?.converted && (
         <p className="rounded-xl border border-line bg-sand/60 p-4 text-xs text-muted">
-          Your card will be charged{" "}
-          <strong className="text-ink">
-            {formatPrice(payment.amount, payment.currency)}
-          </strong>
-          , the equivalent of {formatPrice(total)} at a fixed rate of 1{" "}
-          {siteConfig.currency} = {payment.rate} {payment.currency}. That is the amount
-          that will appear on your statement.
+          Your total is{" "}
+          <strong className="text-ink">{formatPrice(total)}</strong> — the price shown
+          throughout your order. Our payment provider settles in {payment.currency}, so your
+          statement will show{" "}
+          <strong className="text-ink">{formatPrice(payment.amount, payment.currency)}</strong>{" "}
+          instead, converted at a fixed rate of 1 {siteConfig.currency} = {payment.rate}{" "}
+          {payment.currency}. Nothing extra is added.
         </p>
       )}
 
@@ -481,6 +530,7 @@ function Field({
   autoComplete,
   placeholder,
   defaultValue,
+  readOnly,
 }: {
   label: string;
   name: string;
@@ -489,6 +539,7 @@ function Field({
   autoComplete?: string;
   placeholder?: string;
   defaultValue?: string;
+  readOnly?: boolean;
 }) {
   return (
     <label className={`flex flex-col gap-1.5 text-sm ${className ?? ""}`}>
@@ -497,10 +548,13 @@ function Field({
         name={name}
         type={type}
         required
+        readOnly={readOnly}
         autoComplete={autoComplete}
         placeholder={placeholder}
         defaultValue={defaultValue}
-        className="rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none transition-colors focus:border-brand"
+        className={`rounded-xl border border-line px-4 py-3 text-ink outline-none transition-colors focus:border-brand ${
+          readOnly ? "bg-sand/60 text-muted" : "bg-white"
+        }`}
       />
     </label>
   );

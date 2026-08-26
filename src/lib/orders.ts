@@ -3,20 +3,30 @@ import { getStripe, getPresentment, type Presentment } from "./stripe";
 import { getAllProducts, type DemandContact } from "./data";
 import { siteConfig } from "./config";
 import { reconcileOrderStock } from "./inventory";
+import { sendOrderConfirmation, type OrderEmail } from "./email";
 
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
 export interface CreateOrderInput {
-  userId: string;
+  /** null for a guest checkout — see `ownOrders` for how those are scoped. */
+  userId: string | null;
   email: string;
   contact: DemandContact;
   items: Array<{ productId: string; quantity: number }>;
+  /**
+   * The order this browser placed a moment ago, from its signed cookie. It's how
+   * a guest's repeat submit is recognised as the same order rather than a second
+   * one; ignored when signed in, where the account is the better key.
+   */
+  priorOrderId?: string | null;
 }
 
 export interface CreateOrderResult {
   ok: boolean;
   clientSecret?: string;
   orderNumber?: string;
+  /** Row id, so the caller can mint a token letting a guest read this one order. */
+  orderId?: string;
   /** What Stripe will actually charge — differs from the BHD total when the
    *  account can't present in the store currency. */
   payment?: Presentment;
@@ -91,6 +101,39 @@ async function priceOrder(
 }
 
 /**
+ * Copies the contact details from a checkout onto the customer's profile.
+ *
+ * The phone is mandatory at checkout but optional at registration, so an account
+ * created first and used to order later had a blank phone on file for ever —
+ * visible as a dash on the account page, and no use to anyone ringing to confirm
+ * a delivery. Whatever the customer last typed at checkout is the best number we
+ * have, so it becomes the number we keep.
+ *
+ * Best-effort and never fatal: an order stands whether or not the profile
+ * catches up, and guests have no profile to write to.
+ */
+async function rememberContactOnProfile(
+  admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  userId: string | null,
+  contact: DemandContact,
+): Promise<void> {
+  if (!userId) return;
+  const patch: Record<string, string> = {};
+  if (contact.phone) patch.phone = contact.phone;
+  if (contact.fullName) patch.full_name = contact.fullName;
+  if (!Object.keys(patch).length) return;
+
+  try {
+    const { data } = await admin.auth.admin.getUserById(userId);
+    await admin.auth.admin.updateUserById(userId, {
+      user_metadata: { ...(data?.user?.user_metadata ?? {}), ...patch },
+    });
+  } catch {
+    // Profile is a convenience; the order already carries these details.
+  }
+}
+
+/**
  * Writes the order row and its lines, rolling the order back if the lines fail
  * so a headless order can't survive the attempt.
  */
@@ -137,7 +180,34 @@ async function writeOrder(
     await admin.from("orders").delete().eq("id", order.id); // rollback (items cascade)
     return null;
   }
+
+  // Both payment routes come through here, so the profile keeps up with the
+  // latest details whichever way the customer paid.
+  await rememberContactOnProfile(admin, input.userId, input.contact);
+
   return order as { id: string; order_number: string };
+}
+
+/**
+ * Narrows an orders query to the orders this checkout is allowed to act on.
+ *
+ * Signed in, that's every order on the account. A guest has no account to match,
+ * and matching on the email alone would be a hole: anyone who typed a stranger's
+ * address could collide with their open checkout and be handed its client
+ * secret. So a guest is scoped to the single order their own signed cookie
+ * names — proof this browser placed it — and nothing else. No cookie, no scope,
+ * and the caller writes a fresh order instead.
+ */
+interface OwnOrders {
+  /** Column and value that identify this checkout's own orders. */
+  column: "user_id" | "id";
+  value: string;
+}
+
+function ownOrders(userId: string | null, priorOrderId: string | null): OwnOrders | null {
+  if (userId) return { column: "user_id", value: userId };
+  if (priorOrderId) return { column: "id", value: priorOrderId };
+  return null;
 }
 
 /** Stable signature of a cart, so two attempts at the same basket compare equal. */
@@ -162,12 +232,22 @@ function cartSignature(lines: Array<{ product_id: string | null; quantity: numbe
 async function findReusableOrder(
   admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
   stripe: NonNullable<ReturnType<typeof getStripe>>,
-  args: { userId: string; total: number; currency: string; lines: LineItem[]; presentment: Presentment },
+  args: {
+    userId: string | null;
+    priorOrderId: string | null;
+    total: number;
+    currency: string;
+    lines: LineItem[];
+    presentment: Presentment;
+  },
 ): Promise<CreateOrderResult | null> {
+  const own = ownOrders(args.userId, args.priorOrderId);
+  if (!own) return null;
+
   const { data } = await admin
     .from("orders")
     .select("id, order_number, total, currency, stripe_payment_intent, order_items(product_id,quantity,unit_price)")
-    .eq("user_id", args.userId)
+    .eq(own.column, own.value)
     .eq("status", "pending")
     .not("stripe_payment_intent", "is", null)
     .order("created_at", { ascending: false })
@@ -200,6 +280,7 @@ async function findReusableOrder(
         ok: true,
         clientSecret: intent.client_secret,
         orderNumber: row.order_number as string,
+        orderId: row.id as string,
         payment: args.presentment,
       };
     } catch {
@@ -220,12 +301,16 @@ async function findReusableOrder(
 async function supersedeOpenOrders(
   admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
   stripe: NonNullable<ReturnType<typeof getStripe>>,
-  userId: string,
+  userId: string | null,
+  priorOrderId: string | null,
 ): Promise<void> {
+  const own = ownOrders(userId, priorOrderId);
+  if (!own) return;
+
   const { data } = await admin
     .from("orders")
     .select("id, stripe_payment_intent")
-    .eq("user_id", userId)
+    .eq(own.column, own.value)
     .eq("status", "pending");
 
   for (const row of data ?? []) {
@@ -285,6 +370,7 @@ export async function createOrderAndIntent(input: CreateOrderInput): Promise<Cre
   //    double submit hands back the same client secret instead of a second row.
   const reused = await findReusableOrder(admin, stripe, {
     userId: input.userId,
+    priorOrderId: input.priorOrderId ?? null,
     total,
     currency,
     lines: lineItems,
@@ -294,7 +380,7 @@ export async function createOrderAndIntent(input: CreateOrderInput): Promise<Cre
 
   // A different basket means the previous checkout was abandoned. Close it, so
   // a customer only ever has one live order at a time.
-  await supersedeOpenOrders(admin, stripe, input.userId);
+  await supersedeOpenOrders(admin, stripe, input.userId, input.priorOrderId ?? null);
 
   // 1) Pending order (service role bypasses RLS).
   const order = await writeOrder(admin, input, pricing.priced, {
@@ -328,10 +414,13 @@ export async function createOrderAndIntent(input: CreateOrderInput): Promise<Cre
       { idempotencyKey: `order_intent_${order.id}` },
     );
     await admin.from("orders").update({ stripe_payment_intent: intent.id }).eq("id", order.id);
+    // No email yet: nothing has been paid. The confirmation goes out from
+    // `markOrderPaid`, once Stripe says the money actually moved.
     return {
       ok: true,
       clientSecret: intent.client_secret ?? undefined,
       orderNumber: order.order_number,
+      orderId: order.id,
       payment: presentment,
     };
   } catch {
@@ -365,8 +454,13 @@ export async function createCodOrder(input: CreateOrderInput): Promise<CreateOrd
   // write a second order — and unlike an abandoned card checkout, both would be
   // real commitments that staff would go and buy stock for. An identical basket
   // placed in the last few minutes is treated as the same order.
-  const reused = await findRecentCodOrder(admin, input.userId, pricing.priced);
-  if (reused) return { ok: true, orderNumber: reused };
+  const reused = await findRecentCodOrder(
+    admin,
+    input.userId,
+    input.priorOrderId ?? null,
+    pricing.priced,
+  );
+  if (reused) return { ok: true, orderNumber: reused.orderNumber, orderId: reused.id };
 
   const order = await writeOrder(admin, input, pricing.priced, {
     status: "confirmed",
@@ -385,7 +479,11 @@ export async function createCodOrder(input: CreateOrderInput): Promise<CreateOrd
     }
   }
 
-  return { ok: true, orderNumber: order.order_number };
+  // Cash needs no payment step, so the order is final the moment it's written —
+  // this is the point at which the customer should hear about it.
+  await emailOrderConfirmation(admin, order.id);
+
+  return { ok: true, orderNumber: order.order_number, orderId: order.id };
 }
 
 /** Window in which a repeat cash submission is the same order, not a new one. */
@@ -393,14 +491,18 @@ const COD_DEDUPE_MS = 10 * 60 * 1000;
 
 async function findRecentCodOrder(
   admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
-  userId: string,
+  userId: string | null,
+  priorOrderId: string | null,
   priced: PricedOrder,
-): Promise<string | null> {
+): Promise<{ id: string; orderNumber: string } | null> {
+  const own = ownOrders(userId, priorOrderId);
+  if (!own) return null;
+
   const since = new Date(Date.now() - COD_DEDUPE_MS).toISOString();
   const { data } = await admin
     .from("orders")
-    .select("order_number, total, currency, order_items(product_id,quantity,unit_price)")
-    .eq("user_id", userId)
+    .select("id, order_number, total, currency, order_items(product_id,quantity,unit_price)")
+    .eq(own.column, own.value)
     .eq("status", "confirmed")
     .eq("payment_method", "cod")
     .gte("created_at", since)
@@ -414,9 +516,61 @@ async function findRecentCodOrder(
     const lines = Array.isArray(row.order_items) ? row.order_items : [];
     if (lines.length !== priced.lineItems.length) continue;
     if (cartSignature(lines as never) !== wanted) continue;
-    return row.order_number as string;
+    return { id: row.id as string, orderNumber: row.order_number as string };
   }
   return null;
+}
+
+/**
+ * Reads one order back and emails its confirmation.
+ *
+ * Reads rather than takes the figures as arguments so the email can only ever
+ * describe what was actually stored — a confirmation that disagrees with the
+ * order is worse than no confirmation at all.
+ *
+ * Never throws, and never blocks the order: a missing API key, a rejected
+ * sender domain or an unreachable mail host all end as a logged line.
+ */
+async function emailOrderConfirmation(
+  admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  orderId: string,
+): Promise<void> {
+  try {
+    const { data } = await admin
+      .from("orders")
+      .select(
+        "order_number, email, full_name, currency, subtotal, shipping_fee, total, payment_method, shipping_address, order_items(name,quantity,unit_price)",
+      )
+      .eq("id", orderId)
+      .maybeSingle();
+    if (!data?.email) return;
+
+    const payload: OrderEmail = {
+      orderNumber: data.order_number as string,
+      email: data.email as string,
+      fullName: (data.full_name as string | null) ?? null,
+      currency: (data.currency as string) ?? siteConfig.currency,
+      subtotal: Number(data.subtotal ?? 0),
+      shipping: Number(data.shipping_fee ?? 0),
+      total: Number(data.total ?? 0),
+      paymentMethod: (data.payment_method as "card" | "cod") ?? "card",
+      address: (data.shipping_address as OrderEmail["address"]) ?? null,
+      items: (Array.isArray(data.order_items) ? data.order_items : []).map((li) => ({
+        name: (li as { name: string }).name,
+        quantity: Number((li as { quantity: number }).quantity ?? 0),
+        unitPrice: Number((li as { unit_price: number }).unit_price ?? 0),
+      })),
+    };
+
+    const sent = await sendOrderConfirmation(payload);
+    if (!sent.ok && process.env.NODE_ENV !== "production") {
+      console.warn(`[email] confirmation for ${payload.orderNumber} not sent: ${sent.reason}`);
+    }
+  } catch (e) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[email] confirmation for order ${orderId} failed: ${(e as Error).message}`);
+    }
+  }
 }
 
 /**
@@ -450,6 +604,11 @@ export async function markOrderPaid(paymentIntentId: string): Promise<void> {
       console.warn(`[inventory] sale posting failed for order ${data.id}: ${(e as Error).message}`);
     }
   }
+
+  // Inside the guard above, so the webhook and the success page racing each
+  // other still produce exactly one confirmation: only the call that actually
+  // moved the order off 'pending' gets this far.
+  await emailOrderConfirmation(admin, data.id);
 }
 
 /**
@@ -465,24 +624,29 @@ export async function markOrderPaid(paymentIntentId: string): Promise<void> {
  * Safe to run alongside the webhook: whichever arrives first wins, and
  * `markOrderPaid` only ever moves a pending order.
  *
- * Scoped to the signed-in owner and gated on Stripe's own view of the payment,
- * so a guessed PaymentIntent id can't be used to mark somebody else's order —
- * or an unpaid one — as paid.
+ * Gated on Stripe's own view of the payment, so a guessed PaymentIntent id can't
+ * mark an unpaid order as paid — and when there's a signed-in customer it's
+ * scoped to their orders too.
+ *
+ * A guest checkout has no account to scope by. That's safe here because the
+ * gate that matters is Stripe's: this only ever moves an order Stripe reports
+ * as succeeded, which is precisely what the webhook does unprompted. The worst
+ * a guessed id achieves is settling a paid order a second earlier.
  */
 export async function confirmOrderFromIntent(
   paymentIntentId: string,
-  userId: string,
+  userId: string | null,
 ): Promise<void> {
   const stripe = getStripe();
   const admin = getSupabaseAdmin();
   if (!stripe || !admin) return;
 
-  const { data: order } = await admin
+  const base = admin
     .from("orders")
     .select("id,status")
-    .eq("stripe_payment_intent", paymentIntentId)
-    .eq("user_id", userId)
-    .maybeSingle();
+    .eq("stripe_payment_intent", paymentIntentId);
+
+  const { data: order } = await (userId ? base.eq("user_id", userId) : base).maybeSingle();
 
   // Not this customer's order, or the webhook already handled it.
   if (!order || order.status !== "pending") return;

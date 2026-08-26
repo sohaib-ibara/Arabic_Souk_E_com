@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { getSessionUser } from "@/lib/auth";
 import { isAdmin, isAllowedEmail } from "@/lib/admin-auth";
-import { getMyOrders } from "@/lib/customer-orders";
+import { claimGuestOrders, getMyOrders } from "@/lib/customer-orders";
 import { formatPrice, formatDate } from "@/lib/format";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
@@ -42,7 +42,19 @@ export default async function AccountPage() {
   if (isAllowedEmail(user.email)) redirect("/admin");
 
   const firstName = user.fullName?.split(" ")[0] || null;
+
+  // Pick up anything ordered as a guest with this (confirmed) address before
+  // signing up, so the list is complete the first time it's opened.
+  if (user.emailConfirmed) await claimGuestOrders(user.id, user.email);
+
   const orders = await getMyOrders();
+
+  // The phone is mandatory at checkout but optional at registration, so an
+  // account made before the first order has none on file. Rather than show a
+  // dash next to a field the customer knows they filled in, fall back to the
+  // number on their most recent order — which is the one we'd actually ring.
+  const latestContact = orders.find((o) => o.contact.phone)?.contact;
+  const phone = user.phone || latestContact?.phone || null;
 
   return (
     <Container className="py-12">
@@ -71,7 +83,7 @@ export default async function AccountPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted">Phone</dt>
-              <dd className="text-right">{user.phone || "—"}</dd>
+              <dd className="text-right">{phone || "—"}</dd>
             </div>
           </dl>
         </section>
@@ -130,6 +142,29 @@ export default async function AccountPage() {
                           </li>
                         ))}
                       </ul>
+                    )}
+
+                    {/* Where it's going and who we'd ring about it. Shown per
+                        order rather than only on the profile, because these are
+                        what the customer typed for THIS delivery — a later
+                        order to a different address shouldn't rewrite history. */}
+                    {(order.contact.phone || order.contact.address.length > 0) && (
+                      <dl className="mt-3 grid gap-x-6 gap-y-2 border-t border-line pt-3 text-xs sm:grid-cols-2">
+                        {order.contact.phone && (
+                          <div>
+                            <dt className="text-muted">Contact number</dt>
+                            <dd className="mt-0.5 text-ink">{order.contact.phone}</dd>
+                          </div>
+                        )}
+                        {order.contact.address.length > 0 && (
+                          <div>
+                            <dt className="text-muted">Delivery address</dt>
+                            <dd className="mt-0.5 text-ink">
+                              {order.contact.address.join(", ")}
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
                     )}
                   </li>
                 );
