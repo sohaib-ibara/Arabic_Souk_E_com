@@ -144,9 +144,17 @@ export default {
    * Takes the map built by that crawl. Returns null when a product wasn't seen
    * on any category page we walked — the importer must not guess, because an
    * uncategorised product belongs in the review queue, not in a wrong aisle.
+   *
+   * Looks up on the id in the URL before the record's sku, and the order
+   * matters. On a multi-shade product `chooseVariant` returns one shade's sku,
+   * which is not the id the shelf linked to — NARS Sheer Glow lists 16 variants
+   * under product 10449360 but parses as sku 10302495. Keying on the sku alone
+   * silently sent exactly those products to the review queue.
    */
   category(record, categoryMap) {
-    return categoryMap?.get(String(record.sku)) ?? null;
+    if (!categoryMap) return null;
+    const fromUrl = this.skuFromUrl(record.sourceUrl ?? "");
+    return categoryMap.get(String(fromUrl)) ?? categoryMap.get(String(record.sku)) ?? null;
   },
 
   /**
