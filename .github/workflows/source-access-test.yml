@@ -18,8 +18,17 @@ on:
         description: "Adapter key (noon | cultbeauty)"
         required: true
         default: cultbeauty
+  # Scoped to the probe's own code. Without the paths filter this re-ran on
+  # every commit to the branch and sent fresh traffic to the retailer each
+  # time, which is both rude and pointless — the answer only changes when the
+  # probe or an adapter changes.
   push:
     branches: [test/source-access]
+    paths:
+      - "scripts/import/access-test.mjs"
+      - "scripts/import/discover.mjs"
+      - "scripts/import/sites/**"
+      - ".github/workflows/source-access-test.yml"
 
 permissions:
   contents: write
