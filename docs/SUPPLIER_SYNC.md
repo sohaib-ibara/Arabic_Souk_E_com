@@ -19,13 +19,28 @@ They are not the same problem and should not get the same solution.
 
 ## Cult Beauty — the easy case
 
-Measured 27 Aug 2026, twice: from the office connection in Lahore, and from a
-GitHub Actions runner on a Microsoft Azure IP (`20.57.206.149`, AS8075, San
-Jose). Both **5/5 usable product pages over plain HTTP with no browser at all**,
-and the browser run passed 5/5 as well.
+Measured 27 Aug 2026 from the office connection in Lahore and from three
+separate GitHub Actions runners, which happened to land on three Azure IPs in
+three US regions:
 
-That Azure result is the one that matters. It is the same class of datacentre IP
-that noon refused twenty times out of twenty. Cult Beauty does not care.
+| Egress | Plain HTTP | Headless browser |
+| ------ | ---------- | ---------------- |
+| `20.57.206.149` · Azure, San Jose | 5/5 | 5/5 |
+| `64.236.141.182` · Azure, Chicago | 5/5 | 5/5 |
+| `172.172.159.182` · Azure, Dulles | 5/5 | 5/5 |
+| Office ISP, Lahore | 5/5 | — |
+
+**Thirty fetches, zero failures**, and the plain-HTTP column is the one that
+matters: no browser was involved at all. Raw output in
+`RESULT-source-access.md` on the `test/source-access` branch.
+
+These are the same class of datacentre IP that noon refused twenty times out of
+twenty. Cult Beauty does not care.
+
+One limit worth stating: all three were Azure, because that is what GitHub
+Actions runs on. Vercel is AWS and Railway is GCP. Nothing measured here
+suggests they would differ, but nothing measured here proves they don't —
+re-run the probe on whichever host is chosen.
 
 Three things make it easy:
 
