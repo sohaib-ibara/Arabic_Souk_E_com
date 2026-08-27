@@ -27,16 +27,78 @@ Twenty attempts from the datacentre IP, zero usable responses.
 
 Headless vs headed made no difference from the datacentre, which is the finding
 that settles it — the block is not about how convincing the client looks. noon
-sits behind Akamai Bot Manager (`lb-akamai.noon.com`, `wildcard.noon.com.edgekey.net`),
-which fingerprints at the TLS/HTTP2 layer and decides before the request is served.
+sits behind Akamai Bot Manager (`lb-akamai.noon.com`, `wildcard.noon.com.edgekey.net`).
+
+### Correction, 27 Aug 2026 — the mechanism is a JavaScript challenge
+
+This document previously said Akamai "fingerprints at the TLS/HTTP2 layer".
+That was wrong, and the difference matters.
+
+`curl_cffi`, which replays Chrome's exact TLS ClientHello, was tested from the
+residential connection across four browser profiles: **20 attempts, 20 × 403**.
+A perfect TLS fingerprint is not enough. The 403 body says why:
+
+```
+server: AkamaiGHost
+set-cookie: bm_s=...                        ← Bot Manager
+<script src="/C7WSBL9wjHg3VaeHMSVB8N7Q/..." defer></script>   ← sensor JS
+```
+
+Akamai serves a **sensor script** that must be executed to earn the cookie
+proving the client is a browser. No HTTP client can do that however well it
+imitates a handshake, so **a real browser is mandatory** — it is not a cost
+optimisation that can be traded away, and any residential-proxy budget has to
+assume browser-sized traffic.
+
+### Automation tells, measured 27 Aug 2026
+
+Whether the browser also has to *hide* that it is automated is still open, but
+the tells are now measured (`bot.sannysoft.com`, headed, same machine):
+
+| Approach | `navigator.webdriver` | WebGL vendor | Cores |
+| -------- | --------------------- | ------------ | ----- |
+| Plain Playwright Chromium | `true` ⚠️ | Google Inc. (Intel) | 8 |
+| Real Chrome + persistent profile | `true` ⚠️ | Google Inc. (Intel) | 8 |
+| `puppeteer-extra-plugin-stealth` | `false` ✅ | Intel Inc. | 4 |
+
+Two things worth keeping: the stealth plugin genuinely removes the biggest
+tell, and **using real Chrome instead of bundled Chromium does not** — CDP sets
+`navigator.webdriver` either way unless something patches it.
+
+Note that `navigator.webdriver` was `true` during the July capture that
+succeeded, so Akamai was not rejecting on it then.
+
+## ⚠️ The residential connection stopped working, 27 Aug 2026
+
+The row above claiming the office connection works is **no longer reproducible**.
+A headed browser — the exact setup that captured 717 products in July — now gets
+Akamai's "Access Denied" on noon's *homepage*, on both of this machine's two
+egress IPs (`59.103.127.14` Cyber Internet, `39.37.188.105` PTCL, which it
+alternates between). Six attempts, correlated to the IP each one left on, zero
+passes. Plain HTTP escalated further: from `403` to no response at all.
+
+**This measurement is confounded and should not be trusted yet.** Roughly forty
+requests were sent to noon in the hour before it, most of them rejected, which
+is exactly the pattern that earns a rate-limit block. It cannot currently be
+told apart from a permanent block earned by the July scraping.
+
+Re-test after a day of silence, with **one** attempt rather than forty, before
+concluding anything. Until then, treat the free office-machine option as
+unproven rather than either working or dead.
+
+A note that applies whichever way it lands: a daily crawl is itself the pattern
+that gets an IP flagged. Rotating residential proxies exist because any single
+address eventually burns.
 
 ## What this rules out
 
 - **GitHub Actions** — measured, blocked.
 - **Any VPS or cloud VM**, free or paid, self-administered or not — same
-  datacentre IP ranges. Oracle Free, Railway, Render, Hetzner, AWS: not worth
-  testing individually.
-- **Dropping the browser** — plain HTTP fails on both connections.
+  datacentre IP ranges. A deployable probe for Railway specifically is on the
+  `test/railway-access` branch; Oracle Free, Render, Hetzner and AWS are the
+  same class and not worth testing individually.
+- **Dropping the browser** — not a TLS problem but a JavaScript challenge, so
+  no HTTP client can substitute. See the correction above.
 
 Owning the server changes nothing; noon never sees who owns it, only where the
 traffic comes from.
