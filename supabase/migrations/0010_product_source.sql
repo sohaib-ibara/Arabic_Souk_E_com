@@ -26,10 +26,24 @@
 -- ============================================================================
 
 -- HOW TO RUN: paste this whole file into the Supabase SQL editor and Run.
--- All of it or none of it: the guard below aborts the transaction rather than
+-- All of it or none of it: the guards below abort the transaction rather than
 -- leave the catalogue half-identified.
+--
+-- REQUIRES 0002_staging.sql. That one had never been run against production —
+-- the noon catalogue was loaded by pasting seed-noon.sql, which skips staging
+-- entirely — so this migration failed on its last statement with a bare
+-- "relation public.staging_products does not exist". The check below says that
+-- in words, before doing any work.
 
 begin;
+
+do $$
+begin
+  if to_regclass('public.staging_products') is null then
+    raise exception
+      'Migration 0010 requires the staging table. Run supabase/migrations/0002_staging.sql first, then re-run this file.';
+  end if;
+end $$;
 
 alter table public.products
   add column if not exists source     text,
