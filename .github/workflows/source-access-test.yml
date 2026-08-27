@@ -1,7 +1,7 @@
 # Measures whether a source answers from a DATACENTRE IP.
 #
 # This is the question that decides the hosting bill. noon was measured blocked
-# from CI (see docs/NOON_SYNC.md), which forces its sync onto a machine on a
+# from CI (see docs/SUPPLIER_SYNC.md), which forces its sync onto a machine on a
 # residential connection. Cult Beauty answers a plain HTTP fetch with no browser
 # from a residential IP — but that is not proof it does so from a datacentre,
 # and the difference is between "runs free on Vercel/Railway" and "needs an

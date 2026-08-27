@@ -9,7 +9,7 @@
  *
  * Transport is "browser" because it has to be: noon sits behind Akamai Bot
  * Manager, which serves a JavaScript sensor challenge. No HTTP client can pass
- * it. See docs/NOON_SYNC.md for the measurements.
+ * it. See docs/SUPPLIER_SYNC.md for the measurements.
  */
 import { breadcrumbOf, decode, findType, imageList, slugify, availabilityToBool } from "./shared.mjs";
 
@@ -65,6 +65,18 @@ export default {
       variantCount: 1,
     };
   },
+
+  /** The page states its own category, so no separate crawl is needed. */
+  categorySource: "breadcrumb",
+
+  /**
+   * noon publishes no per-brand restriction list for Bahrain the way Cult
+   * Beauty does, and staff have been sourcing from it by hand without hitting
+   * one. Nothing is filtered here rather than guessing at a list — but this is
+   * an absence of evidence, not a cleared route, and it is worth a look if a
+   * noon order is ever refused at checkout on their side.
+   */
+  canFulfil: () => ({ ok: true }),
 
   /**
    * noon's breadcrumb is a category path, so the taxonomy comes free:

@@ -35,9 +35,11 @@ yarn-error.log*
 # ...but keep the example env file (no secrets) in version control
 !.env*.example
 
-# noon import — local scrape captures and run logs (raw, review-only; never commit)
-scripts/import/.noon-capture.json
-scripts/import/.noon-*.json
+# supplier imports — raw captures, category maps and run logs.
+# Review-only working files; the retailers' copy and images are theirs, so none
+# of it is ever committed. Every importer writes dot-prefixed files here.
+scripts/import/.*.json
+scripts/import/.*.log
 scripts/import/.batch*.log
 
 # vercel
