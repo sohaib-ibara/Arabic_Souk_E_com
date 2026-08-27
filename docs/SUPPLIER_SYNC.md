@@ -181,6 +181,38 @@ working from exactly the datacentre that refuses noon.
 
 ---
 
+## How a product is identified
+
+Every product carries the supplier it came from and that supplier's own code
+for it: `products.source` and `products.source_sku`, unique together
+(migration `0010`). The same pair exists on `staging_products`.
+
+The key is the supplier's code, **not** the URL, and that is the whole point. A
+retailer renaming a product changes its URL but never its code — keying on the
+URL would make every rename look like a brand-new product and quietly duplicate
+the row on the next sync. `source_url` stays for what it is actually for: a
+link staff click to buy the item.
+
+That pair is what lets a nightly run answer the only three questions it has:
+
+| Question | Answered by |
+| -------- | ----------- |
+| Have I seen this before? | a lookup on `(source, source_sku)` |
+| Did its price or stock change? | comparing against the row found there |
+| Which supplier do I buy it from? | `source` |
+
+Both columns are **staff-only**. Which suppliers we use and their product codes
+is the sourcing list — the same commercial secret `source_url` is protected as.
+Since migration `0008` dropped the blanket table grant, a new column is private
+by default; do not add these to that grant list or to `PUBLIC_PRODUCT_COLUMNS`
+in [src/lib/data.ts](../src/lib/data.ts).
+
+The 301 existing products backfill from their `source_url` inside the
+migration. Checked against the live database first: all 301 parse, all 301
+codes are distinct, and every one matches what the noon adapter's `skuFromUrl`
+produces — which matters, because if the two disagreed the first sync would
+treat the whole catalogue as new.
+
 ## How a source is added
 
 Everything that differs between retailers lives in one adapter under

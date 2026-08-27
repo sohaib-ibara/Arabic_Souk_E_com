@@ -59,10 +59,33 @@ async function findCategoryId(sb: SupabaseClient, slug: string | null): Promise<
   return (data as any)?.id ?? null;
 }
 
-async function uniqueSlug(sb: SupabaseClient, name: string, stagingId: string): Promise<string> {
+/**
+ * The slug for a promotion, which must be stable across re-promotes.
+ *
+ * A product already in the catalogue keeps the slug it has. That matters more
+ * than it looks: the slug is the public URL, so recomputing it whenever a price
+ * changed would break every indexed link and every bookmark. Only a genuinely
+ * new product gets a fresh slug, and only then does a collision need suffixing.
+ */
+async function resolveSlug(
+  sb: SupabaseClient,
+  name: string,
+  stagingId: string,
+  source: string | null,
+  sourceSku: string | null,
+): Promise<string> {
+  if (source && sourceSku) {
+    const { data: mine } = await sb
+      .from("products")
+      .select("slug")
+      .eq("source", source)
+      .eq("source_sku", sourceSku)
+      .maybeSingle();
+    if (mine) return (mine as any).slug as string;
+  }
   const base = slugify(name);
-  const { data } = await sb.from("products").select("id").eq("slug", base).maybeSingle();
-  return data ? `${base}-${stagingId.slice(0, 6)}` : base;
+  const { data: taken } = await sb.from("products").select("id").eq("slug", base).maybeSingle();
+  return taken ? `${base}-${stagingId.slice(0, 6)}` : base;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -102,11 +125,24 @@ async function main() {
       if (!name) throw new Error("missing name");
       const brandId = await findBrandId(sb, (r.brand as string) ?? null);
       const categoryId = await findCategoryId(sb, (r.category as string) ?? null);
-      const slug = await uniqueSlug(sb, name, String(r.id));
+      const source = (r.source as string) ?? null;
+      const sourceSku = (r.source_sku as string) ?? null;
+      const slug = await resolveSlug(sb, name, String(r.id), source, sourceSku);
       const rawPrice = Number(r.price ?? 0);
       const price = Math.round(rawPrice * RATE * 1000) / 1000;
 
-      const { error: insErr } = await sb.from("products").insert({
+      /*
+        Upsert on (source, source_sku), not insert.
+
+        Two reasons. Re-promoting a product whose price changed should update
+        the row rather than fail on the slug or create a second listing of the
+        same item. And carrying source/source_sku/source_url across is what
+        makes the live row traceable to its supplier at all — without them a
+        promoted product arrives anonymous, which is exactly the gap
+        backfill-source-url.ts had to be written to repair.
+      */
+      const identified = Boolean(source && sourceSku);
+      const row = {
         name,
         slug,
         description: r.description ?? null,
@@ -123,7 +159,14 @@ async function main() {
         is_featured: false,
         is_new: true,
         tags: [],
-      });
+        source,
+        source_sku: sourceSku,
+        source_url: (r.source_url as string) ?? null,
+      };
+
+      const { error: insErr } = identified
+        ? await sb.from("products").upsert(row, { onConflict: "source,source_sku" })
+        : await sb.from("products").insert(row);
       if (insErr) throw insErr;
 
       await sb
