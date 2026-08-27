@@ -53,11 +53,21 @@ async function getHtml(url) {
   return res.text();
 }
 
-/** Every product id linked from a category page. */
-function productIdsIn(html) {
-  const ids = new Set();
-  for (const m of html.matchAll(/\/p\/[a-z0-9-]+\/(\d+)\//gi)) ids.add(m[1]);
-  return [...ids];
+/**
+ * Every product linked from a category page, as id → URL.
+ *
+ * The URL is kept, not just the id, so a capture can be driven straight from
+ * this map. That matters more than it sounds: discovering from the shelves
+ * means every captured product arrives already categorised, where discovering
+ * from the sitemap leaves most of them uncategorised because no shelf crawl
+ * ever reaches the whole 10,541-product catalogue.
+ */
+function productsIn(html, origin) {
+  const found = new Map();
+  for (const m of html.matchAll(/\/p\/([a-z0-9-]+)\/(\d+)\//gi)) {
+    found.set(m[2], `${origin}/p/${m[1]}/${m[2]}/`);
+  }
+  return found;
 }
 
 /**
@@ -118,17 +128,17 @@ for (const shelf of shelves) {
   let total = 0;
   for (let n = 1; n <= MAX_PAGES; n++) {
     const url = site.categoryPages.paginate(base, n);
-    let ids;
+    let found;
     try {
-      ids = productIdsIn(await getHtml(url));
+      found = productsIn(await getHtml(url), site.origin);
       requests++;
     } catch (e) {
       failures++;
       console.log(`  ✗ ${shelf.path} p${n} — ${e.message}`);
       break;
     }
-    if (!ids.length) break; // ran past the last page
-    for (const id of ids) {
+    if (!found.size) break; // ran past the last page
+    for (const [id, productUrl] of found) {
       // First shelf wins. Subcategories are crawled after their department
       // page, so a product only keeps the broad label if no narrower one
       // claimed it — which is the wrong way round, so prefer the deeper path.
@@ -140,11 +150,12 @@ for (const shelf of shelves) {
           departmentSlug: slugify(shelf.department),
           name: shelf.name,
           slug: slugify(shelf.name),
+          url: productUrl,
           deep: deeper,
         };
       }
     }
-    total += ids.length;
+    total += found.size;
     await sleep(DELAY_MS);
   }
   if (total) console.log(`  ${shelf.path.padEnd(42)} ${total}`);

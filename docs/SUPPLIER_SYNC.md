@@ -207,6 +207,31 @@ Its departments were chosen to line up with noon's — Makeup, Skin Care, Hair
 Care, Fragrance, Personal Care — so both sources feed one storefront taxonomy
 instead of two parallel ones.
 
+#### Capture from the shelves, not the sitemap
+
+This one is worth stating plainly, because measuring it changed the design.
+
+The obvious pipeline is: discover every product from the sitemap, then look its
+category up in the map. Tried that — **only 6 of 39 products came back
+categorised**. The reason is arithmetic. Shelves are deep (one fragrance
+subcategory alone reports 772 items), the page size is capped at 46 and
+`productsPerPage` is ignored, so a shelf crawl covers a fraction of a
+10,541-product catalogue. Everything else lands in the review queue.
+
+So capture walks the shelves instead. `map-categories.mjs` records each
+product's URL alongside its category, and `capture.mjs` drives straight off that
+list:
+
+```bash
+DISCOVER=shelves   # default when a map exists — every result is categorised
+DISCOVER=sitemap   # the whole catalogue, for change detection
+```
+
+Which is the better shape anyway: the store carries selected aisles, not all of
+Cult Beauty, so fetching from the aisles it carries means fewer requests *and*
+no uncategorised products. The sitemap keeps its job — spotting what is new
+across the whole catalogue — and is no longer asked to do one it is bad at.
+
 ---
 
 ## If a sync runs on an office machine, it needs a heartbeat

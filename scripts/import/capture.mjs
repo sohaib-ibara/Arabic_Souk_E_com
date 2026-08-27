@@ -123,8 +123,36 @@ if (isBrowser) {
   page.setDefaultNavigationTimeout(45_000);
 }
 
-console.log(`\nDiscovering products…`);
-const discovered = await discoverProducts(site, { page, max: MAX_PRODUCTS, log: (s) => console.log(s) });
+/**
+ * Where the product list comes from.
+ *
+ * For a source whose pages don't state their own category, walking the shelves
+ * we already mapped beats walking the sitemap: every product then arrives
+ * categorised, and we only fetch products from aisles the store actually
+ * carries. The sitemap route stays for change detection over the whole
+ * catalogue and for sources that need no map.
+ *
+ *   DISCOVER=shelves   product URLs from the category map (the default when
+ *                      one exists — every result is categorised)
+ *   DISCOVER=sitemap   every product the source publishes
+ */
+const DISCOVER = process.env.DISCOVER || (categoryMap?.size ? "shelves" : "sitemap");
+
+console.log(`\nDiscovering products (${DISCOVER})…`);
+let discovered;
+if (DISCOVER === "shelves") {
+  if (!categoryMap?.size) {
+    console.error(`No category map. Run:  SITE=${site.key} npm run import:categories`);
+    process.exit(2);
+  }
+  discovered = [...categoryMap.values()]
+    .map((c) => c.url)
+    .filter(Boolean)
+    .slice(0, MAX_PRODUCTS);
+  console.log(`  ${categoryMap.size} mapped products → ${discovered.length} selected`);
+} else {
+  discovered = await discoverProducts(site, { page, max: MAX_PRODUCTS, log: (s) => console.log(s) });
+}
 const urls = discovered.filter((u) => !done.has(u));
 console.log(`${discovered.length} discovered · ${urls.length} to fetch\n`);
 
