@@ -13,7 +13,8 @@
     "import:browser": "node scripts/import/browser-noon.mjs",
     "import:promote": "node scripts/import/promote-staging.ts",
     "import:access": "node scripts/import/access-test.mjs",
-    "import:categories": "node scripts/import/map-categories.mjs"
+    "import:categories": "node scripts/import/map-categories.mjs",
+    "import:capture": "node scripts/import/capture.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.8.0",
