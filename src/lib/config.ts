@@ -88,10 +88,19 @@ export const siteConfig = {
     whatsapp: "97336949682",
     address: "Seef District, Manama, Kingdom of Bahrain",
   },
+  /**
+   * Social profiles — empty until the accounts exist.
+   *
+   * These held instagram.com / tiktok.com / facebook.com, the platforms' own
+   * front pages, which rendered as footer icons that went nowhere and as
+   * `sameAs` claims of ownership in the Organization JSON-LD. Both are removed;
+   * fill these in and restore the footer block and `sameAs` when there are real
+   * profiles to point at.
+   */
   social: {
-    instagram: "https://instagram.com",
-    tiktok: "https://tiktok.com",
-    facebook: "https://facebook.com",
+    instagram: "",
+    tiktok: "",
+    facebook: "",
   },
   shipping: {
     freeThreshold: 20, // BHD

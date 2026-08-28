@@ -2,7 +2,6 @@ import Link from "next/link";
 import { siteConfig } from "@/lib/config";
 import { legalLinks, supportLinks } from "@/lib/nav";
 import { NewsletterForm } from "@/components/newsletter-form";
-import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/icons";
 import { PaymentMarks } from "@/components/ui/payment-marks";
 import { CompanyDetails } from "@/components/layout/company-details";
 
@@ -11,41 +10,28 @@ export function Footer({ categories }: { categories: Array<{ name: string; slug:
   const year = 2026;
   return (
     <footer className="mt-20 border-t border-line bg-sand/60">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      {/* Extra bottom padding so the floating WhatsApp button clears the last
+          row. It is fixed to the viewport and occupies the bottom ~80px, so
+          without this it sat on top of the payment marks once the page was
+          scrolled all the way down — which is exactly where it always is. */}
+      <div className="mx-auto max-w-7xl px-4 pb-28 pt-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand + social */}
+          {/*
+            Brand.
+
+            The Instagram / TikTok / Facebook icons that used to sit here have
+            gone. They pointed at instagram.com, tiktok.com and facebook.com —
+            the platforms' own front pages — because the store has no accounts
+            on any of them. A social icon that goes nowhere is worse than no
+            icon: it looks like a broken link on a shop asking for card details.
+
+            To bring them back, set the real profile URLs in siteConfig.social
+            and restore this block along with the `sameAs` entries in the
+            store layout's Organization JSON-LD.
+          */}
           <div>
             <span className="font-serif text-2xl">{siteConfig.name}</span>
             <p className="mt-3 max-w-xs text-sm text-muted">{siteConfig.description}</p>
-            <div className="mt-5 flex gap-2">
-              <a
-                href={siteConfig.social.instagram}
-                aria-label="Instagram"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink hover:border-brand hover:text-brand"
-              >
-                <InstagramIcon width={18} height={18} />
-              </a>
-              <a
-                href={siteConfig.social.tiktok}
-                aria-label="TikTok"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink hover:border-brand hover:text-brand"
-              >
-                <TiktokIcon width={18} height={18} />
-              </a>
-              <a
-                href={siteConfig.social.facebook}
-                aria-label="Facebook"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink hover:border-brand hover:text-brand"
-              >
-                <FacebookIcon width={18} height={18} />
-              </a>
-            </div>
           </div>
 
           {/* Shop */}
