@@ -1,0 +1,88 @@
+# Measures whether a source answers from a DATACENTRE IP.
+#
+# This is the question that decides the hosting bill. noon was measured blocked
+# from CI (see docs/SUPPLIER_SYNC.md), which forces its sync onto a machine on a
+# residential connection. Cult Beauty answers a plain HTTP fetch with no browser
+# from a residential IP — but that is not proof it does so from a datacentre,
+# and the difference is between "runs free on Vercel/Railway" and "needs an
+# always-on office PC".
+#
+# Diagnostic only: a handful of product pages, nothing written to the store,
+# nothing published, and it never runs on a schedule.
+name: source access test
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Adapter key (noon | cultbeauty)"
+        required: true
+        default: cultbeauty
+  # Scoped to the probe's own code. Without the paths filter this re-ran on
+  # every commit to the branch and sent fresh traffic to the retailer each
+  # time, which is both rude and pointless — the answer only changes when the
+  # probe or an adapter changes.
+  push:
+    branches: [test/source-access]
+    paths:
+      - "scripts/import/access-test.mjs"
+      - "scripts/import/discover.mjs"
+      - "scripts/import/sites/**"
+      - ".github/workflows/source-access-test.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Only Playwright is needed; the app's own dependencies are irrelevant.
+      - name: Install Playwright + Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm i --no-save playwright@1.61.1
+          npx playwright install --with-deps chromium
+
+      # The headline test. If plain HTTP passes from here, the daily sync for
+      # this source can run on any host — no browser, no residential IP.
+      - name: Plain HTTP only
+        run: |
+          echo "## ${SITE} · plain HTTP from a datacentre" >> docs/source-access-results.md
+          node scripts/import/access-test.mjs | tee -a docs/source-access-results.md
+        env:
+          SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
+          LIMIT: 5
+          SKIP_BROWSER: "1"
+
+      # Only meaningful if the line above failed: it separates "this IP is
+      # blocked outright" from "this IP is fine but needs a real browser".
+      - name: With a browser
+        if: always()
+        run: |
+          echo "" >> docs/source-access-results.md
+          echo "## ${SITE} · headless browser from a datacentre" >> docs/source-access-results.md
+          node scripts/import/access-test.mjs | tee -a docs/source-access-results.md
+        env:
+          SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
+          LIMIT: 5
+
+      # Run logs need a token to read, so the outcome is committed back to the
+      # branch instead — readable by anyone reviewing this decision, and it
+      # keeps a dated record of what was measured. [skip ci] stops this commit
+      # from triggering the workflow again.
+      - name: Publish result
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f docs/source-access-results.md
+          git commit -m "source access test result [skip ci]" || exit 0
+          git push origin HEAD:test/source-access
