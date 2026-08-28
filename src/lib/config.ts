@@ -54,15 +54,53 @@ export const siteConfig = {
      */
     cashOnDelivery: true,
   },
+  /**
+   * The registered entity, as it must appear on invoices and order
+   * confirmations. Supplied by the client on 28 Aug 2026.
+   *
+   * `legalLine` is stored as one string on purpose. It is a legal identity, not
+   * data to recombine — assembling "trading name" and "registered name" from
+   * separate fields invites a later edit that changes the wording, and the
+   * wording is the part that has to be exact.
+   */
+  business: {
+    // "Souk", matching the brand everywhere else. The client's note spelled it
+    // "Souq"; confirmed 28 Aug 2026 that the store is Arabic Souk. If the CR
+    // certificate itself reads "Souq", that spelling has to win here — it is
+    // the registered name, and an invoice should match the certificate.
+    legalLine: "Arabic Souk (Trading Name of TEJARAT HUB W.L.L)",
+    country: "Kingdom of Bahrain",
+    crNumber: "177789-1",
+  },
   contact: {
+    // Confirmed 28 Aug 2026. Printed on every order confirmation and used as
+    // the reply-to on every email the store sends.
     email: "hello@arabicsouk.com",
-    phone: "+973 1700 0000",
+    // Callers build tel: links by stripping the spaces, so this stays the one
+    // human-readable form rather than being duplicated as a second field.
+    phone: "+973 3694 9682",
+    /**
+     * The same line, in the digits-only form wa.me requires — no +, no spaces.
+     * Written out rather than derived from `phone` so that whoever changes one
+     * is looking straight at the other: a WhatsApp button pointing at a number
+     * nobody reads is a support channel that silently goes nowhere.
+     */
+    whatsapp: "97336949682",
     address: "Seef District, Manama, Kingdom of Bahrain",
   },
+  /**
+   * Social profiles — empty until the accounts exist.
+   *
+   * These held instagram.com / tiktok.com / facebook.com, the platforms' own
+   * front pages, which rendered as footer icons that went nowhere and as
+   * `sameAs` claims of ownership in the Organization JSON-LD. Both are removed;
+   * fill these in and restore the footer block and `sameAs` when there are real
+   * profiles to point at.
+   */
   social: {
-    instagram: "https://instagram.com",
-    tiktok: "https://tiktok.com",
-    facebook: "https://facebook.com",
+    instagram: "",
+    tiktok: "",
+    facebook: "",
   },
   shipping: {
     freeThreshold: 20, // BHD

@@ -346,6 +346,15 @@ export function CheckoutView({
               <dt className="text-muted">Delivery</dt>
               <dd>{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
             </div>
+            {/* Why this order was charged and another wasn't. Without it the
+                fee looks arbitrary — it appears on a 3 BHD basket and vanishes
+                on a 25 BHD one, with nothing on the page connecting the two. */}
+            {shipping > 0 && (
+              <p className="text-xs text-muted">
+                Add {formatPrice(siteConfig.shipping.freeThreshold - subtotal)} more for free
+                delivery.
+              </p>
+            )}
             <div className="flex justify-between border-t border-line pt-2.5 text-base font-medium">
               <dt>Total</dt>
               <dd>{formatPrice(total)}</dd>
@@ -462,20 +471,35 @@ function PaymentPanel({
           Ordered to lead with the figure the customer recognises. Opening on
           the converted amount read as a price change — the shopper sees a
           number they never agreed to, in a currency they weren't shopping in,
-          and has to work backwards to find out nothing has changed. */}
+          and has to work backwards to find out nothing has changed.
+
+          A footnote now rather than a bordered panel. As a boxed callout it
+          carried the weight of a warning and set two currencies side by side as
+          though the shop could not decide what it was charging. BHD is the
+          price — the only figure quoted anywhere, Pay button included — and
+          this is a note about what the bank will print.
+
+          Not removable, though: the card really is debited in AED, so hiding it
+          would surprise the customer at their statement. It disappears by
+          itself once Stripe can charge BHD, which needs a Bahrain Stripe
+          account — the current UK one rejects BHD outright. */}
       {payment?.converted && (
-        <p className="rounded-xl border border-line bg-sand/60 p-4 text-xs text-muted">
-          Your total is{" "}
-          <strong className="text-ink">{formatPrice(total)}</strong> — the price shown
-          throughout your order. Our payment provider settles in {payment.currency}, so your
-          statement will show{" "}
-          <strong className="text-ink">{formatPrice(payment.amount, payment.currency)}</strong>{" "}
-          instead, converted at a fixed rate of 1 {siteConfig.currency} = {payment.rate}{" "}
-          {payment.currency}. Nothing extra is added.
+        <p className="text-xs leading-relaxed text-muted">
+          You pay <strong className="text-ink">{formatPrice(total)}</strong>. Your bank statement
+          will show this as {formatPrice(payment.amount, payment.currency)}, because our payment
+          provider settles in {payment.currency} at a fixed 1 {siteConfig.currency} ={" "}
+          {payment.rate} {payment.currency}. Nothing extra is added.
         </p>
       )}
 
       <PaymentElement
+        options={{
+          // Stripe defaults the country picker to the account's own country,
+          // which showed "United Kingdom" to shoppers in Bahrain and read as
+          // yet another sign the shop was foreign. Every customer here is in
+          // Bahrain, so that is the sensible default; they can still change it.
+          defaultValues: { billingDetails: { address: { country: siteConfig.countryCode } } },
+        }}
         onReady={() => {
           setReady(true);
           setLoadFailed(false);

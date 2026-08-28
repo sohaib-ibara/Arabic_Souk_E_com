@@ -52,7 +52,7 @@ export function TrackOrderForm({ defaultOrderNumber }: { defaultOrderNumber?: st
               name="orderNumber"
               required
               defaultValue={state.values.orderNumber}
-              placeholder="LM-1A2B3C4D"
+              placeholder="AS-260828-1042"
               autoComplete="off"
               className={field}
             />

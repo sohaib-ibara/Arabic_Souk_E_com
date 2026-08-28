@@ -134,6 +134,14 @@ export function CartView() {
               <dt className="text-muted">Delivery</dt>
               <dd>{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
             </div>
+            {/* Same reason as at checkout: say what turns the fee off, at the
+                point where the basket can still be changed. */}
+            {shipping > 0 && (
+              <p className="text-xs text-muted">
+                Add {formatPrice(siteConfig.shipping.freeThreshold - subtotal)} more for free
+                delivery.
+              </p>
+            )}
             <div className="flex justify-between border-t border-line pt-3 text-base font-medium">
               <dt>Total</dt>
               <dd>{formatPrice(total)}</dd>

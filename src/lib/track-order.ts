@@ -41,7 +41,11 @@ export interface TrackedOrder {
   items: TrackedLine[];
 }
 
-/** Normalised so "lm-1a2b" and " LM-1A2B " find the same order. */
+/**
+ * Normalised so "as-260828-1042" and " AS-260828-1042 " find the same order.
+ * Older orders still carry the previous `LM-` format and must keep working —
+ * see migration 0011; nothing here is format-specific, which is why they do.
+ */
 function normaliseNumber(v: string): string {
   return v.trim().toUpperCase().replace(/\s+/g, "");
 }
