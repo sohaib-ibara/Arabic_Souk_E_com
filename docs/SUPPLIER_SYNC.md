@@ -11,7 +11,7 @@ The short version, as of 27 Aug 2026:
 | Source | Needs a browser? | Runs in a datacentre? | Where the sync can live |
 | ------ | ---------------- | --------------------- | ----------------------- |
 | **Cult Beauty** | ❌ no — plain HTTP | ✅ **yes, measured** | Anywhere. Vercel Cron, Railway, GitHub Actions. Free. |
-| **noon** | ✅ yes, mandatory | ❌ no — blocked | A machine on a residential connection, or a paid scraping service. |
+| **noon** | ✅ yes, mandatory | ❌ no — blocked | ⚠️ **Nowhere free.** The office-connection route worked in July and is now blocked too (re-tested 29 Aug). Needs rotating residential proxies or a paid scraping API. |
 
 They are not the same problem and should not get the same solution.
 
@@ -160,6 +160,26 @@ apart from a permanent block earned by the July scraping.
 Re-test after a day of silence, with **one** attempt rather than forty, before
 concluding anything. Until then, treat the free office-machine option for noon
 as unproven rather than either working or dead.
+
+#### Re-tested 29 Aug 2026 — still blocked, and no longer confounded
+
+Two days of silence, then **one** attempt: headed browser, homepage and one
+product page, from `39.37.188.105` (PTCL).
+
+```
+homepage   454 bytes · Akamai Access Denied
+product    504 bytes · Akamai Access Denied
+```
+
+That removes the rate-limit explanation. A block that survives two days of
+total silence and answers a single request with 454 bytes is not a cooldown —
+it is the IP being on a list. The July scraping earned it.
+
+**So the free office-machine route for noon is closed, not merely unproven.**
+noon now needs either rotating residential proxies or a paid scraping API with
+its own IP pool; both are recurring costs and a client decision. Its 301 live
+products are unaffected — they are already in the catalogue — but they will not
+update until one of those is in place.
 
 A note that applies whichever way it lands: a daily crawl is itself the pattern
 that gets an IP flagged. Rotating residential proxies exist because any single
