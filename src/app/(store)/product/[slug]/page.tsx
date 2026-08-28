@@ -118,21 +118,46 @@ export default async function ProductPage({ params }: { params: Params }) {
           "@type": "DefinedRegion",
           addressCountry: siteConfig.countryCode,
         },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "DAY",
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 1,
-            maxValue: 2,
-            unitCode: "DAY",
-          },
-        },
+        /*
+          The same window the page shows the shopper, not a second opinion.
+
+          Google sums handlingTime and transitTime into one estimate and checks
+          it against the visible page; structured data promising 1–3 days over
+          a page reading "5–8 days" is a contradiction it can drop the rich
+          result over, and it would be the more optimistic of the two claims
+          that reached Google Shopping.
+
+          Where the supplier states a window we hold it as one figure rather
+          than a dispatch/transit split, so it goes in transitTime alone and
+          handlingTime is omitted — the sum is what matters, and inventing a
+          decomposition we were never given would be a third claim.
+        */
+        deliveryTime:
+          product.lead_days_min != null && product.lead_days_max != null
+            ? {
+                "@type": "ShippingDeliveryTime",
+                transitTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: product.lead_days_min,
+                  maxValue: product.lead_days_max,
+                  unitCode: "DAY",
+                },
+              }
+            : {
+                "@type": "ShippingDeliveryTime",
+                handlingTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: 0,
+                  maxValue: 1,
+                  unitCode: "DAY",
+                },
+                transitTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: 1,
+                  maxValue: 2,
+                  unitCode: "DAY",
+                },
+              },
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
