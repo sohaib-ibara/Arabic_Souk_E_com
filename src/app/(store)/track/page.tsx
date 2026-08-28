@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { TrackOrderForm } from "@/components/checkout/track-order-form";
+import { CompanyDetails } from "@/components/layout/company-details";
 import { siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
@@ -45,6 +46,10 @@ export default async function TrackOrderPage({
             See all your orders
           </Link>
         </p>
+
+        {/* A looked-up order stands in for a receipt, so the same registered
+            identity appears here as on the confirmation page and email. */}
+        <CompanyDetails className="mt-8 border-t border-line pt-6 text-center" />
       </div>
     </Container>
   );

@@ -4,6 +4,7 @@ import { legalLinks, supportLinks } from "@/lib/nav";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/icons";
 import { PaymentMarks } from "@/components/ui/payment-marks";
+import { CompanyDetails } from "@/components/layout/company-details";
 
 /** Category links come from the store layout, built from the live catalogue. */
 export function Footer({ categories }: { categories: Array<{ name: string; slug: string }> }) {
@@ -110,6 +111,10 @@ export function Footer({ categories }: { categories: Array<{ name: string; slug:
             </Link>
           ))}
         </nav>
+
+        {/* The registered entity, on every page rather than only on receipts —
+            a Bahrain storefront is expected to say who it trades as. */}
+        <CompanyDetails className="mt-6 border-t border-line pt-6 text-center sm:text-left" />
 
         <div className="mt-4 flex flex-col items-center justify-between gap-4 text-xs text-muted sm:flex-row">
           <p>

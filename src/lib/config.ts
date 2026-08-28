@@ -54,9 +54,29 @@ export const siteConfig = {
      */
     cashOnDelivery: true,
   },
+  /**
+   * The registered entity, as it must appear on invoices and order
+   * confirmations. Supplied by the client on 28 Aug 2026.
+   *
+   * `legalLine` is stored as one string on purpose. It is a legal identity, not
+   * data to recombine — assembling "trading name" and "registered name" from
+   * separate fields invites a later edit that changes the wording, and the
+   * wording is the part that has to be exact.
+   */
+  business: {
+    legalLine: "Arabic Souq (Trading Name of TEJARAT HUB W.L.L)",
+    country: "Kingdom of Bahrain",
+    crNumber: "177789-1",
+  },
   contact: {
+    // ⚠️ PLACEHOLDER. The client's message gave this as "E-mail: Hello@" —
+    // truncated mid-address — so this is still the old demo value. Confirm the
+    // real address before go-live; it is printed on every order confirmation
+    // and is the reply-to on every email the store sends.
     email: "hello@arabicsouk.com",
-    phone: "+973 1700 0000",
+    // Callers build tel: links by stripping the spaces, so this stays the one
+    // human-readable form rather than being duplicated as a second field.
+    phone: "+973 3694 9682",
     address: "Seef District, Manama, Kingdom of Bahrain",
   },
   social: {

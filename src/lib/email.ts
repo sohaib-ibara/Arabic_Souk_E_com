@@ -113,6 +113,14 @@ function renderText(o: OrderEmail): string {
     `(You'll need this order number and this email address.)`,
     "",
     `${siteConfig.name} — ${siteConfig.url}`,
+    "",
+    // The registered identity. This email is the customer's confirmation, and
+    // in Bahrain that means it carries the trading entity and CR number.
+    siteConfig.business.legalLine,
+    siteConfig.business.country,
+    `CR No. ${siteConfig.business.crNumber}`,
+    `Contact Number: ${siteConfig.contact.phone}`,
+    `E-mail: ${siteConfig.contact.email}`,
   ].join("\n");
 }
 
@@ -193,6 +201,17 @@ function renderHtml(o: OrderEmail): string {
 
     <p style="margin:20px 0 0;font-size:12px;color:#6f655f;text-align:center">
       Questions? Reply to this email or contact us at ${esc(siteConfig.contact.email)}.
+    </p>
+
+    <!-- Registered identity. Inline styles and a plain block, not the shared
+         React component: an email client cannot use Tailwind, so the two are
+         kept in step through siteConfig rather than through markup. -->
+    <p style="margin:16px 0 0;padding-top:16px;border-top:1px solid #e7e0d8;font-size:11px;line-height:1.7;color:#6f655f;text-align:center">
+      <strong style="color:#1b1613;font-weight:600">${esc(siteConfig.business.legalLine)}</strong><br />
+      ${esc(siteConfig.business.country)}<br />
+      CR No. ${esc(siteConfig.business.crNumber)}<br />
+      Contact Number: ${esc(siteConfig.contact.phone)}<br />
+      E-mail: ${esc(siteConfig.contact.email)}
     </p>
   </div>
 </body></html>`;

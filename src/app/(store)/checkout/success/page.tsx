@@ -11,6 +11,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { confirmOrderFromIntent } from "@/lib/orders";
 import { ORDER_COOKIE, readOrderToken } from "@/lib/order-token";
 import { ClearCart } from "@/components/checkout/clear-cart";
+import { CompanyDetails } from "@/components/layout/company-details";
 import { emailConfigured } from "@/lib/email";
 
 export const metadata: Metadata = {
@@ -202,6 +203,10 @@ export default async function CheckoutSuccessPage({
               it&rsquo;s all you need (with your email) to check on this order at any time.
             </p>
           )}
+
+          {/* This page is the customer's receipt, so it carries the registered
+              business identity the same way the confirmation email does. */}
+          <CompanyDetails className="mt-8 border-t border-line pt-6" />
         </>
       )}
     </Container>
