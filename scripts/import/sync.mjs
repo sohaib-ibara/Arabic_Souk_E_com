@@ -180,6 +180,29 @@ function loadCategoryMap() {
 const categoryMap = loadCategoryMap();
 const DISCOVER = env.DISCOVER || (categoryMap?.size ? "shelves" : "sitemap");
 
+/*
+  A crawl-categorised source without its map cannot categorise anything.
+
+  This bites in CI specifically: the map is a local build artefact and is
+  gitignored, so a GitHub Actions run has no map, falls back to sitemap
+  discovery, and files every new product under no category. Cult Beauty's
+  breadcrumb is brand-based — ["Philip Kingsley", "<product name>"] — so there
+  is nothing on the page to fall back to.
+
+  Not fatal, and not worth blocking the run over: change detection on products
+  we already hold is the valuable half and needs no map at all. But it must be
+  said out loud and recorded, because "40 new products" reads like a good night
+  when in fact none of them can be shelved.
+*/
+const missingCategoryMap = site.categorySource === "crawl" && !categoryMap?.size;
+if (missingCategoryMap) {
+  console.log(
+    `⚠  No category map for ${site.key} — new products will be staged UNCATEGORISED.\n` +
+      `   Change detection on known products is unaffected.\n` +
+      `   Build one with:  SITE=${site.key} npm run import:categories\n`,
+  );
+}
+
 let net = null;
 let discovered = [];
 try {
@@ -396,6 +419,9 @@ if (kindCounts.availability) {
 const summary = {
   ...kindCounts,
   refused: results.refused.length,
+  // Surfaced in /admin/sync so a run that staged uncategorised products is not
+  // mistaken for a clean one.
+  ...(missingCategoryMap ? { no_category_map: true } : {}),
   samples: results.changed.slice(0, 20).map((c) => ({
     sku: c.record.sku,
     name: c.record.name.slice(0, 80),

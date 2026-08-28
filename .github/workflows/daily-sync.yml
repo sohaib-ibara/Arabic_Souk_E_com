@@ -56,11 +56,20 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      # --omit=dev skips Playwright, whose postinstall downloads ~500MB of
+      # browsers. Nothing here needs one: the only browser source is noon, which
+      # cannot run in CI at all, and fetcher.mjs imports Playwright lazily inside
+      # the browser branch. @supabase/supabase-js is a prod dependency.
+      - run: npm ci --omit=dev
 
       # Cult Beauty needs no browser — that is the whole reason it can run here.
       # A source that needed one would need a residential IP too, and would not
       # belong in this workflow.
+      #
+      # ⚠️ The category map is a local build artefact and is gitignored, so runs
+      # here have none: new products are staged UNCATEGORISED and the run says
+      # so. Change detection on products we already hold is unaffected, and is
+      # the half that matters daily. Fix by moving the map into the database.
       - name: Sync
         env:
           SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
