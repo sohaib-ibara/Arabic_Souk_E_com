@@ -118,21 +118,46 @@ export default async function ProductPage({ params }: { params: Params }) {
           "@type": "DefinedRegion",
           addressCountry: siteConfig.countryCode,
         },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "DAY",
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 1,
-            maxValue: 2,
-            unitCode: "DAY",
-          },
-        },
+        /*
+          The same window the page shows the shopper, not a second opinion.
+
+          Google sums handlingTime and transitTime into one estimate and checks
+          it against the visible page; structured data promising 1–3 days over
+          a page reading "5–8 days" is a contradiction it can drop the rich
+          result over, and it would be the more optimistic of the two claims
+          that reached Google Shopping.
+
+          Where the supplier states a window we hold it as one figure rather
+          than a dispatch/transit split, so it goes in transitTime alone and
+          handlingTime is omitted — the sum is what matters, and inventing a
+          decomposition we were never given would be a third claim.
+        */
+        deliveryTime:
+          product.lead_days_min != null && product.lead_days_max != null
+            ? {
+                "@type": "ShippingDeliveryTime",
+                transitTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: product.lead_days_min,
+                  maxValue: product.lead_days_max,
+                  unitCode: "DAY",
+                },
+              }
+            : {
+                "@type": "ShippingDeliveryTime",
+                handlingTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: 0,
+                  maxValue: 1,
+                  unitCode: "DAY",
+                },
+                transitTime: {
+                  "@type": "QuantitativeValue",
+                  minValue: 1,
+                  maxValue: 2,
+                  unitCode: "DAY",
+                },
+              },
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
@@ -235,9 +260,22 @@ export default async function ProductPage({ params }: { params: Params }) {
 
             {/* Assurances */}
             <ul className="mt-8 grid gap-3 border-t border-line pt-6 text-sm text-ink/80 sm:grid-cols-2">
+              {/*
+                The supplier's real window where we have one, the house default
+                otherwise.
+
+                Worth stating plainly: the default is "1–2 days", which
+                describes a shop delivering from its own shelf. This one buys
+                from the supplier after the customer pays, so a line sourced
+                from the UK is nearer two weeks. Quoting 1–2 days on those is a
+                promise the shop cannot keep, and the customer finds out only
+                after paying.
+              */}
               <li className="flex items-center gap-2">
                 <TruckIcon width={18} height={18} className="text-brand" /> Delivery in{" "}
-                {siteConfig.shipping.etaDays}
+                {product.lead_days_min && product.lead_days_max
+                  ? `${product.lead_days_min}–${product.lead_days_max} days`
+                  : siteConfig.shipping.etaDays}
               </li>
               <li className="flex items-center gap-2">
                 <ShieldIcon width={18} height={18} className="text-brand" /> 100% authentic

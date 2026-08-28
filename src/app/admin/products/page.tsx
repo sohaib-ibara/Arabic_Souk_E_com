@@ -7,9 +7,11 @@ import { isAdmin } from "@/lib/admin-auth";
 import {
   getCatalogueStatus,
   getCategoryOptions,
+  getSourceOptions,
   listAdminProducts,
   type ListResult,
 } from "@/lib/admin-products";
+import { setVisibilityAction } from "@/app/admin/actions";
 
 export const metadata: Metadata = {
   title: "Products · Admin",
@@ -33,6 +35,9 @@ export default async function AdminProductsPage({
   const sp = await searchParams;
   const search = str(sp.search);
   const categoryId = str(sp.category);
+  const source = str(sp.source);
+  const rawVisibility = str(sp.visibility);
+  const visibility = rawVisibility === "listed" || rawVisibility === "hidden" ? rawVisibility : "";
   const parsedPage = Number.parseInt(str(sp.page) || "1", 10);
   const page = Number.isNaN(parsedPage) ? 1 : parsedPage;
 
@@ -43,12 +48,20 @@ export default async function AdminProductsPage({
   let result: ListResult = { items: [], total: 0, page, perPage: 25, pageCount: 1 };
   let loadError: string | null = null;
   let categories = [] as Awaited<ReturnType<typeof getCategoryOptions>>;
+  let sources = [] as Awaited<ReturnType<typeof getSourceOptions>>;
 
   if (status.configured) {
     try {
-      [result, categories] = await Promise.all([
-        listAdminProducts({ search, categoryId, page }),
+      [result, categories, sources] = await Promise.all([
+        listAdminProducts({
+          search,
+          categoryId,
+          source,
+          visibility: visibility || undefined,
+          page,
+        }),
         getCategoryOptions(),
+        getSourceOptions(),
       ]);
     } catch (e) {
       loadError = (e as Error).message;
@@ -98,12 +111,28 @@ export default async function AdminProductsPage({
         </Notice>
       )}
 
+      {str(sp.bulk) === "none" && (
+        <Notice tone="warning" className="mt-6">
+          Nothing was selected, so nothing changed. Tick the products first.
+        </Notice>
+      )}
+      {(str(sp.bulk) === "listed" || str(sp.bulk) === "hidden") && (
+        <Notice tone="success" className="mt-6">
+          {str(sp.n)} product{str(sp.n) === "1" ? "" : "s"}{" "}
+          {str(sp.bulk) === "listed" ? "now listed on the storefront." : "hidden from the storefront."}
+        </Notice>
+      )}
+
       {status.configured && !loadError && (
         <ProductsTable
           result={result}
           categories={categories}
+          sources={sources}
           search={search}
           categoryId={categoryId}
+          source={source}
+          visibility={visibility}
+          action={setVisibilityAction}
         />
       )}
     </Container>

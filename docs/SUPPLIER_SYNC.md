@@ -11,7 +11,7 @@ The short version, as of 27 Aug 2026:
 | Source | Needs a browser? | Runs in a datacentre? | Where the sync can live |
 | ------ | ---------------- | --------------------- | ----------------------- |
 | **Cult Beauty** | ❌ no — plain HTTP | ✅ **yes, measured** | Anywhere. Vercel Cron, Railway, GitHub Actions. Free. |
-| **noon** | ✅ yes, mandatory | ❌ no — blocked | A machine on a residential connection, or a paid scraping service. |
+| **noon** | ✅ yes, mandatory | ❌ no — blocked | ⚠️ **Nowhere free.** The office-connection route worked in July and is now blocked too (re-tested 29 Aug). Needs rotating residential proxies or a paid scraping API. |
 
 They are not the same problem and should not get the same solution.
 
@@ -161,6 +161,26 @@ Re-test after a day of silence, with **one** attempt rather than forty, before
 concluding anything. Until then, treat the free office-machine option for noon
 as unproven rather than either working or dead.
 
+#### Re-tested 29 Aug 2026 — still blocked, and no longer confounded
+
+Two days of silence, then **one** attempt: headed browser, homepage and one
+product page, from `39.37.188.105` (PTCL).
+
+```
+homepage   454 bytes · Akamai Access Denied
+product    504 bytes · Akamai Access Denied
+```
+
+That removes the rate-limit explanation. A block that survives two days of
+total silence and answers a single request with 454 bytes is not a cooldown —
+it is the IP being on a list. The July scraping earned it.
+
+**So the free office-machine route for noon is closed, not merely unproven.**
+noon now needs either rotating residential proxies or a paid scraping API with
+its own IP pool; both are recurring costs and a client decision. Its 301 live
+products are unaffected — they are already in the catalogue — but they will not
+update until one of those is in place.
+
 A note that applies whichever way it lands: a daily crawl is itself the pattern
 that gets an IP flagged. Rotating residential proxies exist because any single
 address eventually burns.
@@ -178,6 +198,40 @@ address eventually burns.
 Owning the server changes nothing; noon never sees who owns it, only where the
 traffic comes from. **None of this applies to Cult Beauty**, which was measured
 working from exactly the datacentre that refuses noon.
+
+### ⚠️ Its delivery window is to Saudi Arabia, not Bahrain
+
+noon states delivery per product, in the JSON-LD we already capture:
+
+```json
+"deliveryTime": {
+  "handlingTime": { "minValue": 0, "maxValue": 2, "unitCode": "DAY" },
+  "transitTime":  { "minValue": 5, "maxValue": 6, "unitCode": "DAY" }
+}
+```
+
+703 of the 717 parseable products in the July capture carry it, and it varies
+per product — 270 are 0–3 days (noon Express), 331 are 5–8, a handful reach
+18–21.
+
+**`shippingDestination` is `SA` on every one of them.** That is noon delivering
+to a Saudi address. The Saudi→Bahrain leg is on top and noon states it nowhere,
+so the stored window is short of the truth by however long that leg takes.
+
+It is recorded as noon gives it, on purpose, until the client says how goods
+actually cross. The scope is spelled out in `supplier_dispatch_note`, which
+0012 grants to nobody, so staff see the caveat in the admin and customers never
+see the raw supplier wording:
+
+```
+noon: dispatch 0–2 days + transit 5–6 days, to an address in SA.
+Excludes SA→BH, which noon does not state.
+```
+
+Five products state dispatch but no transit. They get **no** window rather than
+a 0–2 day one — a dispatch time passed off as a delivery time is worse than the
+site default. Add the Bahrain leg in `fulfilment` in
+[the adapter](../scripts/import/sites/noon.mjs) once the number is known.
 
 ---
 
@@ -297,6 +351,67 @@ into a visible one.
 
 ---
 
+## Running the sync
+
+```bash
+SITE=cultbeauty npm run sync                  # dry run — reports, writes nothing
+SITE=cultbeauty CONFIRM_SYNC=1 npm run sync   # applies
+```
+
+Cult Beauty runs itself: `.github/workflows/daily-sync.yml`, 02:20 UTC (05:20
+Bahrain), on GitHub Actions. It needs two repository secrets —
+`NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+
+**noon is deliberately not in that workflow.** A job that goes green every
+morning while fetching nothing is worse than no job, because the shop then looks
+synced. noon needs a browser on a residential connection; run the same command
+on the office machine via Task Scheduler.
+
+### What a run will and will not change
+
+| | |
+| --- | --- |
+| New product upstream | staged `pending`; hidden even after promotion |
+| Price moved | **recorded only** — the shop's price is not touched |
+| Name, description, images | recorded only |
+| Availability changed | recorded only, and called out in the run summary |
+| Delivery window moved | **written straight to the live product** |
+
+Price is recorded rather than applied because the prices on the shop are not the
+supplier's. noon's came in at SAR×0.1 and staff have corrected them by hand
+since — the implied rate across the live catalogue runs 0.048 to 0.133, not a
+flat 0.1. A sync that followed the supplier would erase that work nightly, and
+would need the markup rule that is still open below.
+
+Delivery is the exception because it is the supplier's own fact about its own
+logistics, nobody edits it here, and a stale one is a promise we break.
+
+### Two identity traps, both hit in testing
+
+**jsonb reorders keys.** The adapter writes `{min, max}`; Postgres returns
+`{"max":…,"min":…}`. Comparing windows with `JSON.stringify` therefore reported
+a delivery change on 58 of 60 unchanged products on the first run — which would
+have marked the whole catalogue changed every night and buried the price moves
+that matter. Compare values, not serialisations.
+
+**A product's URL id is not its SKU.** Cult Beauty's `/p/…/10449360/` parses to
+sku `10302495`, because the adapter picks a variant and the variant carries its
+own code; roughly 40% of that catalogue is multi-variant. Classifying by
+URL-derived SKU alone meant those products never matched staging, so they looked
+new on every run — re-fetched nightly, never diffed for price, and consuming the
+whole `NEW_LIMIT` budget forever so real new products were never reached. The
+sync indexes staging by **both** URL and SKU, and re-decides new-vs-changed
+*after* parsing.
+
+### Rotation, not a full crawl
+
+`NEW_LIMIT` (default 40) caps how many new products one run adopts; the rest
+wait for tomorrow. `REFRESH_LIMIT` (default 60, 120 in CI) re-checks known
+products **stalest first**, so everything comes round without fetching 3,526
+pages nightly at someone else's expense.
+
+---
+
 ## Still open (client decisions)
 
 - **Markup rule** — nothing may follow a supplier price automatically without
@@ -304,6 +419,15 @@ into a visible one.
   Cult Beauty's shipping and the duties its customers pay on arrival.
 - **Which categories, from which supplier, and a cap** on how many products one
   run may add. Cult Beauty alone offers 10,541 products; the store holds 301.
+- **⚠️ The two taxonomies do not meet.** Of the 62 distinct categories in the
+  first 177-product Cult Beauty capture, **58 do not exist in our database** —
+  only 16 of those 177 products would land in a category that the storefront
+  already has. Cult Beauty files by concern (`mature-skin`, `night-time`,
+  `active`), noon by product type (`creams-moisturizers`, `treatment-serums`).
+  Promoting as-is puts 161 products in no category: reachable from search and
+  `/shop`, absent from every category page and the nav. Either the Cult Beauty
+  categories get created — roughly tripling the nav — or they get mapped onto
+  the existing 28, which is a merchandising decision, not a technical one.
 - **New products: auto-publish or review queue?** The staging table and manual
   promote step already exist ([NOON_IMPORT.md](NOON_IMPORT.md)). That document's
   rights and copyright position applies to anything a daily sync brings in, and

@@ -103,3 +103,58 @@ export const imageList = (image, max = 4) =>
 
 /** Tracking params make a supplier link long and stale; the bare path is stable. */
 export const cleanUrl = (u) => String(u || "").split("?")[0];
+
+/**
+ * schema.org `OfferShippingDetails.deliveryTime` → days, as the retailer states them.
+ *
+ * `handlingTime` is how long before the parcel leaves the warehouse and
+ * `transitTime` how long it then travels. Both are QuantitativeValue, so both
+ * carry a UN/CEFACT `unitCode`, and only DAY is accepted here — reading "2 WEE"
+ * as two days would quote a fortnight as a fortnight's fourteenth.
+ *
+ * `total` is null unless BOTH legs are stated. An offer that gives handling and
+ * no transit tells us when it leaves, not when it lands; adding nothing for the
+ * journey would turn "dispatched within 2 days" into "delivered within 2 days".
+ *
+ * The destination is returned alongside, because a retailer quotes delivery to
+ * somewhere specific — usually its own country — and a window measured to the
+ * wrong country is worse than no window at all.
+ */
+export function shippingDeliveryTime(offer) {
+  const details = offer?.shippingDetails;
+  const dt = Array.isArray(details) ? details[0]?.deliveryTime : details?.deliveryTime;
+  if (!dt) return null;
+
+  const span = (q) => {
+    if (!q) return null;
+    if (String(q.unitCode ?? "DAY").toUpperCase() !== "DAY") return null;
+    const min = Number(q.minValue ?? q.value);
+    const max = Number(q.maxValue ?? q.value ?? q.minValue);
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+    if (min < 0 || max < min) return null;
+    return { min, max };
+  };
+
+  const handling = span(dt.handlingTime);
+  const transit = span(dt.transitTime);
+  if (!handling && !transit) return null;
+
+  const dest = Array.isArray(details) ? details[0]?.shippingDestination : details?.shippingDestination;
+  const region = Array.isArray(dest) ? dest[0] : dest;
+  const country = region?.addressCountry;
+
+  return {
+    handling,
+    transit,
+    destinationCountry:
+      (typeof country === "string" ? country : country?.name ?? null) || null,
+    total:
+      handling && transit
+        ? { min: handling.min + transit.min, max: handling.max + transit.max }
+        : null,
+  };
+}
+
+/** "0–2 days", or "2 days" when the range is a point. */
+export const dayRange = (span) =>
+  !span ? null : span.min === span.max ? `${span.max} days` : `${span.min}–${span.max} days`;

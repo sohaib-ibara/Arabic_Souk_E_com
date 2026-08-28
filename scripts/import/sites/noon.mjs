@@ -11,7 +11,16 @@
  * Manager, which serves a JavaScript sensor challenge. No HTTP client can pass
  * it. See docs/SUPPLIER_SYNC.md for the measurements.
  */
-import { breadcrumbOf, decode, findType, imageList, slugify, availabilityToBool } from "./shared.mjs";
+import {
+  availabilityToBool,
+  breadcrumbOf,
+  dayRange,
+  decode,
+  findType,
+  imageList,
+  shippingDeliveryTime,
+  slugify,
+} from "./shared.mjs";
 
 /** noon's own top-level beauty departments, in the order we show them. */
 const DEPT_ORDER = ["Makeup", "Skin Care", "Hair Care", "Fragrance", "Personal Care"];
@@ -62,6 +71,41 @@ export default {
       reviewCount:
         Number(prod.aggregateRating?.reviewCount ?? prod.aggregateRating?.ratingCount ?? 0) || 0,
       breadcrumb: breadcrumbOf(page.entities),
+      /**
+       * noon states delivery per product, inside `offers.shippingDetails`.
+       *
+       * ⚠ The window is to an address in noon's OWN country — `SA` on all 703
+       * products in the July capture that carry one. It is not what a Bahrain
+       * customer experiences: the Saudi→Bahrain leg is on top of it, and noon
+       * does not state that leg anywhere on the page.
+       *
+       * Recorded as noon gives it, deliberately, pending the client's answer on
+       * how goods actually cross. The scope is written into `dispatchNote`,
+       * which is staff-only (migration 0012 grants it to no one), so whoever
+       * reads it in the admin can see what the number does and does not cover.
+       */
+      fulfilment: (() => {
+        const d = shippingDeliveryTime(offer);
+        if (!d) return null;
+        const where = d.destinationCountry ?? "the stated destination";
+        const legs = [
+          d.handling && `dispatch ${dayRange(d.handling)}`,
+          d.transit && `transit ${dayRange(d.transit)}`,
+        ].filter(Boolean);
+        return {
+          dispatchNote:
+            `noon: ${legs.join(" + ")}, to an address in ${where}. ` +
+            `Excludes ${where}→BH, which noon does not state.`,
+          dispatchDays: d.handling?.max ?? null,
+          maxPerOrder: null,
+          barcode: null,
+          preorder: false,
+          // Null when noon states dispatch but not transit — see
+          // shippingDeliveryTime. Those products fall back to the site default
+          // rather than passing a dispatch time off as a delivery time.
+          leadDays: d.total,
+        };
+      })(),
       variantCount: 1,
     };
   },

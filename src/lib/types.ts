@@ -50,6 +50,17 @@ export interface Product {
    * bundled sample and imported catalogues carry no timestamps.
    */
   updated_at?: string | null;
+  /**
+   * Delivery window in days for this specific product, where the supplier
+   * stated one — their dispatch time plus their shipping to Bahrain.
+   *
+   * Per-product because it genuinely differs: a UK line is dispatched in a day
+   * and then takes 5–15 working days to arrive, which the store's blanket
+   * "1–2 days" does not describe. Null means the supplier said nothing, and
+   * the page falls back to the site default rather than inventing a figure.
+   */
+  lead_days_min?: number | null;
+  lead_days_max?: number | null;
 }
 
 /** A single line in the shopping cart (persisted client-side). */
