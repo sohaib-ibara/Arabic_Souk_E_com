@@ -10,6 +10,7 @@ const links = [
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/pricing", label: "Bulk pricing" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/sync", label: "Supplier sync" },
 ];
 
 /**

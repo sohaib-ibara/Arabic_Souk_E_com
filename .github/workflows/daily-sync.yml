@@ -1,0 +1,81 @@
+# Daily supplier sync — the sources that can run in the cloud.
+#
+# ⚠️  noon is NOT here, and cannot be. It sits behind Akamai Bot Manager and was
+# measured refusing every datacentre IP we tried, 20/20 (docs/SUPPLIER_SYNC.md).
+# Adding it to this workflow would produce a job that goes green every morning
+# while fetching nothing — the worst possible failure, because the shop would
+# look synced. noon runs from an office machine; see the same doc.
+#
+# Cult Beauty was measured answering plain HTTP from three Azure IPs, 30/30 —
+# which is the datacentre class GitHub Actions runs in, so this is measured on
+# the host it actually uses, not inferred.
+#
+# What a run does NOT do: change a price on the live shop, or list anything.
+# Prices here are not the supplier's (noon's came in at SAR×0.1 and staff have
+# corrected them by hand since) and curation is the client's. New products land
+# in staging as 'pending'; changes are recorded for review. Delivery windows are
+# the one thing written straight through — the supplier's own fact about its own
+# logistics, which nobody edits here and which is a broken promise when stale.
+name: daily supplier sync
+
+on:
+  schedule:
+    # 02:20 UTC = 05:20 Bahrain — after the retailer's overnight price updates
+    # and before anyone opens the admin. Not on the hour: GitHub queues those
+    # heavily and a delayed start is a delayed sync.
+    - cron: "20 2 * * *"
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Adapter key (cloud-reachable sources only)"
+        required: true
+        default: cultbeauty
+      apply:
+        description: "Write to the database? 'no' for a dry run"
+        required: true
+        default: "yes"
+      new_limit:
+        description: "Most new products this run may take on"
+        required: false
+        default: "40"
+
+concurrency:
+  # Two syncs of one source at once would race on the same staging rows.
+  group: daily-sync-${{ github.event.inputs.site || 'cultbeauty' }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Cult Beauty needs no browser — that is the whole reason it can run here.
+      # A source that needed one would need a residential IP too, and would not
+      # belong in this workflow.
+      - name: Sync
+        env:
+          SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
+          CONFIRM_SYNC: ${{ github.event.inputs.apply == 'no' && '0' || '1' }}
+          NEW_LIMIT: ${{ github.event.inputs.new_limit || '40' }}
+          REFRESH_LIMIT: "120"
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/import/sync.mjs
+
+      # The run is recorded in `sync_runs` either way, so the admin dashboard
+      # shows a failure even if nobody reads this log. This step exists so the
+      # GitHub UI goes red too.
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "::error::Sync failed for ${{ github.event.inputs.site || 'cultbeauty' }}."
+          echo "The admin dashboard reads sync_runs and will show this as a failed run."

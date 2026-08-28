@@ -28,8 +28,9 @@
  *   OUT            default scripts/import/.<site>-capture.json (gitignored)
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { DEFAULT_UA, getSite, toPage } from "./sites/index.mjs";
+import { getSite, toPage } from "./sites/index.mjs";
 import { discoverProducts } from "./discover.mjs";
+import { openFetcher, pooled } from "./fetcher.mjs";
 
 const SITE = process.env.SITE;
 if (!SITE) {
@@ -62,8 +63,6 @@ if (!CONFIRM) {
   console.error("\nRefusing to run. Set CONFIRM_SCRAPE=1 to acknowledge the notice above.");
   process.exit(2);
 }
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** The category map, if this source needs one and it has been built. */
 function loadCategoryMap() {
@@ -101,27 +100,11 @@ if (MERGE && existsSync(OUT)) {
   }
 }
 
-let browser = null;
-let page = null;
-if (isBrowser) {
-  const { chromium } = await import("playwright");
-  // --disable-http2: noon's HTTP/2 stack returns ERR_HTTP2_PROTOCOL_ERROR to
-  // automation; forcing HTTP/1.1 avoids it. Headed also evades bot checks.
-  browser = await chromium.launch({
-    headless: HEADLESS,
-    args: ["--disable-http2", "--disable-blink-features=AutomationControlled"],
-  });
-  const ctx = await browser.newContext({
-    userAgent: DEFAULT_UA,
-    locale: "en-US",
-    viewport: { width: 1366, height: 900 },
-  });
-  await ctx.addInitScript(() => {
-    Object.defineProperty(navigator, "webdriver", { get: () => undefined });
-  });
-  page = await ctx.newPage();
-  page.setDefaultNavigationTimeout(45_000);
-}
+// Transport, browser flags and politeness all live in fetcher.mjs, shared with
+// the daily sync — the arguments that get past noon's Akamai challenge must not
+// exist in two copies that can drift apart.
+const net = await openFetcher(site, { headless: HEADLESS });
+const page = net.page;
 
 /**
  * Where the product list comes from.
@@ -156,25 +139,6 @@ if (DISCOVER === "shelves") {
 const urls = discovered.filter((u) => !done.has(u));
 console.log(`${discovered.length} discovered · ${urls.length} to fetch\n`);
 
-/* ---- fetch one page, by whichever transport the adapter declares ---- */
-async function grab(url) {
-  if (isBrowser) {
-    await page.goto(url, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1800);
-    return page.content();
-  }
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": DEFAULT_UA,
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-GB,en;q=0.9",
-    },
-    signal: AbortSignal.timeout(30_000),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.text();
-}
-
 const products = [];
 const skipped = [];
 let n = 0;
@@ -182,7 +146,7 @@ let n = 0;
 async function handle(url) {
   const i = ++n;
   try {
-    const record = site.parse(toPage({ url, html: await grab(url) }));
+    const record = site.parse(toPage({ url, html: await net.grab(url) }));
     if (!record) {
       products.push({ sourceUrl: url, error: "no product data" });
       console.log(`  [${i}/${urls.length}] ✗ no product data — ${url}`);
@@ -212,24 +176,9 @@ async function handle(url) {
 
 // A browser drives one page, so it stays serial; HTTP sources run a small pool.
 // Either way there is a delay between requests — this is someone else's server.
-if (CONCURRENCY <= 1) {
-  for (const url of urls) {
-    await handle(url);
-    await sleep(DELAY_MS);
-  }
-} else {
-  const queue = [...urls];
-  await Promise.all(
-    Array.from({ length: CONCURRENCY }, async () => {
-      while (queue.length) {
-        await handle(queue.shift());
-        await sleep(DELAY_MS);
-      }
-    }),
-  );
-}
+await pooled(urls, CONCURRENCY, DELAY_MS, handle);
 
-if (browser) await browser.close();
+await net.close();
 
 /* ---- merge with any preserved records, preferring a clean capture ---- */
 let final = products;

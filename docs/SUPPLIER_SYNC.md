@@ -331,6 +331,67 @@ into a visible one.
 
 ---
 
+## Running the sync
+
+```bash
+SITE=cultbeauty npm run sync                  # dry run — reports, writes nothing
+SITE=cultbeauty CONFIRM_SYNC=1 npm run sync   # applies
+```
+
+Cult Beauty runs itself: `.github/workflows/daily-sync.yml`, 02:20 UTC (05:20
+Bahrain), on GitHub Actions. It needs two repository secrets —
+`NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+
+**noon is deliberately not in that workflow.** A job that goes green every
+morning while fetching nothing is worse than no job, because the shop then looks
+synced. noon needs a browser on a residential connection; run the same command
+on the office machine via Task Scheduler.
+
+### What a run will and will not change
+
+| | |
+| --- | --- |
+| New product upstream | staged `pending`; hidden even after promotion |
+| Price moved | **recorded only** — the shop's price is not touched |
+| Name, description, images | recorded only |
+| Availability changed | recorded only, and called out in the run summary |
+| Delivery window moved | **written straight to the live product** |
+
+Price is recorded rather than applied because the prices on the shop are not the
+supplier's. noon's came in at SAR×0.1 and staff have corrected them by hand
+since — the implied rate across the live catalogue runs 0.048 to 0.133, not a
+flat 0.1. A sync that followed the supplier would erase that work nightly, and
+would need the markup rule that is still open below.
+
+Delivery is the exception because it is the supplier's own fact about its own
+logistics, nobody edits it here, and a stale one is a promise we break.
+
+### Two identity traps, both hit in testing
+
+**jsonb reorders keys.** The adapter writes `{min, max}`; Postgres returns
+`{"max":…,"min":…}`. Comparing windows with `JSON.stringify` therefore reported
+a delivery change on 58 of 60 unchanged products on the first run — which would
+have marked the whole catalogue changed every night and buried the price moves
+that matter. Compare values, not serialisations.
+
+**A product's URL id is not its SKU.** Cult Beauty's `/p/…/10449360/` parses to
+sku `10302495`, because the adapter picks a variant and the variant carries its
+own code; roughly 40% of that catalogue is multi-variant. Classifying by
+URL-derived SKU alone meant those products never matched staging, so they looked
+new on every run — re-fetched nightly, never diffed for price, and consuming the
+whole `NEW_LIMIT` budget forever so real new products were never reached. The
+sync indexes staging by **both** URL and SKU, and re-decides new-vs-changed
+*after* parsing.
+
+### Rotation, not a full crawl
+
+`NEW_LIMIT` (default 40) caps how many new products one run adopts; the rest
+wait for tomorrow. `REFRESH_LIMIT` (default 60, 120 in CI) re-checks known
+products **stalest first**, so everything comes round without fetching 3,526
+pages nightly at someone else's expense.
+
+---
+
 ## Still open (client decisions)
 
 - **Markup rule** — nothing may follow a supplier price automatically without
@@ -338,6 +399,15 @@ into a visible one.
   Cult Beauty's shipping and the duties its customers pay on arrival.
 - **Which categories, from which supplier, and a cap** on how many products one
   run may add. Cult Beauty alone offers 10,541 products; the store holds 301.
+- **⚠️ The two taxonomies do not meet.** Of the 62 distinct categories in the
+  first 177-product Cult Beauty capture, **58 do not exist in our database** —
+  only 16 of those 177 products would land in a category that the storefront
+  already has. Cult Beauty files by concern (`mature-skin`, `night-time`,
+  `active`), noon by product type (`creams-moisturizers`, `treatment-serums`).
+  Promoting as-is puts 161 products in no category: reachable from search and
+  `/shop`, absent from every category page and the nav. Either the Cult Beauty
+  categories get created — roughly tripling the nav — or they get mapped onto
+  the existing 28, which is a merchandising decision, not a technical one.
 - **New products: auto-publish or review queue?** The staging table and manual
   promote step already exist ([NOON_IMPORT.md](NOON_IMPORT.md)). That document's
   rights and copyright position applies to anything a daily sync brings in, and

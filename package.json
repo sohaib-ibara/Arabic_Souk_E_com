@@ -16,7 +16,8 @@
     "import:categories": "node scripts/import/map-categories.mjs",
     "import:capture": "node scripts/import/capture.mjs",
     "import:stage": "node scripts/import/stage.mjs",
-    "import:delivery": "node scripts/import/backfill-delivery.mjs"
+    "import:delivery": "node scripts/import/backfill-delivery.mjs",
+    "sync": "node scripts/import/sync.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.8.0",
