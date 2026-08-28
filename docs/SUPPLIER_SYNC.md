@@ -179,6 +179,40 @@ Owning the server changes nothing; noon never sees who owns it, only where the
 traffic comes from. **None of this applies to Cult Beauty**, which was measured
 working from exactly the datacentre that refuses noon.
 
+### ⚠️ Its delivery window is to Saudi Arabia, not Bahrain
+
+noon states delivery per product, in the JSON-LD we already capture:
+
+```json
+"deliveryTime": {
+  "handlingTime": { "minValue": 0, "maxValue": 2, "unitCode": "DAY" },
+  "transitTime":  { "minValue": 5, "maxValue": 6, "unitCode": "DAY" }
+}
+```
+
+703 of the 717 parseable products in the July capture carry it, and it varies
+per product — 270 are 0–3 days (noon Express), 331 are 5–8, a handful reach
+18–21.
+
+**`shippingDestination` is `SA` on every one of them.** That is noon delivering
+to a Saudi address. The Saudi→Bahrain leg is on top and noon states it nowhere,
+so the stored window is short of the truth by however long that leg takes.
+
+It is recorded as noon gives it, on purpose, until the client says how goods
+actually cross. The scope is spelled out in `supplier_dispatch_note`, which
+0012 grants to nobody, so staff see the caveat in the admin and customers never
+see the raw supplier wording:
+
+```
+noon: dispatch 0–2 days + transit 5–6 days, to an address in SA.
+Excludes SA→BH, which noon does not state.
+```
+
+Five products state dispatch but no transit. They get **no** window rather than
+a 0–2 day one — a dispatch time passed off as a delivery time is worse than the
+site default. Add the Bahrain leg in `fulfilment` in
+[the adapter](../scripts/import/sites/noon.mjs) once the number is known.
+
 ---
 
 ## How a product is identified
