@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { siteConfig } from "@/lib/config";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartDrawer } from "@/components/cart/cart-drawer";
@@ -76,8 +77,17 @@ export default async function StoreLayout({
           reading a cookie during layout render, which opts all 301 product
           pages out of static generation to decide whether to offer someone an
           account. It asks /api/auth/session-state from the browser instead,
-          and only at the moment it would otherwise appear. */}
-      <RegisterPrompt />
+          and only at the moment it would otherwise appear.
+
+          The Suspense boundary is required, not decorative: the component
+          reads `useSearchParams` for its preview flag, and without a boundary
+          that forces every prerendered page in this layout to bail out to
+          client rendering — the build fails outright rather than letting it
+          pass quietly. `null` is the honest fallback, since it renders nothing
+          until it triggers anyway. */}
+      <Suspense fallback={null}>
+        <RegisterPrompt />
+      </Suspense>
     </CartProvider>
   );
 }

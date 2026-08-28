@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/components/cart/cart-provider";
 import { CloseIcon } from "@/components/ui/icons";
 import { siteConfig } from "@/lib/config";
@@ -34,6 +34,17 @@ const KEY = "as_register_prompt";
 /** sessionStorage: per tab, and reset when the visit ends. */
 const VIEWS_KEY = "as_pageviews";
 const SHOWN_KEY = "as_register_prompt_shown";
+const START_KEY = "as_visit_started";
+/**
+ * `?signup-preview=1` shows it immediately, ignoring every gate.
+ *
+ * The gates are what make this bearable to a real shopper, and they also make
+ * it near-impossible to demonstrate — you cannot show a client a popup that
+ * requires two pages, thirty-five seconds and a fortnight since the last
+ * dismissal. This is the way to look at it on demand. It only ever opens a
+ * dialog the visitor can close, so there is nothing to abuse.
+ */
+const PREVIEW_PARAM = "signup-preview";
 const DISMISS_DAYS = 14;
 const ENGAGE_MS = 35_000;
 const MIN_PAGE_VIEWS = 2;
@@ -67,6 +78,29 @@ const readPageViews = (): number => {
     return 0;
   }
 };
+
+/**
+ * Milliseconds since this visit began, across page loads and navigations.
+ *
+ * Time has to accumulate over the visit rather than per page. Measuring it per
+ * page meant a single timer, set on first load, firing while the visitor was
+ * still on page one — it failed the two-page check and, because navigating
+ * doesn't change the effect's dependencies, no replacement was ever scheduled.
+ * Anyone who read the homepage for more than 35 seconds before clicking could
+ * never see the prompt at all.
+ */
+function visitElapsedMs(): number {
+  try {
+    const started = Number(window.sessionStorage.getItem(START_KEY) ?? "0");
+    if (!started) {
+      window.sessionStorage.setItem(START_KEY, String(Date.now()));
+      return 0;
+    }
+    return Date.now() - started;
+  } catch {
+    return 0;
+  }
+}
 
 /** Shown once per visit, across full page loads as well as client navigation. */
 const shownAlready = (): boolean => {
@@ -125,10 +159,12 @@ export function RegisterPrompt() {
   const cardRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { isOpen: cartOpen } = useCart();
 
-  const blocked = SUPPRESSED.some((p) => pathname?.startsWith(p)) || cartOpen;
+  const preview = searchParams.get(PREVIEW_PARAM) === "1";
+  const blocked = !preview && (SUPPRESSED.some((p) => pathname?.startsWith(p)) || cartOpen);
 
   // Count pages viewed. Runs on mount and on every client-side route change,
   // and persists across full page loads.
@@ -151,6 +187,8 @@ export function RegisterPrompt() {
 
   /* ---- Decide whether to show, once the engagement bar is cleared ---- */
   useEffect(() => {
+    // Preview needs no timer — it is derived straight from the URL at render.
+    if (preview) return;
     if (blocked || shownThisSession.current || shownAlready() || suppressedUntilPassed()) return;
 
     let cancelled = false;
@@ -161,15 +199,30 @@ export function RegisterPrompt() {
       // Read from storage, not the ref: on a fresh page load the ref is only
       // as old as this mount.
       if (readPageViews() < MIN_PAGE_VIEWS) return;
-      // Claimed before awaiting, so the timer and exit-intent paths can't both
-      // get through while the session check is in flight.
+      // No elapsed-time check here on purpose. The timer below is already
+      // scheduled for exactly the time still owed, so it cannot fire early —
+      // and exit intent must not be held to the same bar. Someone leaving after
+      // two pages in twenty seconds is precisely who this is the last chance
+      // with; a duplicate check here silently disabled that path.
+      // Claimed before awaiting so the timer and exit-intent paths can't both
+      // get through while the session check is in flight. Only recorded to
+      // storage once it actually opens — a failed session check reads as
+      // "signed in", and marking here would silence the rest of the visit on
+      // the strength of one dropped request.
       shownThisSession.current = true;
-      markShown();
       if (await isSignedIn()) return;
-      if (!cancelled) setOpen(true);
+      if (cancelled) return;
+      markShown();
+      setOpen(true);
     }
 
-    const timer = window.setTimeout(reveal, ENGAGE_MS);
+    /*
+      Scheduled against time already spent on the site, and re-scheduled on
+      every navigation. A visitor who lingers on one page then clicks through
+      has already served the wait, so this fires straight away rather than
+      starting the clock over.
+    */
+    const timer = window.setTimeout(reveal, Math.max(0, ENGAGE_MS - visitElapsedMs()));
 
     /*
       Exit intent, desktop only. Someone leaving anyway is the one moment where
@@ -187,7 +240,11 @@ export function RegisterPrompt() {
       window.clearTimeout(timer);
       document.removeEventListener("mouseout", onLeave);
     };
-  }, [blocked]);
+    // `pathname` matters as much as `blocked`. Without it the effect runs once
+    // and never again — `blocked` is a boolean that stays false across a whole
+    // browsing session — so the one timer it set could expire before the
+    // second page was ever opened, and nothing would reschedule it.
+  }, [blocked, pathname, preview]);
 
   /* ---- Dismissal: Escape, click outside ---- */
   useEffect(() => {
@@ -215,7 +272,8 @@ export function RegisterPrompt() {
     if (open) setOpen(false);
   }
 
-  if (!open || blocked) return null;
+  // `preview` opens it from the URL alone, with no state and no gates.
+  if ((!open && !preview) || blocked) return null;
 
   function accept(e: React.FormEvent) {
     e.preventDefault();
