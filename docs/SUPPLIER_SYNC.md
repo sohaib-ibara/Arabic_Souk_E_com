@@ -32,7 +32,7 @@ three US regions:
 
 **Thirty fetches, zero failures**, and the plain-HTTP column is the one that
 matters: no browser was involved at all. Raw output in
-`RESULT-source-access.md` on the `test/source-access` branch.
+[docs/source-access-results.md](source-access-results.md), appended by each CI run.
 
 These are the same class of datacentre IP that noon refused twenty times out of
 twenty. Cult Beauty does not care.

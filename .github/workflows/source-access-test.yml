@@ -55,8 +55,8 @@ jobs:
       # this source can run on any host — no browser, no residential IP.
       - name: Plain HTTP only
         run: |
-          echo "## ${SITE} · plain HTTP from a datacentre" >> RESULT-source-access.md
-          node scripts/import/access-test.mjs | tee -a RESULT-source-access.md
+          echo "## ${SITE} · plain HTTP from a datacentre" >> docs/source-access-results.md
+          node scripts/import/access-test.mjs | tee -a docs/source-access-results.md
         env:
           SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
           LIMIT: 5
@@ -67,9 +67,9 @@ jobs:
       - name: With a browser
         if: always()
         run: |
-          echo "" >> RESULT-source-access.md
-          echo "## ${SITE} · headless browser from a datacentre" >> RESULT-source-access.md
-          node scripts/import/access-test.mjs | tee -a RESULT-source-access.md
+          echo "" >> docs/source-access-results.md
+          echo "## ${SITE} · headless browser from a datacentre" >> docs/source-access-results.md
+          node scripts/import/access-test.mjs | tee -a docs/source-access-results.md
         env:
           SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
           LIMIT: 5
@@ -83,6 +83,6 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f RESULT-source-access.md
+          git add -f docs/source-access-results.md
           git commit -m "source access test result [skip ci]" || exit 0
           git push origin HEAD:test/source-access
