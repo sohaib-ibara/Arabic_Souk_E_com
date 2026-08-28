@@ -4,6 +4,8 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { SignupTab } from "@/components/layout/signup-tab";
+import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getFooterCategories, getNavGroups } from "@/lib/nav";
 
@@ -60,6 +62,11 @@ export default async function StoreLayout({
       <main className="flex-1">{children}</main>
       <Footer categories={footerCategories} />
       <CartDrawer />
+      {/* Both float above the page and below the cart drawer. Only the store
+          shell gets them — /admin has its own layout and staff don't need a
+          newsletter tab. */}
+      <SignupTab />
+      <WhatsAppButton />
     </CartProvider>
   );
 }

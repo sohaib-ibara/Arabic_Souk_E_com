@@ -79,6 +79,13 @@ export const siteConfig = {
     // Callers build tel: links by stripping the spaces, so this stays the one
     // human-readable form rather than being duplicated as a second field.
     phone: "+973 3694 9682",
+    /**
+     * The same line, in the digits-only form wa.me requires — no +, no spaces.
+     * Written out rather than derived from `phone` so that whoever changes one
+     * is looking straight at the other: a WhatsApp button pointing at a number
+     * nobody reads is a support channel that silently goes nowhere.
+     */
+    whatsapp: "97336949682",
     address: "Seef District, Manama, Kingdom of Bahrain",
   },
   social: {
