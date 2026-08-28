@@ -64,15 +64,17 @@ export const siteConfig = {
    * wording is the part that has to be exact.
    */
   business: {
-    legalLine: "Arabic Souq (Trading Name of TEJARAT HUB W.L.L)",
+    // "Souk", matching the brand everywhere else. The client's note spelled it
+    // "Souq"; confirmed 28 Aug 2026 that the store is Arabic Souk. If the CR
+    // certificate itself reads "Souq", that spelling has to win here — it is
+    // the registered name, and an invoice should match the certificate.
+    legalLine: "Arabic Souk (Trading Name of TEJARAT HUB W.L.L)",
     country: "Kingdom of Bahrain",
     crNumber: "177789-1",
   },
   contact: {
-    // ⚠️ PLACEHOLDER. The client's message gave this as "E-mail: Hello@" —
-    // truncated mid-address — so this is still the old demo value. Confirm the
-    // real address before go-live; it is printed on every order confirmation
-    // and is the reply-to on every email the store sends.
+    // Confirmed 28 Aug 2026. Printed on every order confirmation and used as
+    // the reply-to on every email the store sends.
     email: "hello@arabicsouk.com",
     // Callers build tel: links by stripping the spaces, so this stays the one
     // human-readable form rather than being duplicated as a second field.
