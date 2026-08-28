@@ -52,6 +52,8 @@ function mapProductRow(row: any): Product {
     is_new: Boolean(row.is_new),
     tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
     updated_at: row.updated_at ?? row.created_at ?? null,
+    lead_days_min: row.lead_days_min != null ? Number(row.lead_days_min) : null,
+    lead_days_max: row.lead_days_max != null ? Number(row.lead_days_max) : null,
   };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -84,7 +86,7 @@ function warnFallback(table: string, error: { message: string } | null) {
  * isn't granted there takes the storefront down; granting one there that isn't
  * needed here is a quiet leak.
  */
-const PUBLIC_PRODUCT_COLUMNS = [
+const LEGACY_PRODUCT_COLUMNS = [
   "id",
   "name",
   "slug",
@@ -107,15 +109,68 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "updated_at",
 ].join(",");
 
+/**
+ * The same list plus what migration 0012 adds.
+ *
+ * These must stay in step with the column grants in that migration: selected
+ * here but not granted takes the whole catalogue down with a 403, and granted
+ * but unselected means hidden products get served.
+ */
+const PUBLIC_PRODUCT_COLUMNS = [
+  LEGACY_PRODUCT_COLUMNS,
+  "is_published",
+  // The honest delivery window for this product, where the supplier gave one.
+  "lead_days_min",
+  "lead_days_max",
+].join(",");
+
+/** Postgres "column does not exist" — i.e. migration 0012 hasn't run here yet. */
+const UNDEFINED_COLUMN = "42703";
+
 async function loadProducts(): Promise<Product[]> {
   const sb = getSupabaseServer();
   if (sb) {
-    const { data, error } = await sb
+    // The single gate for "is this product listed at all".
+    //
+    // Filtered in this loader rather than at each call site: everything
+    // downstream — listings, search, categories, related products, the
+    // sitemap, generateStaticParams — reads from here, so an unpublished
+    // product cannot reappear through a path someone forgot to filter.
+    const withVisibility = await sb
       .from("products")
       .select(`${PUBLIC_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`)
+      .eq("is_published", true)
       .order("created_at", { ascending: false });
-    if (!error && data && data.length) return data.map(mapProductRow);
-    warnFallback("products", error);
+
+    if (!withVisibility.error && withVisibility.data?.length) {
+      return withVisibility.data.map(mapProductRow);
+    }
+
+    /*
+      Deploy-order safety net.
+
+      If the code ships before migration 0012 runs, selecting and filtering on
+      `is_published` fails, and the generic fallback below would quietly serve
+      the bundled sample catalogue — 628 demo products at demo prices, in place
+      of the real 301. A build did exactly that before this branch was added.
+      Wrong products on a live shop is far worse than an unenforced filter, so
+      a missing column retries without it and says so loudly.
+    */
+    if (withVisibility.error?.code === UNDEFINED_COLUMN) {
+      console.error(
+        "[data] products.is_published is missing — run supabase/migrations/0012. " +
+          "Serving the full catalogue; hidden products are NOT being filtered.",
+      );
+      const legacy = await sb
+        .from("products")
+        .select(`${LEGACY_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`)
+        .order("created_at", { ascending: false });
+      if (!legacy.error && legacy.data?.length) return legacy.data.map(mapProductRow);
+      warnFallback("products", legacy.error);
+      return localProducts;
+    }
+
+    warnFallback("products", withVisibility.error);
   }
   return localProducts;
 }

@@ -45,6 +45,25 @@ export interface AdminProductRow {
    * by the storefront.
    */
   source_url: string | null;
+  /** Supplier adapter key — "noon", "cultbeauty". Staff-only, like source_url. */
+  source: string | null;
+  /** That supplier's product code. The sync key; see migration 0010. */
+  source_sku: string | null;
+  /**
+   * Listed on the storefront at all.
+   *
+   * Not the same as `in_stock`, and the difference is the whole point of it:
+   * an out-of-stock product still has a page and still appears in listings,
+   * marked unavailable. An unpublished one is not there.
+   */
+  is_published: boolean;
+  /** Realistic delivery window in days — supplier dispatch plus their shipping. */
+  lead_days_min: number | null;
+  lead_days_max: number | null;
+  /** The supplier's own dispatch wording, for staff. Never shown to customers. */
+  supplier_dispatch_note: string | null;
+  /** Supplier's cap on units per order, where they state one. */
+  max_per_order: number | null;
   updated_at: string | null;
 }
 
@@ -85,6 +104,15 @@ function mapRow(row: any): AdminProductRow {
     description: row.description ?? null,
     tags: Array.isArray(row.tags) ? row.tags : [],
     source_url: row.source_url ?? null,
+    source: row.source ?? null,
+    source_sku: row.source_sku ?? null,
+    // Defaults to listed. A row written before migration 0012 has no value,
+    // and treating that as hidden would empty the storefront.
+    is_published: row.is_published !== false,
+    lead_days_min: row.lead_days_min != null ? Number(row.lead_days_min) : null,
+    lead_days_max: row.lead_days_max != null ? Number(row.lead_days_max) : null,
+    supplier_dispatch_note: row.supplier_dispatch_note ?? null,
+    max_per_order: row.max_per_order != null ? Number(row.max_per_order) : null,
     updated_at: row.updated_at ?? null,
   };
 }
@@ -131,6 +159,16 @@ export async function getCatalogueStatus(): Promise<CatalogueStatus> {
 export interface ListQuery {
   search?: string;
   categoryId?: string;
+  /**
+   * Supplier adapter key, or "none" for products added by hand.
+   *
+   * The reason this filter exists: the client curates per supplier — some noon
+   * lines, some Cult Beauty ones — and doing that across a few thousand rows
+   * means being able to look at one supplier at a time.
+   */
+  source?: string;
+  /** "listed" | "hidden". Omitted shows both. */
+  visibility?: "listed" | "hidden";
   page?: number;
   perPage?: number;
 }
@@ -156,6 +194,12 @@ export async function listAdminProducts(q: ListQuery = {}): Promise<ListResult> 
     query = query.or(`name.ilike.%${s}%,slug.ilike.%${s}%`);
   }
   if (q.categoryId) query = query.eq("category_id", q.categoryId);
+  // "none" is a real choice, not an empty filter: it finds the products staff
+  // added by hand, which is exactly the set an importer must never touch.
+  if (q.source === "none") query = query.is("source", null);
+  else if (q.source) query = query.eq("source", q.source);
+  if (q.visibility === "listed") query = query.eq("is_published", true);
+  else if (q.visibility === "hidden") query = query.eq("is_published", false);
 
   const from = (page - 1) * perPage;
   const { data, count, error } = await query
@@ -279,6 +323,49 @@ export async function deleteProductRow(id: string): Promise<void> {
   if (!admin) throw new Error("Supabase service role isn't configured.");
   const { error } = await admin.from("products").delete().eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+/**
+ * List or hide products in bulk.
+ *
+ * Curating per supplier is a bulk job by nature — "carry these forty Cult
+ * Beauty lines, not the other ten thousand" is not forty visits to an edit
+ * form. Chunked because a filter on a few thousand ids exceeds what a URL can
+ * carry, and PostgREST puts `in.(…)` in the query string.
+ */
+export async function setPublished(ids: string[], published: boolean): Promise<number> {
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("Supabase service role isn't configured.");
+  if (!ids.length) return 0;
+
+  let changed = 0;
+  for (const batch of chunk(ids, 200)) {
+    const { error, count } = await admin
+      .from("products")
+      .update({ is_published: published }, { count: "exact" })
+      .in("id", batch);
+    if (error) throw new Error(error.message);
+    changed += count ?? batch.length;
+  }
+  return changed;
+}
+
+/** Which suppliers are represented in the catalogue, for the filter dropdown. */
+export async function getSourceOptions(): Promise<Array<{ key: string; count: number }>> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return [];
+  // No group-by over PostgREST without a view, and the catalogue is small
+  // enough that counting in memory beats adding one.
+  const { data, error } = await admin.from("products").select("source");
+  if (error) return [];
+  const counts = new Map<string, number>();
+  for (const row of (data ?? []) as Array<{ source: string | null }>) {
+    const key = row.source ?? "none";
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([key, count]) => ({ key, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 /* ------------------------------------------------------------------ */

@@ -71,21 +71,28 @@ async function resolveSlug(
   sb: SupabaseClient,
   name: string,
   stagingId: string,
-  source: string | null,
-  sourceSku: string | null,
+  existingSlug: string | null,
 ): Promise<string> {
-  if (source && sourceSku) {
-    const { data: mine } = await sb
-      .from("products")
-      .select("slug")
-      .eq("source", source)
-      .eq("source_sku", sourceSku)
-      .maybeSingle();
-    if (mine) return (mine as any).slug as string;
-  }
+  if (existingSlug) return existingSlug;
   const base = slugify(name);
   const { data: taken } = await sb.from("products").select("id").eq("slug", base).maybeSingle();
   return taken ? `${base}-${stagingId.slice(0, 6)}` : base;
+}
+
+/** The live row for this supplier product, if we already carry it. */
+async function findExisting(
+  sb: SupabaseClient,
+  source: string | null,
+  sourceSku: string | null,
+): Promise<{ slug: string; is_published: boolean } | null> {
+  if (!source || !sourceSku) return null;
+  const { data } = await sb
+    .from("products")
+    .select("slug,is_published")
+    .eq("source", source)
+    .eq("source_sku", sourceSku)
+    .maybeSingle();
+  return (data as any) ?? null;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -127,7 +134,8 @@ async function main() {
       const categoryId = await findCategoryId(sb, (r.category as string) ?? null);
       const source = (r.source as string) ?? null;
       const sourceSku = (r.source_sku as string) ?? null;
-      const slug = await resolveSlug(sb, name, String(r.id), source, sourceSku);
+      const existing = await findExisting(sb, source, sourceSku);
+      const slug = await resolveSlug(sb, name, String(r.id), existing?.slug ?? null);
       const rawPrice = Number(r.price ?? 0);
       const price = Math.round(rawPrice * RATE * 1000) / 1000;
 
@@ -162,6 +170,24 @@ async function main() {
         source,
         source_sku: sourceSku,
         source_url: (r.source_url as string) ?? null,
+        supplier_dispatch_note: (r.supplier_dispatch_note as string) ?? null,
+        lead_days_min: (r.lead_days_min as number) ?? null,
+        lead_days_max: (r.lead_days_max as number) ?? null,
+        max_per_order: (r.max_per_order as number) ?? null,
+        /*
+          New products arrive hidden; an existing one keeps whatever the admin
+          set.
+
+          The client curates — some noon lines, some Cult Beauty ones — so
+          promoting straight onto the shelf would make curation a matter of
+          removing things afterwards, with whatever was briefly visible already
+          indexed. Listing is a deliberate second step in the admin.
+
+          Carrying the existing value matters just as much: this upsert also
+          runs when a price changes, and sending `false` unconditionally would
+          quietly pull a product the admin had chosen to list.
+        */
+        is_published: existing ? existing.is_published : false,
       };
 
       const { error: insErr } = identified

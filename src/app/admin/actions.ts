@@ -8,6 +8,7 @@ import {
   deleteProductRow,
   getAdminProduct,
   insertProduct,
+  setPublished,
   slugify,
   updateProductRow,
   validatePriceFloors,
@@ -94,6 +95,42 @@ function revalidateStorefront(slug?: string | null) {
 function revalidateProduct(slug?: string | null) {
   revalidatePath("/admin/products");
   revalidateStorefront(slug);
+}
+
+/**
+ * List or hide the selected products.
+ *
+ * The client curates per supplier — carry some noon lines, some Cult Beauty
+ * ones — and that is a bulk decision across hundreds of rows, not something to
+ * do one edit form at a time.
+ *
+ * A plain form post with checkboxes, so it works with JavaScript switched off
+ * like the rest of this admin. Returns to the same filtered view, because the
+ * next action is almost always on the same list.
+ */
+export async function setVisibilityAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const ids = formData
+    .getAll("ids")
+    .map((v) => String(v))
+    .filter(Boolean);
+  const publish = formData.get("publish") === "1";
+  const back = String(formData.get("back") || "/admin/products");
+
+  if (!ids.length) {
+    redirect(`${back}${back.includes("?") ? "&" : "?"}bulk=none`);
+  }
+
+  const changed = await setPublished(ids, publish);
+
+  // Every storefront surface reads from one loader that filters on this flag,
+  // so listings, search and category pages all have to be refreshed — not just
+  // the products' own pages, which is why no slug is passed.
+  revalidateProduct(null);
+
+  const q = new URLSearchParams({ bulk: publish ? "listed" : "hidden", n: String(changed) });
+  redirect(`${back}${back.includes("?") ? "&" : "?"}${q}`);
 }
 
 /* ---------------------------- product form ---------------------------- */

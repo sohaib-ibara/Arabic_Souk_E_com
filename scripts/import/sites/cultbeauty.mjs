@@ -43,6 +43,60 @@ function galleryImages(html, sku, max) {
 }
 
 /**
+ * Dispatch and ordering limits, from the product data embedded in the page.
+ *
+ * The JSON-LD says only whether a thing is in stock. The page also carries the
+ * storefront's own product object, which states how fast the supplier ships it
+ * and how many one order may contain — the delivery information the client
+ * asked for, and the number that decides whether our own "1–2 days" is a lie.
+ *
+ * Read by locating the object for this exact sku and scanning a window around
+ * it, rather than parsing a megabyte of minified state. The fields are keyed
+ * per variant, so anchoring on the sku is what keeps a neighbouring product's
+ * dispatch time from being attributed to this one.
+ */
+function fulfilmentFor(html, sku) {
+  if (!html || !sku) return null;
+  const anchor = html.indexOf(`"sku":${sku},`);
+  if (anchor === -1) return null;
+  // Generous either side: the fields sit before and after the sku in practice.
+  const win = html.slice(Math.max(0, anchor - 4000), anchor + 4000);
+
+  const str = (k) => win.match(new RegExp(`"${k}":"([^"]{0,160})"`))?.[1] ?? null;
+  const num = (k) => {
+    const m = win.match(new RegExp(`"${k}":(\\d{1,6})`));
+    return m ? Number(m[1]) : null;
+  };
+  const bool = (k) => {
+    const m = win.match(new RegExp(`"${k}":(true|false)`));
+    return m ? m[1] === "true" : null;
+  };
+
+  const note = str("availabilityMessage");
+  return {
+    dispatchNote: note,
+    // "Usually dispatched within 24 hours" / "... within 2 days". Parsed to a
+    // number so it can be added to shipping time; left null when the wording
+    // is anything we haven't seen, because a guessed lead time is worse than
+    // falling back to the site default.
+    dispatchDays: parseDispatchDays(note),
+    maxPerOrder: num("maxPerOrder"),
+    barcode: str("barcode"),
+    preorder: bool("preorder") ?? false,
+  };
+}
+
+/** "…within 24 hours" → 1 day. "…within 3 days" → 3. Anything else → null. */
+function parseDispatchDays(note) {
+  if (!note) return null;
+  const hours = note.match(/within\s+(\d+)\s*hours?/i);
+  if (hours) return Math.max(1, Math.ceil(Number(hours[1]) / 24));
+  const days = note.match(/within\s+(\d+)\s*(?:working|business)?\s*days?/i);
+  if (days) return Number(days[1]);
+  return null;
+}
+
+/**
  * Pick the SKU a shopper lands on. The variant whose sku equals the group id is
  * the page default; failing that take the cheapest in-stock one, because a
  * lapsed variant left at a stale price should not become our headline figure.
@@ -123,6 +177,27 @@ export default {
       reviewCount:
         Number(root.aggregateRating?.reviewCount ?? root.aggregateRating?.ratingCount ?? 0) || 0,
       breadcrumb: crumbs,
+      /**
+       * How long this actually takes to reach a customer, and what limits
+       * apply. `leadDays` adds the supplier's dispatch time to their shipping
+       * window for Bahrain — the honest number, as opposed to the store's
+       * blanket "1–2 days", which describes a warehouse this shop does not
+       * have.
+       */
+      fulfilment: (() => {
+        const f = fulfilmentFor(page.html, sku);
+        if (!f) return null;
+        const ship = this.shippingToBahrain.standard;
+        const [shipMin, shipMax] = ship.days.split("-").map(Number);
+        const dispatch = f.dispatchDays;
+        return {
+          ...f,
+          leadDays:
+            dispatch == null
+              ? null
+              : { min: dispatch + shipMin, max: dispatch + shipMax },
+        };
+      })(),
       // Carried so the review queue can flag "this page sells 4 sizes and we
       // imported one of them" rather than silently picking.
       variantCount: (group?.hasVariant ?? []).length || 1,

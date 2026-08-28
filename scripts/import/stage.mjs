@@ -104,6 +104,13 @@ const toRow = (r) => ({
   in_stock: r.available,
   rating: r.rating ? Math.round(r.rating * 10) / 10 : null,
   review_count: r.reviewCount ?? 0,
+  // What the supplier says about getting it here. Null throughout for a source
+  // that states nothing (noon), so the product page falls back to the site
+  // default rather than showing a window nobody promised.
+  supplier_dispatch_note: r.fulfilment?.dispatchNote ?? null,
+  lead_days_min: r.fulfilment?.leadDays?.min ?? null,
+  lead_days_max: r.fulfilment?.leadDays?.max ?? null,
+  max_per_order: r.fulfilment?.maxPerOrder ?? null,
   scraped_at: capture.capturedAt ?? new Date().toISOString(),
 });
 

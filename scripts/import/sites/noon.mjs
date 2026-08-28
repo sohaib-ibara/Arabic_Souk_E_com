@@ -62,6 +62,16 @@ export default {
       reviewCount:
         Number(prod.aggregateRating?.reviewCount ?? prod.aggregateRating?.ratingCount ?? 0) || 0,
       breadcrumb: breadcrumbOf(page.entities),
+      /**
+       * null, and checked rather than assumed.
+       *
+       * noon's pages carry no dispatch time we can read: the JSON-LD states
+       * availability and nothing more, and the July capture of 814 products
+       * contains no delivery field of any kind. Cult Beauty embeds one, so the
+       * interface allows it — but inventing a number for noon would put a
+       * delivery promise on the page with nothing behind it.
+       */
+      fulfilment: null,
       variantCount: 1,
     };
   },

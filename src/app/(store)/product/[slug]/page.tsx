@@ -235,9 +235,22 @@ export default async function ProductPage({ params }: { params: Params }) {
 
             {/* Assurances */}
             <ul className="mt-8 grid gap-3 border-t border-line pt-6 text-sm text-ink/80 sm:grid-cols-2">
+              {/*
+                The supplier's real window where we have one, the house default
+                otherwise.
+
+                Worth stating plainly: the default is "1–2 days", which
+                describes a shop delivering from its own shelf. This one buys
+                from the supplier after the customer pays, so a line sourced
+                from the UK is nearer two weeks. Quoting 1–2 days on those is a
+                promise the shop cannot keep, and the customer finds out only
+                after paying.
+              */}
               <li className="flex items-center gap-2">
                 <TruckIcon width={18} height={18} className="text-brand" /> Delivery in{" "}
-                {siteConfig.shipping.etaDays}
+                {product.lead_days_min && product.lead_days_max
+                  ? `${product.lead_days_min}–${product.lead_days_max} days`
+                  : siteConfig.shipping.etaDays}
               </li>
               <li className="flex items-center gap-2">
                 <ShieldIcon width={18} height={18} className="text-brand" /> 100% authentic
