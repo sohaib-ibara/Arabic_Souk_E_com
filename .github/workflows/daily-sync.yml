@@ -56,23 +56,34 @@ jobs:
           node-version: 22
           cache: npm
 
-      # `npm ci --omit=dev` failed here in under a second on three consecutive
-      # scheduled runs, while succeeding locally against the same committed
-      # lockfile — so it is environmental, and the runner logs need repository
-      # admin rights to read.
+      # A full `npm ci`, deliberately — NOT `--omit=dev`.
       #
-      # Rather than ship a guess at the cause into a job that runs unattended:
-      # try it, and on failure print npm's own log and fall back to a plain
-      # install. The job then works either way, and the next run tells us what
-      # `npm ci` actually objected to instead of leaving us to infer it.
+      # `--omit=dev` was tried and broke the first three scheduled runs:
+      #
+      #   npm error Missing: @emnapi/runtime@1.11.3 from lock file
+      #
+      # `@img/sharp-wasm32` is an optional PROD dependency that needs
+      # `@emnapi/runtime`, and the lockfile's only copy of it sits nested under
+      # a DEV package. A full install resolves that fine; pruning the dev tree
+      # leaves the prod side with an unsatisfiable requirement, and npm refuses.
+      # It passed locally because Windows skips that optional package entirely,
+      # so the constraint never arises here — only on Linux.
+      #
+      # The dev tree costs a few seconds. The only reason to prune it was
+      # Playwright's ~500MB browser download, and that is what the env var below
+      # actually turns off. Nothing in this job launches a browser: the sole
+      # browser source is noon, which cannot run in CI at all.
+      #
+      # No fallback to `npm install` on failure. A daily unattended job that
+      # quietly switches to unpinned resolution when the lockfile drifts is how
+      # you get a sync that works until the day it silently doesn't. Let it fail
+      # loudly — sync_runs records that, and /admin/sync shows it.
       - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
         run: |
           node -v && npm -v
-          npm ci --omit=dev || {
-            echo "::warning::npm ci failed; falling back to npm install. Log follows."
-            tail -n 80 "$(npm config get cache)"/_logs/*.log 2>/dev/null || true
-            npm install --omit=dev --no-audit --no-fund
-          }
+          npm ci
 
       # Cult Beauty needs no browser — that is the whole reason it can run here.
       # A source that needed one would need a residential IP too, and would not
