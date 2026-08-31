@@ -51,51 +51,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node 24, not 22, and the version matters.
-      #
-      # package-lock.json was written by npm 11. Node 22 ships npm 10, which
-      # builds a different ideal tree from the same lockfile and then rejects it:
-      #
-      #   npm error Missing: @emnapi/runtime@1.11.3 from lock file
-      #
-      # npm 11 considers that same file up to date — checked directly, including
-      # with --os=linux --cpu=x64, so it is a resolver difference between npm
-      # majors and not a platform gap. Matching the npm that wrote the lockfile
-      # is the fix; regenerating it under npm 10 would only invert the problem
-      # for everyone developing on Node 24.
+      # No `cache: npm` — that caches a dependency tree this job no longer
+      # installs, and keying it on a lockfile we deliberately ignore would cache
+      # the wrong thing. The one package below takes about three seconds.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
-      # A full `npm ci`, deliberately — NOT `--omit=dev`.
+      # Install ONLY what the sync imports. The application's lockfile is not
+      # used here at all, and that is the point.
       #
-      # `--omit=dev` was tried and broke the first three scheduled runs:
+      # Three runs were spent trying to make `npm ci` work against it:
       #
       #   npm error Missing: @emnapi/runtime@1.11.3 from lock file
       #
-      # `@img/sharp-wasm32` is an optional PROD dependency that needs
-      # `@emnapi/runtime`, and the lockfile's only copy of it sits nested under
-      # a DEV package. A full install resolves that fine; pruning the dev tree
-      # leaves the prod side with an unsatisfiable requirement, and npm refuses.
-      # It passed locally because Windows skips that optional package entirely,
-      # so the constraint never arises here — only on Linux.
+      # First blamed on `--omit=dev`, then on npm 10 vs npm 11. Removing the
+      # flag did not help; nor did Node 24. Every local reproduction passed,
+      # because the resolver behaviour that rejects this lockfile does not occur
+      # on the machine that wrote it.
       #
-      # The dev tree costs a few seconds. The only reason to prune it was
-      # Playwright's ~500MB browser download, and that is what the env var below
-      # actually turns off. Nothing in this job launches a browser: the sole
-      # browser source is noon, which cannot run in CI at all.
+      # Stepping back: none of that install is needed. sync.mjs imports
+      # @supabase/supabase-js and Node built-ins; discover.mjs adds node:zlib;
+      # fetcher.mjs imports Playwright lazily, inside a branch this job never
+      # takes. Next, React, Tailwind and sharp were only ever there because the
+      # lockfile lists them — and it was sharp's optional wasm dependency that
+      # broke the install. A daily job had been made to depend on the whole
+      # application resolving cleanly on a platform nobody develops on.
       #
-      # No fallback to `npm install` on failure. A daily unattended job that
-      # quietly switches to unpinned resolution when the lockfile drifts is how
-      # you get a sync that works until the day it silently doesn't. Let it fail
-      # loudly — sync_runs records that, and /admin/sync shows it.
-      - name: Install dependencies
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      # So: move the app's manifest aside, install the one package, put it back.
+      # 9 packages, ~3s, and nothing to drift out of sync. The version is pinned
+      # exactly; its own dependencies float, which is the one thing given up
+      # versus a lockfile, and worth it for a job that otherwise does not run.
+      # Bump it when the app's own version moves.
+      - name: Install the sync's one dependency
         run: |
           node -v && npm -v
-          npm ci
+          mv package.json      "$RUNNER_TEMP/package.json.app"
+          mv package-lock.json "$RUNNER_TEMP/package-lock.json.app"
+          npm install --no-save --no-audit --no-fund @supabase/supabase-js@2.110.7
+          mv "$RUNNER_TEMP/package.json.app"      package.json
+          mv "$RUNNER_TEMP/package-lock.json.app" package-lock.json
 
       # Cult Beauty needs no browser — that is the whole reason it can run here.
       # A source that needed one would need a residential IP too, and would not
