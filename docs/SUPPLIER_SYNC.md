@@ -191,9 +191,26 @@ Worth stating plainly, because three fixes in a row were wrong before this one:
 each of those was a variation of the same tool. The question that broke the
 deadlock was "can we use something other than Playwright".
 
-**What this does not change:** datacentre IPs are still refused, measured 20/20
-and independently of the browser. noon runs from a machine on a home
-connection, not from CI.
+**What this does not change: noon still cannot run in CI.**
+
+That was worth testing rather than assuming, because every earlier datacentre
+measurement used a Chrome-based client — and Chrome is refused from the home
+connection too. "Datacentre refuses noon" could have been a fact about Chrome.
+
+It is not. `noon-camoufox-probe.yml` runs Camoufox headed inside Xvfb on a
+GitHub runner, and it is refused there. Headless was deliberately avoided so a
+failure could not be blamed on it.
+
+So the two blocks are independent and both must be satisfied:
+
+| | home IP | datacentre IP |
+| --- | --- | --- |
+| **Chrome** | ❌ blocked | ❌ blocked |
+| **Camoufox** | ✅ **passes** | ❌ blocked |
+
+CI can only ever fix the browser. noon runs from a machine on a residential
+connection — scheduled locally, with `/admin/sync` as the heartbeat that makes
+a missed run visible.
 
 **What it was worth.** A ten-product refresh found six of nine prices had moved
 since July — Elvive down 50%, NIVEA down 23%, Panthederm **up 24%**. That last
