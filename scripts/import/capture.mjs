@@ -38,7 +38,9 @@ if (!SITE) {
   process.exit(2);
 }
 const site = getSite(SITE);
-const isBrowser = site.transport === "browser";
+// Both real-browser transports drive a single page, so they share the serial
+// pacing. Only a plain HTTP source can safely run a pool.
+const isBrowser = site.transport === "browser" || site.transport === "camoufox";
 
 const CONFIRM = process.env.CONFIRM_SCRAPE === "1";
 const MAX_PRODUCTS = Number(process.env.MAX_PRODUCTS || 50);

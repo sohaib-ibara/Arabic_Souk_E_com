@@ -11,7 +11,7 @@ The short version, as of 27 Aug 2026:
 | Source | Needs a browser? | Runs in a datacentre? | Where the sync can live |
 | ------ | ---------------- | --------------------- | ----------------------- |
 | **Cult Beauty** | ❌ no — plain HTTP | ✅ **yes, measured** | Anywhere. Vercel Cron, Railway, GitHub Actions. Free. |
-| **noon** | ✅ yes, mandatory | ❌ no — blocked | ⚠️ **Nowhere free.** The office-connection route worked in July and is now blocked too (re-tested 29 Aug). Needs rotating residential proxies or a paid scraping API. |
+| **noon** | ✅ yes — **Camoufox, not Chrome** | ❌ no — blocked | An office machine on a home connection. Free. `SITE=noon npm run sync` |
 
 They are not the same problem and should not get the same solution.
 
@@ -160,6 +160,45 @@ apart from a permanent block earned by the July scraping.
 Re-test after a day of silence, with **one** attempt rather than forty, before
 concluding anything. Until then, treat the free office-machine option for noon
 as unproven rather than either working or dead.
+
+#### Solved 31 Aug 2026 — it was never the IP. It was Chrome.
+
+The section below concluded the address was on a list. That was wrong, and one
+ten-second check disproved it: **noon loads normally in the operator's own
+Chrome**, from the same machine, at the same time our scraper is refused.
+
+So it is not *where* the request comes from. It is *what is making it*:
+
+| Client | Result |
+| ------ | ------ |
+| Playwright bundled Chromium | 453 bytes · Access Denied |
+| Real Chrome binary (`channel: "chrome"`) | 299 bytes · Access Denied |
+| rebrowser-playwright (CDP `Runtime.enable` patched) | 453 bytes · Access Denied |
+| A human's Chrome | ✅ loads |
+| **Camoufox** (patched Firefox) | ✅ **573KB homepage, 2.1MB product page** |
+
+All three failures drive Chrome over **CDP**, and Akamai's sensor reads it.
+Note what it is *not*: `navigator.webdriver` was masked in every attempt, and
+was `true` during the July capture that worked.
+
+Camoufox is Firefox patched at the C++ level. No Chrome, no CDP, so the entire
+detection family misses. It passed on the first attempt, cold, with no warm
+session — and our existing adapter parsed the result with **zero changes**:
+sku, brand, price, availability, rating, breadcrumb category and the delivery
+window, all intact.
+
+Worth stating plainly, because three fixes in a row were wrong before this one:
+each of those was a variation of the same tool. The question that broke the
+deadlock was "can we use something other than Playwright".
+
+**What this does not change:** datacentre IPs are still refused, measured 20/20
+and independently of the browser. noon runs from a machine on a home
+connection, not from CI.
+
+**What it was worth.** A ten-product refresh found six of nine prices had moved
+since July — Elvive down 50%, NIVEA down 23%, Panthederm **up 24%**. That last
+direction is the expensive one: the shop was selling below what noon now
+charges.
 
 #### Re-tested 29 Aug 2026 — still blocked, and no longer confounded
 

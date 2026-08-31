@@ -11,9 +11,96 @@
  *   const html = await net.grab(url);
  *   await net.close();
  */
+import { spawn } from "node:child_process";
+import { createInterface } from "node:readline";
+import { readFileSync, rmSync } from "node:fs";
 import { DEFAULT_UA } from "./sites/index.mjs";
 
-export async function openFetcher(site, { headless = false, ua = DEFAULT_UA } = {}) {
+/**
+ * Camoufox — a patched Firefox, driven through a small Python helper.
+ *
+ * This is the only transport that gets past noon. Chrome cannot: Playwright's
+ * Chromium, the real Chrome binary and rebrowser-patched Chromium were all
+ * refused from an IP where a human's Chrome works, because they drive Chrome
+ * over CDP and Akamai's sensor reads that. Camoufox is patched at the C++
+ * level and is not Chrome, so the whole detection family misses.
+ *
+ * See camoufox-fetch.py for why this talks over a pipe rather than using
+ * Camoufox's own Playwright server (the two Playwright versions are locked
+ * together and ours differ).
+ */
+async function openCamoufox({ headless, settleMs }) {
+  const script = new URL("./camoufox-fetch.py", import.meta.url).pathname.replace(
+    /^\/([A-Za-z]:)/,
+    "$1",
+  );
+  const proc = spawn("python", [script], {
+    stdio: ["pipe", "pipe", "pipe"],
+    env: {
+      ...process.env,
+      ...(headless ? { CAMOUFOX_HEADLESS: "1" } : {}),
+      ...(settleMs ? { CAMOUFOX_SETTLE_MS: String(settleMs) } : {}),
+    },
+  });
+
+  const lines = createInterface({ input: proc.stdout });
+  /* One reply per request, in order — a queue of resolvers is enough. */
+  const waiting = [];
+  lines.on("line", (line) => {
+    let msg;
+    try {
+      msg = JSON.parse(line);
+    } catch {
+      return; // Camoufox writes progress chatter; ignore anything not JSON
+    }
+    const next = waiting.shift();
+    if (next) next(msg);
+  });
+
+  let stderr = "";
+  proc.stderr.on("data", (d) => (stderr += d.toString().slice(0, 2000)));
+
+  const reply = () => new Promise((resolve) => waiting.push(resolve));
+
+  // Launching the browser takes a few seconds; a failure here is usually a
+  // missing install, so say that rather than timing out mysteriously.
+  const ready = await Promise.race([
+    reply(),
+    new Promise((_, rej) =>
+      setTimeout(
+        () => rej(new Error(`Camoufox did not start in 120s. ${stderr.slice(-400)}`)),
+        120_000,
+      ),
+    ),
+  ]);
+  if (!ready?.ready) throw new Error(`Camoufox failed to start: ${stderr.slice(-400)}`);
+
+  return {
+    page: null, // no Playwright page — discovery that needs one cannot use this transport
+    async grab(url) {
+      proc.stdin.write(url + "\n");
+      const msg = await reply();
+      if (!msg?.ok) throw new Error(msg?.error ?? "camoufox: no response");
+      const html = readFileSync(msg.file, "utf8");
+      rmSync(msg.file, { force: true }); // one page at a time; don't accumulate MBs
+      return html;
+    },
+    async close() {
+      try {
+        proc.stdin.write("QUIT\n");
+        proc.stdin.end();
+      } catch {
+        /* already gone */
+      }
+      if (ready.dir) rmSync(ready.dir, { recursive: true, force: true });
+      proc.kill();
+    },
+  };
+}
+
+export async function openFetcher(site, { headless = false, ua = DEFAULT_UA, settleMs } = {}) {
+  if (site.transport === "camoufox") return openCamoufox({ headless, settleMs });
+
   if (site.transport !== "browser") {
     return {
       page: null,

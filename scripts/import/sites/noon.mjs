@@ -7,9 +7,17 @@
  * re-import that renamed them would break every indexed URL and every
  * `source_url` backfilled onto the products table.
  *
- * Transport is "browser" because it has to be: noon sits behind Akamai Bot
- * Manager, which serves a JavaScript sensor challenge. No HTTP client can pass
- * it. See docs/SUPPLIER_SYNC.md for the measurements.
+ * Transport is "camoufox", and it has to be.
+ *
+ * noon sits behind Akamai Bot Manager, which serves a JavaScript sensor
+ * challenge, so no HTTP client can pass it — that much was always true. What
+ * changed on 31 Aug 2026 is that Chrome stopped working too: Playwright's
+ * bundled Chromium, the real Chrome binary and rebrowser-patched Chromium were
+ * each refused from an IP where a human's Chrome loaded the site fine, minutes
+ * apart. They share CDP, and the sensor reads it.
+ *
+ * Camoufox is Firefox patched at the C++ level, drives no CDP, and passed on
+ * the first attempt. See docs/SUPPLIER_SYNC.md for the measurements.
  */
 import {
   availabilityToBool,
@@ -31,7 +39,7 @@ export default {
   label: "noon (Saudi)",
   origin: "https://www.noon.com",
   currency: "SAR",
-  transport: "browser",
+  transport: "camoufox",
   departmentOrder: DEPT_ORDER,
 
   /**

@@ -74,7 +74,9 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 }
 
 const site = getSite(SITE);
-const isBrowser = site.transport === "browser";
+// Both real-browser transports drive a single page, so they share the serial
+// pacing. Only a plain HTTP source can safely run a pool.
+const isBrowser = site.transport === "browser" || site.transport === "camoufox";
 const DELAY_MS = Number(env.DELAY_MS || (isBrowser ? 1500 : 400));
 const CONCURRENCY = Number(env.CONCURRENCY || (isBrowser ? 1 : 4));
 
@@ -160,7 +162,26 @@ const stagedBySku = new Map();
 const known = (url, sku) =>
   stagedByUrl.get(url) ?? (sku == null ? null : stagedBySku.get(String(sku))) ?? null;
 
-console.log(`Already staged: ${stagedBySku.size}`);
+/*
+  Live products count as "held" for discovery, even with no staging row.
+
+  noon's 301 went live through the original import, which predated staging, so
+  staging knows nothing about them. Without this the first noon sync would
+  discover nothing and refresh nothing. They arrive as new *to staging*, which
+  is accurate — that first run seeds the mirror, and every run after it diffs
+  against it.
+*/
+const liveUrls = new Set();
+{
+  const { data } = await sb
+    .from("products")
+    .select("source_url")
+    .eq("source", site.key)
+    .not("source_url", "is", null);
+  for (const r of data ?? []) liveUrls.add(r.source_url);
+}
+
+console.log(`Already held: ${stagedBySku.size} staged, ${liveUrls.size} live`);
 
 /* ------------------------------------------------------------------ *
  * 3. Discover what the supplier currently lists
@@ -178,7 +199,29 @@ function loadCategoryMap() {
 }
 
 const categoryMap = loadCategoryMap();
-const DISCOVER = env.DISCOVER || (categoryMap?.size ? "shelves" : "sitemap");
+
+/*
+  Where the candidate URLs come from.
+
+    shelves  the category map (Cult Beauty; every result arrives categorised)
+    sitemap  everything the source publishes
+    listing  walk listing pages in a browser and scroll
+    staged   only the products we already hold
+
+  `staged` is the default for a source whose discovery needs a Playwright page
+  the transport cannot provide. noon is exactly that: it publishes no sitemap,
+  so discovery means scrolling listing pages — but it is only reachable through
+  Camoufox, which runs the browser inside a Python helper and exposes no page
+  object to scroll with.
+
+  That costs less than it sounds. Refreshing the 301 noon products we already
+  carry is the whole job today: prices move, stock moves, and neither has been
+  checked since July. Finding *new* noon products is a separate feature, and
+  it needs the helper to learn to scroll before it can work at all.
+*/
+const needsPageToDiscover = site.discover.kind === "listing" && site.transport === "camoufox";
+const DISCOVER =
+  env.DISCOVER || (needsPageToDiscover ? "staged" : categoryMap?.size ? "shelves" : "sitemap");
 
 /*
   A crawl-categorised source without its map cannot categorise anything.
@@ -206,7 +249,23 @@ if (missingCategoryMap) {
 let net = null;
 let discovered = [];
 try {
-  if (DISCOVER === "shelves") {
+  if (DISCOVER === "staged") {
+    discovered = [...new Set([...stagedByUrl.keys(), ...liveUrls])];
+    const unseeded = discovered.filter((u) => !stagedByUrl.has(u)).length;
+    console.log(`Discovered: ${discovered.length} (products we already hold — refresh only)`);
+    if (unseeded) {
+      console.log(
+        `  ${unseeded} of them are live but not yet in staging — this run seeds them,\n` +
+          `  so they are counted as new here. Later runs will diff against them.`,
+      );
+    }
+    if (!discovered.length) {
+      throw new Error(
+        `Nothing held for ${site.key}, so there is nothing to refresh. ` +
+          `Seed it with a capture first: SITE=${site.key} npm run import:capture`,
+      );
+    }
+  } else if (DISCOVER === "shelves") {
     if (!categoryMap?.size) {
       throw new Error(`No category map. Run: SITE=${site.key} npm run import:categories`);
     }
