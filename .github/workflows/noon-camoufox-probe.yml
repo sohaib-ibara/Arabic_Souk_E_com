@@ -1,0 +1,45 @@
+# Can Camoufox reach noon from a datacentre IP?
+#
+# This decides where the noon sync lives, and it is the one combination never
+# tested. Camoufox is measured working from a home connection. Datacentre IPs
+# were measured refused 20/20 — but every one of those used a Chrome-based
+# client, and Chrome is refused from the home connection too. So "datacentre
+# refuses noon" may be a fact about Chrome rather than about the IP.
+#
+# If this passes, the noon sync can be automated here exactly like Cult Beauty.
+# If it fails, noon stays on a machine with a residential connection.
+#
+# Diagnostic only: two page loads, nothing written to the database, nothing
+# published. Manual trigger only — no schedule, because repeatedly throwing
+# refused requests at a retailer is both rude and how an IP earns a real block.
+name: noon camoufox probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Xvfb lets Camoufox run a genuinely headed browser with no display.
+      # Plain headless is a detectable state of its own and would confound the
+      # result — a failure would not tell us whether the IP or the headlessness
+      # was to blame.
+      - name: Install Camoufox and a virtual display
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+          pip install --quiet "camoufox[virtualdisplay]"
+          python -m camoufox fetch
+
+      - name: Probe
+        env:
+          HEADLESS: virtual
+        run: python scripts/import/camoufox-probe.py
