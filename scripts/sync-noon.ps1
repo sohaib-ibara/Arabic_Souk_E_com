@@ -4,7 +4,7 @@
 
 .DESCRIPTION
   noon cannot be synced from the cloud. Chrome is refused from every IP we have
-  tried, and Camoufox — which does get through — is refused from datacentre IPs.
+  tried, and Camoufox, which does get through, is refused from datacentre IPs.
   Both conditions have to hold at once, and CI can only ever fix the browser.
   So noon runs here, on a machine with a residential connection.
 
@@ -32,6 +32,12 @@
 .PARAMETER DelayMs
   Pause between page loads. Do not lower this. A fast 800-page crawl in July is
   what got this IP flagged by Akamai in the first place.
+
+.NOTES
+  Keep this file ASCII-only. Windows PowerShell 5.1 reads a .ps1 with no BOM as
+  cp1252, so a UTF-8 em dash arrives as three bytes ending in 0x94 - a curly
+  closing quote, which PowerShell honours as a string delimiter. One em dash in
+  a string inverts every quote in the rest of the file, and it still parses.
 #>
 param(
     [int]$NewLimit = 100,
@@ -54,7 +60,7 @@ function Write-Log($Message) {
     Add-Content -Path $Log -Value $line -Encoding utf8
 }
 
-# A run can outlast its own schedule — the seed passes take half an hour. Two
+# A run can outlast its own schedule; the seed passes take half an hour. Two
 # Camoufox instances against the same source would double the request rate at
 # the retailer and race on the same staging rows.
 $Lock = Join-Path $LogDir "noon.lock"
@@ -64,7 +70,7 @@ if (Test-Path $Lock) {
         Write-Log "A sync started $([int]$age.TotalMinutes) min ago is still running. Skipping."
         exit 0
     }
-    Write-Log "Stale lock from $([int]$age.TotalHours)h ago — a previous run died. Continuing."
+    Write-Log "Stale lock from $([int]$age.TotalHours)h ago; a previous run died. Continuing."
     Remove-Item $Lock -Force
 }
 New-Item -ItemType File -Path $Lock -Force | Out-Null
@@ -99,7 +105,7 @@ try {
         Write-Log "Sync exited $code. The run is recorded in sync_runs; /admin/sync will show it."
     }
 
-    # Keep a fortnight. The database is the real record — these are for reading
+    # Keep a fortnight. The database is the real record; these are for reading
     # a stack trace when something breaks.
     Get-ChildItem $LogDir -Filter "noon-*.log" |
         Sort-Object LastWriteTime -Descending |

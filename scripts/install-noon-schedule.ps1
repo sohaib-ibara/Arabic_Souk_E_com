@@ -3,27 +3,33 @@
   Register (or remove) the daily noon sync in Windows Task Scheduler.
 
 .DESCRIPTION
-  Run once. No administrator rights needed — the task is registered for the
+  Run once. No administrator rights needed - the task is registered for the
   current user, which is also required: the sync drives a HEADED browser, so it
   only works while that user is logged on.
 
     powershell -ExecutionPolicy Bypass -File scripts\install-noon-schedule.ps1
     powershell -ExecutionPolicy Bypass -File scripts\install-noon-schedule.ps1 -Remove
 
-  Verify afterwards in Task Scheduler (taskschd.msc) under "Arabic Souk — noon
+  Keep this file ASCII-only. Windows PowerShell 5.1 reads a .ps1 with no BOM as
+  cp1252, so a UTF-8 em dash arrives as three bytes ending in 0x94 - a curly
+  closing quote, which PowerShell honours as a string delimiter. One em dash in
+  a string inverts every quote in the rest of the file, and it still parses.
+
+  Verify afterwards in Task Scheduler (taskschd.msc) under "Arabic Souk - noon
   sync", or with:
 
     Get-ScheduledTask -TaskName "Arabic Souk - noon sync"
 
 .PARAMETER At
-  Local time to run, 24h. Default 03:30 — outside working hours, and after
-  noon's own overnight price updates.
+  Local time to run, 24h, in the machine's own timezone. Default 20:00, chosen
+  because the browser is headed: it has to run at an hour this machine is
+  reliably awake and logged on, which matters more than picking a quiet hour.
 
 .PARAMETER Remove
   Unregister the task instead of creating it.
 #>
 param(
-    [string]$At = "03:30",
+    [string]$At = "20:00",
     [switch]$Remove
 )
 
@@ -53,14 +59,14 @@ $Action = New-ScheduledTaskAction `
 $Trigger = New-ScheduledTaskTrigger -Daily -At $At
 
 <#
-  RunOnlyIfIdle is deliberately OFF: 03:30 is chosen precisely because nobody is
-  using the machine, and an idle check would skip the run if anything happened
-  to be active.
+  RunOnlyIfIdle is deliberately OFF, and at an evening hour that is essential
+  rather than merely tidy: the machine is picked for this slot BECAUSE it is in
+  use then, so an idle check would skip almost every run.
 
-  StartWhenAvailable IS on, so a machine that was asleep at 03:30 catches up
-  when it wakes rather than silently missing a day.
+  StartWhenAvailable IS on, so a machine that was off or asleep at the trigger
+  catches up when it wakes rather than silently missing a day.
 
-  The task does NOT wake the machine or run on battery — those are the
+  The task does NOT wake the machine or run on battery; those are the
   user's own machine's business, and /admin/sync reports a missed run anyway.
 #>
 $Settings = New-ScheduledTaskSettingsSet `
@@ -83,7 +89,7 @@ Register-ScheduledTask `
     -Trigger $Trigger `
     -Settings $Settings `
     -Principal $Principal `
-    -Description "Refreshes noon prices, stock and delivery times into staging. Camoufox, headed — needs this user logged on. See docs/SUPPLIER_SYNC.md." `
+    -Description "Refreshes noon prices, stock and delivery times into staging. Camoufox, headed; needs this user logged on. See docs/SUPPLIER_SYNC.md." `
     -Force | Out-Null
 
 Write-Output "Registered '$TaskName', daily at $At."
@@ -95,4 +101,4 @@ Write-Output ""
 Write-Output "Test it now without waiting:"
 Write-Output "  Start-ScheduledTask -TaskName `"$TaskName`""
 Write-Output ""
-Write-Output "Then check /admin/sync in the app — that is the record that matters."
+Write-Output "Then check /admin/sync in the app; that is the record that matters."
