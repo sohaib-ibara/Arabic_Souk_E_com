@@ -377,7 +377,19 @@ await pooled(toFetch, CONCURRENCY, DELAY_MS, async ({ sku, url }) => {
       results.unchanged++;
       return;
     }
-    results.changed.push({ record, kinds, previous });
+    /*
+      Keep the SKU we already stored, do not adopt the one just parsed.
+
+      On a multi-variant product the parsed SKU is whichever variant the page
+      happened to lead with, and that moves: this row was stored as 10785712
+      and came back 13321112 after Cult Beauty reordered the shades. Writing
+      the new one would try to insert a second row for a URL we already hold,
+      which violates staging_products_source_source_url_key.
+
+      The URL is the stable half of the pair — it is what we matched on — so
+      the identity stays put and only the content updates.
+    */
+    results.changed.push({ record, kinds, previous, sku: prev.source_sku });
     const detail = kinds
       .map((k) =>
         k === "price" ? `price ${previous.price} → ${num(record.price)}` : k,
@@ -449,9 +461,12 @@ if (!CONFIRM) {
    * ---------------------------------------------------------------- */
 
   const stamp = now();
-  const toRow = (r, kinds, previous) => ({
+  const toRow = (r, kinds, previous, sku) => ({
     source: r.source ?? site.key,
-    source_sku: String(r.sku),
+    // `sku` is the identity we already hold, where we hold one — see the note
+    // where results.changed is built. Only a genuinely new product uses the
+    // freshly parsed value.
+    source_sku: String(sku ?? r.sku),
     source_url: r.sourceUrl,
     raw: r,
     name: r.name,
@@ -478,18 +493,40 @@ if (!CONFIRM) {
 
   const rows = [
     ...results.new.map((r) => toRow(r, [], null)),
-    ...results.changed.map((c) => toRow(c.record, c.kinds, c.previous)),
+    ...results.changed.map((c) => toRow(c.record, c.kinds, c.previous, c.sku)),
   ];
 
+  /*
+    A rejected batch is retried row by row.
+
+    An upsert is one statement, so one bad row discards the whole batch. That
+    is how a run detected three changes, wrote none, and still reported
+    success: two perfectly good rows were collateral damage from a third that
+    violated a unique constraint. Falling back to individual writes keeps the
+    good ones and names the row that actually failed.
+  */
   let staged_ok = 0;
+  const stagingErrors = [];
   const CHUNK = 100;
   for (let k = 0; k < rows.length; k += CHUNK) {
     const batch = rows.slice(k, k + CHUNK);
     const { error } = await sb
       .from("staging_products")
       .upsert(batch, { onConflict: "source,source_sku" });
-    if (error) console.log(`  ✗ staging rows ${k + 1}–${k + batch.length}: ${error.message}`);
-    else staged_ok += batch.length;
+    if (!error) {
+      staged_ok += batch.length;
+      continue;
+    }
+    console.log(`  ⚠ batch ${k + 1}–${k + batch.length} rejected (${error.message}) — retrying singly`);
+    for (const row of batch) {
+      const { error: one } = await sb
+        .from("staging_products")
+        .upsert([row], { onConflict: "source,source_sku" });
+      if (one) {
+        stagingErrors.push(`${row.source_sku} ${String(row.name).slice(0, 40)}: ${one.message}`);
+        console.log(`    ✗ ${row.source_sku} ${String(row.name).slice(0, 40)} — ${one.message}`);
+      } else staged_ok++;
+    }
   }
   console.log(`\nStaged ${staged_ok}/${rows.length}.`);
 
@@ -533,16 +570,36 @@ if (!CONFIRM) {
       `waiting in staging for review. Nothing new is listed until an admin lists it.`,
   );
 
+  /*
+    A run that could not write what it found is not a successful run.
+
+    The first applied run detected three changes, wrote zero, and recorded
+    ok=true — so /admin/sync would have shown a healthy sync while the shop
+    quietly learned nothing. Whether the writes landed is the only thing an
+    applied run is actually for.
+  */
+  if (stagingErrors.length) {
+    console.log(
+      `\n⚠  ${stagingErrors.length} row(s) could not be staged. This run is marked failed.`,
+    );
+  }
   await finish({
-    ok: true,
+    ok: stagingErrors.length === 0,
+    error: stagingErrors.length ? stagingErrors.slice(0, 5).join(" | ").slice(0, 500) : null,
     discovered: discovered.length,
     fetched: toFetch.length,
     new_products: results.new.length,
     changed: results.changed.length,
     unchanged: results.unchanged,
     failed: results.failed.length,
-    summary: { ...summary, delivery_applied: deliveryApplied, staged: staged_ok },
+    summary: {
+      ...summary,
+      delivery_applied: deliveryApplied,
+      staged: staged_ok,
+      staging_errors: stagingErrors.length,
+    },
   });
+  if (stagingErrors.length) process.exitCode = 1;
 }
 
 console.log(`\nRun recorded: ${runId}`);
