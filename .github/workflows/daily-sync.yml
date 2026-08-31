@@ -51,9 +51,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node 24, not 22, and the version matters.
+      #
+      # package-lock.json was written by npm 11. Node 22 ships npm 10, which
+      # builds a different ideal tree from the same lockfile and then rejects it:
+      #
+      #   npm error Missing: @emnapi/runtime@1.11.3 from lock file
+      #
+      # npm 11 considers that same file up to date — checked directly, including
+      # with --os=linux --cpu=x64, so it is a resolver difference between npm
+      # majors and not a platform gap. Matching the npm that wrote the lockfile
+      # is the fix; regenerating it under npm 10 would only invert the problem
+      # for everyone developing on Node 24.
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       # A full `npm ci`, deliberately — NOT `--omit=dev`.
