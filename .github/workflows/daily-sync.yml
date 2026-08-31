@@ -35,9 +35,9 @@ on:
         required: true
         default: "yes"
       new_limit:
-        description: "Most new products this run may take on"
+        description: "Most new products this run may take on (0 = refresh only)"
         required: false
-        default: "40"
+        default: "0"
 
 concurrency:
   # Two syncs of one source at once would race on the same staging rows.
@@ -56,11 +56,23 @@ jobs:
           node-version: 22
           cache: npm
 
-      # --omit=dev skips Playwright, whose postinstall downloads ~500MB of
-      # browsers. Nothing here needs one: the only browser source is noon, which
-      # cannot run in CI at all, and fetcher.mjs imports Playwright lazily inside
-      # the browser branch. @supabase/supabase-js is a prod dependency.
-      - run: npm ci --omit=dev
+      # `npm ci --omit=dev` failed here in under a second on three consecutive
+      # scheduled runs, while succeeding locally against the same committed
+      # lockfile — so it is environmental, and the runner logs need repository
+      # admin rights to read.
+      #
+      # Rather than ship a guess at the cause into a job that runs unattended:
+      # try it, and on failure print npm's own log and fall back to a plain
+      # install. The job then works either way, and the next run tells us what
+      # `npm ci` actually objected to instead of leaving us to infer it.
+      - name: Install dependencies
+        run: |
+          node -v && npm -v
+          npm ci --omit=dev || {
+            echo "::warning::npm ci failed; falling back to npm install. Log follows."
+            tail -n 80 "$(npm config get cache)"/_logs/*.log 2>/dev/null || true
+            npm install --omit=dev --no-audit --no-fund
+          }
 
       # Cult Beauty needs no browser — that is the whole reason it can run here.
       # A source that needed one would need a residential IP too, and would not
@@ -74,7 +86,16 @@ jobs:
         env:
           SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
           CONFIRM_SYNC: ${{ github.event.inputs.apply == 'no' && '0' || '1' }}
-          NEW_LIMIT: ${{ github.event.inputs.new_limit || '40' }}
+          # 0 = refresh only: re-check products we already hold and report what
+          # the supplier changed, without adopting new ones.
+          #
+          # Deliberate for now. CI has no category map, so every product a run
+          # adopts arrives uncategorised — and 58 of the 62 Cult Beauty
+          # categories have no home in our taxonomy yet anyway. Accumulating
+          # uncategorised rows nightly would just make that decision messier to
+          # act on. Change detection is the half that is useful today, and it
+          # needs no map. Raise this once the taxonomy is settled.
+          NEW_LIMIT: ${{ github.event.inputs.new_limit || '0' }}
           REFRESH_LIMIT: "120"
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
