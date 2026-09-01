@@ -162,6 +162,27 @@ product in `/admin/products`.
 New vendors are created **off**. A vendor that has just been added has not been
 priced or reviewed and must not reach the shop because someone created a row.
 
+### Its images need a host entry
+
+`next/image` refuses a hostname that is not in `next.config.ts`, and it throws
+**while rendering** — so one product from an unlisted host takes down the whole
+category page, not just its own card. Listing the first Cult Beauty products
+did exactly that: their images are on THG's CDN, and `/category/bath-body`
+returned "Something went wrong".
+
+Before listing anything from a new vendor:
+
+```sql
+select images from products where source = '<key>' limit 1;
+```
+
+and add that hostname to `images.remotePatterns`. Known so far:
+
+| vendor | hosts |
+|---|---|
+| noon | `*.nooncdn.com` |
+| Cult Beauty | `*.thcdn.com`, `*.thgimages.com` |
+
 ### API vendors
 
 `vendors.kind` is `scrape | api | manual`. Nothing branches on it yet — it is
