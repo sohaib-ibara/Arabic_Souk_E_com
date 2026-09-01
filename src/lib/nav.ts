@@ -17,6 +17,34 @@ const capturedNav: NavGroup[] = importedNav.length
   : primaryNav.map((n) => ({ name: n.name, slug: n.slug, items: [] }));
 
 /**
+ * Every slug the captured taxonomy names, whether or not a category row exists
+ * for it. Membership here is what makes a category "placed" — checking the
+ * surviving groups instead would list a category twice the moment its group was
+ * dropped for having no other stocked children.
+ */
+const CAPTURED_SLUGS: ReadonlySet<string> = new Set(
+  capturedNav.flatMap((group) => [group.slug, ...group.items.map((item) => item.slug)]),
+);
+
+/**
+ * Where a category goes when the captured taxonomy has no place for it.
+ *
+ * The menu's shape came from noon, so it only has room for aisles noon has. A
+ * second vendor does not respect that: Cult Beauty sells home scents, baby care
+ * and supplements, and its own shelves are merchandising angles rather than
+ * product types. Categories created for those had a working page and showed up
+ * in the shop filter, but nothing in the menu ever linked to them — reachable
+ * only by typing the URL.
+ *
+ * So anything the captured tree does not claim collects here, last, in front of
+ * "Shop all". Nothing has to be registered: create a category, switch it on,
+ * and it appears. Switch it off and the heading goes with it when it was the
+ * last one — which is the same rule every other group already follows.
+ */
+const OTHERS_SLUG = "others";
+const OTHERS_NAME = "Others";
+
+/**
  * The navigation, reduced to links that actually go somewhere.
  *
  * The captured taxonomy and the catalogue drift apart: noon lists departments
@@ -42,17 +70,27 @@ const capturedNav: NavGroup[] = importedNav.length
  *
  * Groups whose children all disappear are dropped rather than left as a heading
  * that opens an empty dropdown.
+ *
+ * Anything the captured tree has no place for goes to `Others`, appended last.
  */
 export async function getNavGroups(): Promise<NavGroup[]> {
   const categories = await getCategories();
   const real = new Set(categories.map((c) => c.slug));
 
-  return capturedNav
+  const groups = capturedNav
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => real.has(item.slug)),
     }))
     .filter((group) => group.items.length > 0 || real.has(group.slug));
+
+  const others = categories
+    .filter((c) => !CAPTURED_SLUGS.has(c.slug))
+    .map((c) => ({ name: c.name, slug: c.slug }));
+
+  if (others.length) groups.push({ name: OTHERS_NAME, slug: OTHERS_SLUG, items: others });
+
+  return groups;
 }
 
 /** A short, flat list of category links for compact places (e.g. the footer). */
