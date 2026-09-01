@@ -393,6 +393,17 @@ function diff(prev, next) {
 if (!net) net = await openFetcher(site, { headless: HEADLESS });
 
 const results = { new: [], changed: [], unchanged: 0, failed: [], refused: [] };
+
+/*
+  Every record we successfully parsed, whether or not anything about it moved.
+
+  Kept separately because `results` only retains the rows that differ, and the
+  supplier's own price has to reach `products.source_price` for ALL of them —
+  that column is what /admin/vendors reprices from, and a product that happens
+  not to have changed still needs one. Identity here is the record's own SKU
+  plus its URL, for the multi-variant reason described below.
+*/
+const parsed = [];
 let i = 0;
 
 await pooled(toFetch, CONCURRENCY, DELAY_MS, async ({ sku, url }) => {
@@ -413,6 +424,7 @@ await pooled(toFetch, CONCURRENCY, DELAY_MS, async ({ sku, url }) => {
     }
 
     record.category = site.category(record, categoryMap);
+    parsed.push({ url, record });
 
     /*
       Decided from the parsed record, not from the pre-fetch guess.
@@ -622,6 +634,44 @@ if (!CONFIRM) {
   }
   if (deliveryMoves.length) {
     console.log(`Delivery windows updated on ${deliveryApplied} live product(s).`);
+  }
+
+  /*
+    The supplier's own price, onto the live row — never the shelf price.
+
+    `source_price` is what /admin/vendors recomputes from: rate, markup,
+    surcharge, ladder. Writing it here rather than at promotion time is what
+    gives the 301 noon products already on the shop something to reprice from,
+    since they were loaded by a pasted seed file that predates the column.
+
+    `price` is deliberately not touched. What the shop charges stays a human
+    decision made in the admin, exactly as the message below has always said.
+  */
+  let costsApplied = 0;
+  for (let k = 0; k < parsed.length; k += 1) {
+    const { url, record } = parsed[k];
+    if (!(Number(record.price) > 0)) continue; // 0 means out of stock, not free
+
+    const patch = { source_price: record.price, source_currency: record.currency };
+    // By URL first, because on a multi-variant product the parsed SKU is not
+    // the one the row is stored under — the same trap as last_seen_at above.
+    let { count } = await sb
+      .from("products")
+      .update(patch, { count: "exact" })
+      .eq("source", site.key)
+      .eq("source_url", url);
+
+    if (!count) {
+      ({ count } = await sb
+        .from("products")
+        .update(patch, { count: "exact" })
+        .eq("source", site.key)
+        .eq("source_sku", String(record.sku)));
+    }
+    costsApplied += count ?? 0;
+  }
+  if (costsApplied) {
+    console.log(`Supplier price recorded on ${costsApplied} live product(s).`);
   }
 
   console.log(

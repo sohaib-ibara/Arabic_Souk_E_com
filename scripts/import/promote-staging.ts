@@ -42,6 +42,69 @@ const slugify = (s: string) =>
   "product";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+interface VendorRule {
+  key: string;
+  currency: string;
+  fx_rate_to_bhd: number;
+  markup_percent: number;
+  surcharge_bhd: number;
+  round_prices: boolean;
+}
+
+/**
+ * The vendor's pricing rule, looked up once per source and cached.
+ *
+ * Returns null when the vendor tables do not exist (migration 0014 not run) or
+ * the source has no vendor row, so this script keeps working on an older
+ * database with PRICE_CONVERSION_RATE as it always did.
+ */
+const vendorCache = new Map<string, VendorRule | null>();
+
+async function findVendor(
+  sb: SupabaseClient,
+  source: string | null,
+): Promise<VendorRule | null> {
+  if (!source) return null;
+  if (vendorCache.has(source)) return vendorCache.get(source)!;
+
+  const { data, error } = await sb
+    .from("vendors")
+    .select("key, currency, fx_rate_to_bhd, markup_percent, surcharge_bhd, round_prices")
+    .eq("key", source)
+    .maybeSingle();
+
+  const rule = error || !data ? null : (data as unknown as VendorRule);
+  vendorCache.set(source, rule);
+  return rule;
+}
+
+/**
+ * Ask the database for the shelf price, rather than doing the arithmetic here.
+ *
+ * `vendor_retail_price` is the same function /admin/vendors previews with, so
+ * a product promoted by this script and one repriced in the admin cannot end
+ * up a fils apart.
+ */
+async function vendorPrice(
+  sb: SupabaseClient,
+  amount: number,
+  v: VendorRule,
+): Promise<number> {
+  const { data, error } = await sb.rpc("vendor_retail_price", {
+    p_amount: amount,
+    p_fx: v.fx_rate_to_bhd,
+    p_markup: v.markup_percent,
+    p_surcharge: v.surcharge_bhd,
+    p_round: v.round_prices,
+  });
+  if (error || data == null) {
+    // Fall back to the same arithmetic without the ladder, so a missing
+    // function degrades to a sane price instead of a crash mid-promotion.
+    return Math.round(amount * v.fx_rate_to_bhd * (1 + v.markup_percent / 100) * 1000) / 1000;
+  }
+  return Number(data);
+}
+
 async function findBrandId(sb: SupabaseClient, name: string | null): Promise<string | null> {
   if (!name) return null;
   const slug = slugify(name);
@@ -137,7 +200,20 @@ async function main() {
       const existing = await findExisting(sb, source, sourceSku);
       const slug = await resolveSlug(sb, name, String(r.id), existing?.slug ?? null);
       const rawPrice = Number(r.price ?? 0);
-      const price = Math.round(rawPrice * RATE * 1000) / 1000;
+
+      /*
+        The vendor's own rule wins over PRICE_CONVERSION_RATE.
+
+        Since migration 0014 the rate, markup, surcharge and rounding live on
+        the vendor row and are editable in /admin/vendors, which is where
+        anyone will look for them. The env var stays as the fallback for a
+        source with no vendor row — and for anyone running this script against
+        a database where 0014 has not been applied.
+      */
+      const vendor = await findVendor(sb, source);
+      const price = vendor
+        ? await vendorPrice(sb, rawPrice, vendor)
+        : Math.round(rawPrice * RATE * 1000) / 1000;
 
       /*
         Upsert on (source, source_sku), not insert.
@@ -156,7 +232,11 @@ async function main() {
         description: r.description ?? null,
         short_description: r.short_description ?? null,
         price,
-        currency: RATE === 1 ? (r.currency ?? "BHD") : "BHD",
+        currency: vendor || RATE !== 1 ? "BHD" : (r.currency ?? "BHD"),
+        // What the vendor charges, kept so the price above can be rebuilt when
+        // a rate or markup changes — without re-scraping anything.
+        source_price: rawPrice > 0 ? rawPrice : null,
+        source_currency: (r.currency as string) ?? vendor?.currency ?? null,
         images: r.images ?? [],
         category_id: categoryId,
         brand_id: brandId,
