@@ -61,7 +61,14 @@ export default {
     if (!prod?.name) return null;
 
     const offer = Array.isArray(prod.offers) ? prod.offers[0] : prod.offers;
-    const url = offer?.url || page.url || "";
+    /**
+     * page.url is the page we actually asked for, so it is the identity we can
+     * trust. `offer.url` agrees with it while the product is in stock, but an
+     * out-of-stock page publishes the storefront homepage there instead. That
+     * yields no SKU, falls through to the slugified name, and gives the product
+     * a second identity for exactly as long as it stays out of stock.
+     */
+    const url = page.url || offer?.url || "";
     const sku = (this.skuFromUrl(url) ?? slugify(prod.name)).toUpperCase();
 
     return {

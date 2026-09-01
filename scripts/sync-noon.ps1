@@ -96,7 +96,14 @@ try {
     # stderr is captured for us; redirecting a native command's stderr inside
     # PowerShell 5.1 wraps each line in an ErrorRecord and would make a clean
     # run look failed.
-    npm run sync | Tee-Object -FilePath $Log -Append
+    #
+    # Not Tee-Object: it writes UTF-16 and takes no -Encoding, so interleaving
+    # it with Write-Log's UTF-8 produces a log no tool can read back.
+    npm run sync | ForEach-Object {
+        $line = [string]$_
+        Write-Output $line
+        Add-Content -Path $Log -Value $line -Encoding utf8
+    }
     $code = $LASTEXITCODE
 
     if ($code -eq 0) {
