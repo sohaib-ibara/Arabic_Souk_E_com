@@ -4,14 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
 import {
-  bulkUpdatePrices,
   deleteProductRow,
   getAdminProduct,
   insertProduct,
   setPublished,
   slugify,
   updateProductRow,
-  validatePriceFloors,
   type ProductInput,
 } from "@/lib/admin-products";
 import { isOrderStatus, setOrderStatus } from "@/lib/admin-orders";
@@ -34,7 +32,6 @@ import {
   updateVendor,
 } from "@/lib/vendors";
 import type {
-  PricingState,
   ProductFormState,
   StockAdjustState,
   StockCsvState,
@@ -292,41 +289,6 @@ async function readUpload(formData: FormData): Promise<string> {
     throw new Error("That file is larger than 5 MB. Split it into smaller batches.");
   }
   return file.text();
-}
-
-/**
- * Handles all three CSV operations, chosen by the `mode` field:
- *
- *  - `preview`  — dry run of a bulk price update, writes nothing
- *  - `apply`    — commits the update (client requirement 4)
- *  - `validate` — margin floor check, read-only (client requirement 5)
- */
-export async function pricingCsvAction(
-  _prev: PricingState,
-  formData: FormData,
-): Promise<PricingState> {
-  await requireAdmin();
-
-  const mode = str(formData, "mode");
-  try {
-    const text = await readUpload(formData);
-
-    if (mode === "validate") {
-      return { kind: "validated", result: await validatePriceFloors(text) };
-    }
-
-    const apply = mode === "apply";
-    const result = await bulkUpdatePrices(text, { apply });
-    if (apply) {
-      revalidatePath("/admin/products");
-      revalidateStorefront();
-      for (const c of result.changes) revalidatePath(`/product/${c.slug}`);
-      return { kind: "applied", result };
-    }
-    return { kind: "preview", result };
-  } catch (e) {
-    return { kind: "error", message: (e as Error).message };
-  }
 }
 
 /* ------------------------------ inventory ------------------------------ */

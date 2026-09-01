@@ -5,6 +5,7 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { PromoModal } from "@/components/layout/promo-modal";
 import { SignupTab } from "@/components/layout/signup-tab";
 import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { RegisterPrompt } from "@/components/layout/register-prompt";
@@ -73,6 +74,11 @@ export default async function StoreLayout({
           none of it. */}
       <SignupTab />
       <WhatsAppButton />
+      {/* Above the cart drawer, unlike the two floating controls: it is a
+          modal, and a modal that renders behind something is a trap. It has
+          its own delay and its own once-a-fortnight memory, so mounting it on
+          every page costs nothing until it decides to appear. */}
+      <PromoModal />
       {/* Takes no session prop on purpose. Resolving one here would mean
           reading a cookie during layout render, which opts all 301 product
           pages out of static generation to decide whether to offer someone an

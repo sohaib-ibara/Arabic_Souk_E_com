@@ -107,6 +107,31 @@ export const siteConfig = {
     standardFee: 2, // BHD
     etaDays: "1–2 days",
   },
+  /**
+   * The welcome offer, shown once per visit in a modal.
+   *
+   * Kept here rather than in the component so a sale can be changed, renamed
+   * or switched off without touching a React file — `enabled: false` removes
+   * the modal entirely, which is the only lever anyone should need on the day
+   * a promotion ends.
+   *
+   * `code` is what the shopper is told to use. Nothing validates it yet: the
+   * checkout has no discount engine, so treat this as a marketing capture that
+   * staff honour by hand until one exists.
+   */
+  promo: {
+    enabled: true,
+    eyebrow: "A welcome treat",
+    headline: "Want 15% off?",
+    body: "Join the list for 15% off your first order, plus early access to new arrivals and offers.",
+    code: "WELCOME15",
+    accept: "Yes, please!",
+    decline: "No, but thanks anyway",
+    /** Seconds on the page before it appears. Long enough not to read as an ad. */
+    delaySeconds: 8,
+    /** Days before a shopper who dismissed it is asked again. */
+    remindAfterDays: 14,
+  },
 } as const;
 
 /** Primary navigation categories (must match category slugs in the data layer). */

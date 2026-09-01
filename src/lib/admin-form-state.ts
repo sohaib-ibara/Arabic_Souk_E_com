@@ -1,4 +1,3 @@
-import type { BulkUpdateResult, ValidationResult } from "./admin-products";
 import type { StockCsvResult } from "./inventory";
 import type { ImportResult, RepriceMode, RepriceResult } from "./vendors";
 
@@ -23,15 +22,6 @@ export const emptyProductFormState: ProductFormState = {
   message: null,
   fieldErrors: {},
 };
-
-export type PricingState =
-  | { kind: "idle" }
-  | { kind: "error"; message: string }
-  | { kind: "preview"; result: BulkUpdateResult }
-  | { kind: "applied"; result: BulkUpdateResult }
-  | { kind: "validated"; result: ValidationResult };
-
-export const emptyPricingState: PricingState = { kind: "idle" };
 
 export interface StockAdjustState {
   ok: boolean;
