@@ -28,6 +28,7 @@ import {
   createVendor,
   importStagedForVendor,
   priceVendor,
+  setCategoryEnabled,
   setVendorCategoryEnabled,
   setVendorEnabled,
   updateVendor,
@@ -678,4 +679,34 @@ export async function vendorImportAction(
   } catch (e) {
     return { kind: "error", message: (e as Error).message };
   }
+}
+
+/**
+ * Switch a whole category on or off.
+ *
+ * Blunter than the per-vendor switch above: this takes the category off the
+ * navigation, the homepage and its own URL, and unlists everything in it
+ * whoever supplies it. `products.is_listed` is recomputed by trigger, so there
+ * is nothing to recalculate here — but every storefront surface has to be
+ * revalidated, because a category disappearing changes all of them.
+ */
+export async function setCategoryEnabledAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = str(formData, "category_id");
+  const enabled = formData.get("enabled") === "1";
+  const back = String(formData.get("back") || "/admin/categories");
+  if (!id) redirect(back);
+
+  try {
+    await setCategoryEnabled(id, enabled);
+  } catch (e) {
+    redirect(withQuery(back, { error: (e as Error).message.slice(0, 120) }));
+  }
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/products");
+  revalidateStorefront();
+
+  redirect(withQuery(back, { cat: enabled ? "on" : "off" }));
 }

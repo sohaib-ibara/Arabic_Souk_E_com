@@ -240,7 +240,27 @@ async function loadCategories(): Promise<Category[]> {
   const sb = getSupabaseServer();
   if (sb) {
     const { data, error } = await sb.from("categories").select("*").order("sort_order");
-    if (!error && data && data.length) return data as Category[];
+    if (!error && data && data.length) {
+      /*
+        A category switched off is not on the shop at all.
+
+        Filtered here rather than at each call site, for the same reason
+        products are: the navigation, the homepage grid, the footer, the
+        sitemap, generateStaticParams and getCategoryBySlug all read from this
+        one loader, so a disabled category cannot come back through a path
+        someone forgot. Its own URL then 404s, because the page calls
+        notFound() when the slug resolves to nothing.
+
+        `!== false` rather than `=== true`: before migration 0015 the column
+        does not exist, and a missing switch has to mean "on" or deploying the
+        code first would empty the shop.
+      */
+      const enabled = (data as Category[]).filter((c) => c.is_enabled !== false);
+      if (enabled.length) return enabled;
+      // Every category switched off is a legitimate state, and quietly serving
+      // the sample taxonomy instead would be a lie.
+      return [];
+    }
     warnFallback("categories", error);
   }
   return localCategories;

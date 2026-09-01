@@ -5,6 +5,13 @@ export interface Category {
   description: string | null;
   image_url: string | null;
   sort_order: number;
+  /**
+   * On the shop at all. Off hides the category, its page and its products
+   * everywhere — distinct from a vendor's per-category switch, which only
+   * hides that one vendor's products in it. Optional because the column
+   * arrives with migration 0015; absent means on.
+   */
+  is_enabled?: boolean;
 }
 
 export interface Brand {

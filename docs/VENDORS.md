@@ -11,16 +11,32 @@ make sense together:
 Implemented by `supabase/migrations/0014_vendor_provisioning.sql` and
 `/admin/vendors`.
 
-## The three switches
+## The four switches
 
 | Level | Where | Stored as |
 |---|---|---|
 | Whole vendor | `/admin/vendors` → **Turn on / Turn off** | `vendors.is_enabled` |
 | One category, one vendor | `/admin/vendors?vendor=…` → Categories | `vendor_categories.is_enabled` |
+| **A whole category, shop-wide** | `/admin/categories` | `categories.is_enabled` |
 | One product | `/admin/products` → List / Hide | `products.is_published` |
 
-They combine with AND. A product is on the shop only when its vendor is on,
-that vendor is on for the product's category, and the product itself is listed.
+They combine with AND. A product is on the shop only when its category is on,
+its vendor is on, that vendor is on for that category, and the product itself
+is listed.
+
+### The two category switches are not the same thing
+
+This catches people, so it is worth being blunt:
+
+- **`/admin/vendors` → Categories** decides *whose* products fill a category.
+  Turning noon off inside skin care leaves Cult Beauty's products there, under
+  the same heading — that is the 1 Sep requirement, and it is why switching one
+  vendor off still leaves products on the shelf.
+- **`/admin/categories`** decides whether the category exists at all. Turning it
+  off removes the heading, the menu entry, the page and every product in it,
+  whoever supplies them.
+
+Reach for the first to change the mix, the second to stop selling a section.
 
 **No row in `vendor_categories` means enabled.** Only an explicit `false` hides
 anything. That way a newly imported product in a category nobody has configured

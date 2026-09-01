@@ -596,3 +596,73 @@ async function shelfPrice(
   }
   return Number(data);
 }
+
+/* --------------------- categories, shop-wide --------------------- */
+
+export interface CategorySwitch {
+  id: string;
+  name: string;
+  slug: string;
+  is_enabled: boolean;
+  /** Products filed here, whatever their vendor or state. */
+  product_count: number;
+  /** How many a shopper can currently see. */
+  listed_count: number;
+  /** Vendors explicitly switched off in this category. */
+  vendors_off: string[];
+}
+
+/**
+ * Every category with the counts behind its switch.
+ *
+ * This switch is the blunt one, and the difference from the per-vendor switch
+ * matters: turning a category off removes it from the shop entirely — nav,
+ * homepage, footer, its own URL — and unlists everything in it, whoever
+ * supplies it. The per-vendor switch only decides whose products fill a
+ * category that is staying.
+ */
+export async function listCategorySwitches(): Promise<CategorySwitch[]> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return [];
+
+  const [{ data: categories, error }, { data: products }, { data: off }, { data: vendors }] =
+    await Promise.all([
+      admin.from("categories").select("id, name, slug, is_enabled").order("sort_order").order("name"),
+      admin.from("products").select("category_id, is_listed"),
+      admin.from("vendor_categories").select("vendor_id, category_id").eq("is_enabled", false),
+      admin.from("vendors").select("id, name"),
+    ]);
+
+  if (error || !categories) return [];
+  const vendorName = new Map((vendors ?? []).map((v: any) => [v.id as string, v.name as string]));
+
+  return (categories as any[]).map((c) => {
+    const mine = (products ?? []).filter((p: any) => p.category_id === c.id);
+    return {
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      // Before migration 0015 the column is absent; absent means on.
+      is_enabled: c.is_enabled !== false,
+      product_count: mine.length,
+      listed_count: mine.filter((p: any) => p.is_listed).length,
+      vendors_off: (off ?? [])
+        .filter((r: any) => r.category_id === c.id)
+        .map((r: any) => vendorName.get(r.vendor_id) ?? "a vendor"),
+    };
+  });
+}
+
+export async function setCategoryEnabled(id: string, enabled: boolean): Promise<void> {
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY isn't set.");
+  const { error } = await admin.from("categories").update({ is_enabled: enabled }).eq("id", id);
+  if (error) {
+    if (error.code === UNDEFINED_COLUMN) {
+      throw new Error(
+        "categories.is_enabled is missing — run supabase/migrations/0015_category_switch.sql.",
+      );
+    }
+    throw new Error(error.message);
+  }
+}
