@@ -62,6 +62,35 @@ export async function fromSitemap(entry, { timeoutMs = 30_000, maxChildren = 25,
 }
 
 /**
+ * Every product URL a set of listing pages yields, via a transport that can
+ * scroll them for us.
+ *
+ * `linksFn(url)` returns every href on that page once it has been scrolled to
+ * the end. It exists so a source whose browser is out of process — Camoufox,
+ * which is the only client noon accepts — can still discover products it has
+ * never seen. Before this, such a source could only refresh URLs already on
+ * file, so anything the retailer added was invisible to us for ever.
+ */
+export async function fromListingLinks(linksFn, listingUrls, site, { max = 100, log = () => {} } = {}) {
+  const found = new Set();
+  for (const listing of listingUrls) {
+    if (found.size >= max) break;
+    try {
+      const hrefs = await linksFn(listing);
+      const products = hrefs.filter((u) => site.isProductUrl(u));
+      for (const u of products) {
+        if (found.size >= max) break;
+        found.add(u);
+      }
+      log(`  ${listing} → ${products.length} product links (${found.size} total)`);
+    } catch (e) {
+      log(`  ${listing} failed — ${e.message}`);
+    }
+  }
+  return [...found];
+}
+
+/**
  * Scroll a listing page until the product-link count stops growing.
  * Runs inside a caller-supplied Playwright page so the browser is launched once.
  */
@@ -101,7 +130,10 @@ export async function fromListing(page, listingUrls, site, { max = 100, log = ()
  * Product URLs for a site, by whichever route its adapter declares.
  * `page` is required only for listing-based sites.
  */
-export async function discoverProducts(site, { page = null, max = Infinity, log = () => {} } = {}) {
+export async function discoverProducts(
+  site,
+  { page = null, links = null, max = Infinity, log = () => {} } = {},
+) {
   const d = site.discover;
   if (d.kind === "sitemap") {
     const all = await fromSitemap(d.url, { log });
@@ -110,8 +142,12 @@ export async function discoverProducts(site, { page = null, max = Infinity, log 
     return products.slice(0, max);
   }
   if (d.kind === "listing") {
-    if (!page) throw new Error(`${site.key} discovery needs a browser page`);
-    return fromListing(page, d.urls, site, { max: Number.isFinite(max) ? max : 100, log });
+    const cap = Number.isFinite(max) ? max : 100;
+    // A transport that scrolls for us is preferred: it is the only route open
+    // to an out-of-process browser, and it behaves identically from here.
+    if (links) return fromListingLinks(links, d.urls, site, { max: cap, log });
+    if (page) return fromListing(page, d.urls, site, { max: cap, log });
+    throw new Error(`${site.key} discovery needs a browser page or a links() transport`);
   }
   throw new Error(`Unknown discovery kind "${d.kind}" for ${site.key}`);
 }

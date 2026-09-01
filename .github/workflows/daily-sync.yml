@@ -37,7 +37,7 @@ on:
       new_limit:
         description: "Most new products this run may take on (0 = refresh only)"
         required: false
-        default: "0"
+        default: "40"
 
 concurrency:
   # Two syncs of one source at once would race on the same staging rows.
@@ -107,13 +107,21 @@ jobs:
           # 0 = refresh only: re-check products we already hold and report what
           # the supplier changed, without adopting new ones.
           #
-          # Deliberate for now. CI has no category map, so every product a run
-          # adopts arrives uncategorised — and 58 of the 62 Cult Beauty
-          # categories have no home in our taxonomy yet anyway. Accumulating
-          # uncategorised rows nightly would just make that decision messier to
-          # act on. Change detection is the half that is useful today, and it
-          # needs no map. Raise this once the taxonomy is settled.
-          NEW_LIMIT: ${{ github.event.inputs.new_limit || '0' }}
+          # Was 0 — refresh only — because CI has no category map and every
+          # product a run adopted arrived uncategorised. The client has since
+          # been explicit that both scrapers must pick up whatever the supplier
+          # adds, so this now grows the catalogue.
+          #
+          # Uncategorised is no longer a dead end: src/lib/category-aliases.ts
+          # maps the shelves that have an equivalent here, and /admin/vendors
+          # reports the rest as "N need a category" instead of letting them
+          # pass unnoticed.
+          #
+          # 40 a night rather than everything at once. New products land in
+          # staging and still need a human to bring them into the catalogue, so
+          # a slower rate keeps that queue reviewable — and keeps the request
+          # rate somewhere a retailer will not mind.
+          NEW_LIMIT: ${{ github.event.inputs.new_limit || '40' }}
           REFRESH_LIMIT: "120"
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

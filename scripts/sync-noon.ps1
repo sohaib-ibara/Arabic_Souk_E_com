@@ -18,13 +18,15 @@
     reads sync_runs and shows "Overdue" when nothing has reported in 30 hours,
     so a machine left switched off shows up as a problem rather than as silence.
 
-  Defaults seed and then maintain, without needing to be changed. While the 301
-  live products are still being mirrored into staging they arrive as new, so
-  NewLimit does the seeding; once they are all staged there are no new ones and
-  only the refresh runs.
+  Defaults seed first and then grow, without needing to be changed. While the
+  301 live products are still being mirrored into staging they arrive as new,
+  so NewLimit paces the seed. Once they are all staged that budget goes to
+  products noon has actually added, which the sync now finds by scrolling
+  noon's category pages through the Camoufox helper.
 
 .PARAMETER NewLimit
-  Most products to add to staging per run. Paces the initial seed.
+  Most products to add to staging per run. Paces the seed first, then caps how
+  many genuinely new noon products a single run adopts.
 
 .PARAMETER RefreshLimit
   How many already-staged products to re-check per run, stalest first.

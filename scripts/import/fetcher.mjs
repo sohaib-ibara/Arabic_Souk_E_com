@@ -76,7 +76,12 @@ async function openCamoufox({ headless, settleMs }) {
   if (!ready?.ready) throw new Error(`Camoufox failed to start: ${stderr.slice(-400)}`);
 
   return {
-    page: null, // no Playwright page — discovery that needs one cannot use this transport
+    /*
+      No Playwright page — the browser lives in the Python process, so nothing
+      here can be driven with page.evaluate(). `links` below is the substitute:
+      discovery that would have scrolled a page asks the helper to do it.
+    */
+    page: null,
     async grab(url) {
       proc.stdin.write(url + "\n");
       const msg = await reply();
@@ -84,6 +89,19 @@ async function openCamoufox({ headless, settleMs }) {
       const html = readFileSync(msg.file, "utf8");
       rmSync(msg.file, { force: true }); // one page at a time; don't accumulate MBs
       return html;
+    },
+    /**
+     * Every href on a listing page, after the helper has scrolled it to the end.
+     *
+     * This is what lets a Camoufox source discover products it has never seen.
+     * Without it noon could only ever refresh the URLs already on file, so a
+     * product noon added yesterday would never be found.
+     */
+    async links(url) {
+      proc.stdin.write(`LIST ${url}\n`);
+      const msg = await reply();
+      if (!msg?.ok) throw new Error(msg?.error ?? "camoufox: no response");
+      return Array.isArray(msg.links) ? msg.links : [];
     },
     async close() {
       try {

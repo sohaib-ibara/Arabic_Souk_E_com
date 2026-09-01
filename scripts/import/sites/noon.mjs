@@ -45,14 +45,41 @@ export default {
   /**
    * noon publishes no product sitemap, so discovery means walking listing
    * pages in a real browser and scrolling until they stop growing.
+   *
+   * These are category GRIDS, one per department, and that distinction cost a
+   * while to find. The single URL that used to be here,
+   * `/saudi-en/noon-premium-beauty/`, is a hub of category tiles with no
+   * product on it: discovery came back with nothing but links to other
+   * categories. Every URL below is one the July capture actually crawled, and
+   * each returned 45 products then.
+   *
+   * Adding a department is adding a line here. Check it grids rather than
+   * hubs — open it and look for products, not tiles.
    */
   discover: {
     kind: "listing",
-    urls: ["https://www.noon.com/saudi-en/noon-premium-beauty/"],
+    urls: [
+      "https://www.noon.com/saudi-en/beauty/makeup-16142/face-18064/foundation/",
+      "https://www.noon.com/saudi-en/beauty/makeup-16142/eyes-17047/eye-shadow/",
+      "https://www.noon.com/saudi-en/beauty/makeup-16142/lips/lipstick/",
+      "https://www.noon.com/saudi-en/beauty/skin-care-16813/moisturizers/face-moisturizers/",
+      "https://www.noon.com/saudi-en/beauty/skin-care-16813/treatment-and-serums/face-serums/",
+      "https://www.noon.com/saudi-en/beauty/hair-care/shampoo-and-conditioners/shampoos-18048/",
+      "https://www.noon.com/saudi-en/beauty/fragrance/eau-de-parfum/",
+      "https://www.noon.com/saudi-en/beauty/personal-care-16343/deodorants-and-antiperspirants/",
+    ],
   },
 
-  // noon product URLs end in the product code then `/p/`.
-  isProductUrl: (url) => /\/[A-Z0-9]+\/p\/?/i.test(url),
+  /*
+    noon product URLs end in the product code then `/p/`.
+
+    The trailing anchor is load-bearing. Without it `\/p` also matched the
+    start of the next path segment, so every category whose name begins with p
+    read as a product — `/beauty/personal-care-16343/` matched on "/beauty/"
+    plus the "p" of "personal". Listing discovery then returned category pages
+    and nothing else. It never bit while noon discovery was refresh-only.
+  */
+  isProductUrl: (url) => /\/[A-Z0-9]+\/p\/?(?:[?#]|$)/i.test(url),
 
   skuFromUrl: (url) => url.match(/\/([A-Z0-9]+)\/p\//i)?.[1]?.toUpperCase() ?? null,
 

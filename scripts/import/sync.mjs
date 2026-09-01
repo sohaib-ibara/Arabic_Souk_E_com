@@ -208,20 +208,37 @@ const categoryMap = loadCategoryMap();
     listing  walk listing pages in a browser and scroll
     staged   only the products we already hold
 
-  `staged` is the default for a source whose discovery needs a Playwright page
-  the transport cannot provide. noon is exactly that: it publishes no sitemap,
-  so discovery means scrolling listing pages — but it is only reachable through
-  Camoufox, which runs the browser inside a Python helper and exposes no page
-  object to scroll with.
+  The machinery for `listing` under Camoufox now exists — the helper scrolls a
+  page itself and hands back the links (`LIST <url>` in camoufox-fetch.py,
+  surfaced as `net.links`) — but noon is NOT defaulted to it, and the reason is
+  worth recording.
 
-  That costs less than it sounds. Refreshing the 301 noon products we already
-  carry is the whole job today: prices move, stock moves, and neither has been
-  checked since July. Finding *new* noon products is a separate feature, and
-  it needs the helper to learn to scroll before it can work at all.
+  noon's category grids are refused. Measured 2 Sep: a product page through
+  Camoufox returns 250KB of real HTML, while
+  /beauty/makeup-16142/face-18064/foundation/ returns 2,667 bytes of Akamai
+  block page, warmed session or not. The July capture crawled those same eight
+  grids at 45 products each, so this tightened between July and now — the same
+  direction as the Chrome-wide block on 31 Aug.
+
+  So defaulting noon to `listing` would spend eight refused requests every
+  night before falling back, which is both pointless and how a soft block
+  becomes a hard one. It stays on `staged` until there is a route that works,
+  and `DISCOVER=listing` is there to retest whenever someone wants to check
+  whether noon has relaxed.
+
+  Cult Beauty is unaffected: it has a sitemap and needs none of this.
 */
-const needsPageToDiscover = site.discover.kind === "listing" && site.transport === "camoufox";
+const noonListingsAreBlocked =
+  site.discover.kind === "listing" && site.transport === "camoufox";
 const DISCOVER =
-  env.DISCOVER || (needsPageToDiscover ? "staged" : categoryMap?.size ? "shelves" : "sitemap");
+  env.DISCOVER ||
+  (noonListingsAreBlocked
+    ? "staged"
+    : site.discover.kind === "listing"
+      ? "listing"
+      : categoryMap?.size
+        ? "shelves"
+        : "sitemap");
 
 /*
   A crawl-categorised source without its map cannot categorise anything.
@@ -273,12 +290,49 @@ try {
     console.log(`Discovered: ${discovered.length} (from the category map)`);
   } else {
     net = await openFetcher(site, { headless: HEADLESS });
+
+    /*
+      Warm the session before crawling a listing page.
+
+      Measured on noon: a cold Camoufox session asking for a category page gets
+      Akamai's interstitial, and the only link on it is akamai.com/privacy.
+      Fetch one ordinary product page first and the same category URL returns
+      885 hrefs. One request buys the clearance cookie that makes discovery
+      work at all, so it is cheap at any price.
+    */
+    const warmUrl = [...liveUrls][0] ?? [...stagedByUrl.keys()][0];
+    if (warmUrl && typeof net.links === "function" && site.discover.kind === "listing") {
+      try {
+        await net.grab(warmUrl);
+        console.log("  (warmed the session with one product page)");
+      } catch {
+        // Discovery reports what it managed to find; no need to fail here.
+      }
+    }
+
     discovered = await discoverProducts(site, {
       page: net.page,
+      // Camoufox has no page but can scroll on our behalf; see fetcher.mjs.
+      links: typeof net.links === "function" ? net.links : null,
       max: Number(env.MAX_DISCOVER || 5000),
       log: (s) => console.log(s),
     });
     console.log(`Discovered: ${discovered.length} (${DISCOVER})`);
+
+    /*
+      A listing crawl that comes back empty must not be read as "the retailer
+      delisted everything". Fall back to what we hold so the run still does its
+      refresh, and say so loudly — a blocked or restructured listing page looks
+      exactly like an empty one from here.
+    */
+    if (!discovered.length) {
+      discovered = [...new Set([...stagedByUrl.keys(), ...liveUrls])];
+      console.log(
+        `⚠  Discovery returned nothing. Falling back to the ${discovered.length} products we
+` +
+          `   already hold. Check the listing URLs in scripts/import/sites/${site.key}.mjs.`,
+      );
+    }
   }
 } catch (e) {
   await finish({ ok: false, error: `discovery: ${String(e.message ?? e)}`.slice(0, 500) });

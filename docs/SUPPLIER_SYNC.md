@@ -491,3 +491,42 @@ pages nightly at someone else's expense.
 - **Variants.** One Cult Beauty URL can sell several sizes at different prices.
   The importer takes the page default and records the count; whether the others
   should become their own products is a merchandising decision.
+
+## Can each source find NEW products?
+
+The client asked (1 Sep) that both scrapers pick up whatever the supplier adds.
+One does. One cannot, and the reason is measured rather than assumed.
+
+| source | discovery | finds new products? |
+|---|---|---|
+| Cult Beauty | sitemap + category map | **yes** — 3,526 URLs, 40 adopted a night |
+| noon | category grids | **no** — the grids are blocked |
+
+### Why noon cannot, as of 2 Sep 2026
+
+noon publishes no sitemap, so discovery has to read its category grids. Those
+grids are refused:
+
+| request through Camoufox | result |
+|---|---|
+| product page | 250,160 bytes, real HTML |
+| `/noon-premium-beauty/` (a hub of tiles, no products) | 547,247 bytes, loads |
+| `/beauty/makeup-16142/face-18064/foundation/` | **2,667 bytes, Akamai block** |
+
+Warming the session with a product page first does not help. The July capture
+crawled those same eight grids at 45 products each, so this tightened between
+July and now — the same direction as the Chrome-wide block on 31 Aug.
+
+So noon stays `DISCOVER=staged`: it tracks price, stock and delivery on the 301
+products we already carry, and does not grow. Defaulting it to `listing` would
+spend eight refused requests every night, which is how a soft block becomes a
+hard one.
+
+**The machinery is built and waiting.** `camoufox-fetch.py` takes `LIST <url>`,
+scrolls the page and returns the links; `net.links` surfaces it; `discover.mjs`
+uses it when a transport offers no Playwright page. Run
+`SITE=noon DISCOVER=listing npm run sync` to retest whenever it is worth
+checking whether noon has relaxed. Nothing else needs changing if it has.
+
+Adding noon products meanwhile is a manual job: paste the URLs into staging, or
+run a capture against pages that are not blocked.
