@@ -5,6 +5,7 @@ import {
   setVendorEnabledAction,
 } from "@/app/admin/actions";
 import type { Vendor, VendorCategory } from "@/lib/vendors";
+import { VendorImport } from "@/components/admin/vendor-import";
 import { VendorPricing } from "@/components/admin/vendor-pricing";
 import { cn } from "@/lib/cn";
 
@@ -68,10 +69,19 @@ export function VendorList({
 
                 <p className="mt-1 text-sm text-muted">
                   {v.product_count === 0 ? (
-                    <>No products in the catalogue yet.</>
+                    v.staged_count > 0 ? (
+                      <>
+                        {v.staged_count} products waiting in staging, none in the catalogue yet
+                      </>
+                    ) : (
+                      <>No products yet. Run the sync.</>
+                    )
                   ) : (
                     <>
                       {v.listed_count} of {v.product_count} products visible
+                      {v.staged_count > v.product_count && (
+                        <> · {v.staged_count - v.product_count} more in staging</>
+                      )}
                       {v.disabled_categories > 0 && (
                         <> · {v.disabled_categories} category switched off</>
                       )}
@@ -144,6 +154,12 @@ export function VendorDetail({
           category switches below say. They take effect when you turn it on.
         </p>
       )}
+
+      <VendorImport
+        vendorId={vendor.id}
+        vendorName={vendor.name}
+        stagedCount={vendor.staged_count}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <PricingRule vendor={vendor} back={back} />

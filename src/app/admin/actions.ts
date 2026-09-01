@@ -26,6 +26,7 @@ import {
 } from "@/lib/inventory";
 import {
   createVendor,
+  importStagedForVendor,
   priceVendor,
   setVendorCategoryEnabled,
   setVendorEnabled,
@@ -36,6 +37,7 @@ import type {
   ProductFormState,
   StockAdjustState,
   StockCsvState,
+  VendorImportState,
   VendorPriceState,
 } from "@/lib/admin-form-state";
 
@@ -639,6 +641,40 @@ export async function vendorPriceAction(
       return { kind: "applied", mode, result };
     }
     return { kind: "preview", mode, result };
+  } catch (e) {
+    return { kind: "error", message: (e as Error).message };
+  }
+}
+
+/**
+ * Bring a vendor's staged products into the catalogue, unlisted.
+ *
+ * Preview first, because this creates rows. Nothing it writes is visible to a
+ * shopper — every new product arrives unlisted — but importing 177 products
+ * into the wrong vendor would still be a mess to unpick.
+ */
+export async function vendorImportAction(
+  _prev: VendorImportState,
+  formData: FormData,
+): Promise<VendorImportState> {
+  await requireAdmin();
+
+  const vendorId = str(formData, "vendor_id");
+  if (!vendorId) return { kind: "error", message: "No vendor was selected." };
+
+  const apply = str(formData, "intent") === "apply";
+
+  try {
+    const result = await importStagedForVendor(vendorId, { apply });
+    if (result.error) return { kind: "error", message: result.error };
+
+    if (result.applied) {
+      revalidatePath("/admin/vendors");
+      revalidatePath("/admin/products");
+      revalidateStorefront();
+      return { kind: "applied", result };
+    }
+    return { kind: "preview", result };
   } catch (e) {
     return { kind: "error", message: (e as Error).message };
   }

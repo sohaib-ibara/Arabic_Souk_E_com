@@ -112,6 +112,43 @@ always in the shop's favour, never below landed cost.
 those rows and say how many they skipped, so a negotiated price is never
 quietly overwritten by an exchange-rate change.
 
+## Staging is not the catalogue
+
+The sync writes `staging_products`. Nothing in the admin or the storefront
+reads that table, which is why a vendor can show **177 waiting in staging, none
+in the catalogue**. Between the two sits one deliberate step:
+
+`/admin/vendors` → the vendor → **Products from staging** → check, then bring in.
+
+Everything it creates arrives with `is_published = false`. Nothing reaches a
+shopper until someone lists it *and* the vendor is switched on. A product
+already in the catalogue keeps whatever the admin decided; only its supplier
+price, stock and delivery window are refreshed.
+
+### Categories on import
+
+`src/lib/category-aliases.ts` maps a supplier's shelf names onto ours. Cult
+Beauty's are not a taxonomy — 58 of its 62 shelves have no equivalent here, and
+many are campaigns (`halloween`, `spotlight`, `goody-bag`, `our-customers-love`)
+that say nothing about what the product is.
+
+Only unambiguous shelves are mapped. Of the 177 staged Cult products:
+
+| | count |
+|---|---|
+| shelf name already matches one of ours | 16 |
+| resolved by the alias map | 93 |
+| **arrive uncategorised** | **68** |
+
+An uncategorised product is imported anyway and flagged in the admin. It will
+not appear under any category until someone sets one, which is the honest
+outcome — guessing would file a serum in the lipstick aisle and nobody would
+notice until a customer did.
+
+The map is **provisional**, pending the client's decision on which Cult
+categories the shop carries. Every line is a guess an admin can overrule per
+product in `/admin/products`.
+
 ## Adding a vendor
 
 1. Add the row in `/admin/vendors`. **`key` must match the adapter key** in

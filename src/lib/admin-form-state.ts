@@ -1,6 +1,6 @@
 import type { BulkUpdateResult, ValidationResult } from "./admin-products";
 import type { StockCsvResult } from "./inventory";
-import type { RepriceMode, RepriceResult } from "./vendors";
+import type { ImportResult, RepriceMode, RepriceResult } from "./vendors";
 
 /**
  * Form state shapes and their initial values for the admin's `useActionState`
@@ -65,3 +65,12 @@ export type VendorPriceState =
   | { kind: "applied"; mode: RepriceMode; result: RepriceResult };
 
 export const emptyVendorPriceState: VendorPriceState = { kind: "idle" };
+
+/** Bringing a vendor's staged products into the catalogue. */
+export type VendorImportState =
+  | { kind: "idle" }
+  | { kind: "error"; message: string }
+  | { kind: "preview"; result: ImportResult }
+  | { kind: "applied"; result: ImportResult };
+
+export const emptyVendorImportState: VendorImportState = { kind: "idle" };

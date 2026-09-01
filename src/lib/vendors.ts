@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "./supabase/server";
+import { resolveCategorySlug } from "./category-aliases";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -47,6 +48,14 @@ export interface Vendor {
   listed_count: number;
   /** Categories this vendor has products in, that it is switched off for. */
   disabled_categories: number;
+  /**
+   * Rows the sync has put in staging for this vendor.
+   *
+   * Distinct from product_count and often much larger: staging is what the
+   * sync found, the catalogue is what someone chose to carry. A vendor with
+   * 177 staged and 0 in the catalogue has simply never been imported.
+   */
+  staged_count: number;
 }
 
 export interface VendorCategory {
@@ -119,6 +128,8 @@ export async function listVendors(): Promise<Vendor[]> {
     .select("vendor_id, category_id")
     .eq("is_enabled", false);
 
+  const { data: staged } = await admin.from("staging_products").select("source");
+
   return vendors.map((v: any) => {
     const mine = (products ?? []).filter((p: any) => p.source === v.key);
     return {
@@ -137,6 +148,7 @@ export async function listVendors(): Promise<Vendor[]> {
       product_count: mine.length,
       listed_count: mine.filter((p: any) => p.is_listed).length,
       disabled_categories: (disabled ?? []).filter((d: any) => d.vendor_id === v.id).length,
+      staged_count: (staged ?? []).filter((r: any) => r.source === v.key).length,
     };
   });
 }
@@ -394,4 +406,193 @@ export async function priceVendor(
     applied: true,
     error: null,
   };
+}
+
+/* --------------------- staging → catalogue --------------------- */
+
+export interface ImportResult {
+  /** Products created in the catalogue, all unlisted. */
+  created: number;
+  /** Already in the catalogue; their supplier price and stock were refreshed. */
+  updated: number;
+  /** Created or updated with no category, so an admin has to file them. */
+  uncategorised: number;
+  failed: Array<{ name: string; reason: string }>;
+  applied: boolean;
+  error: string | null;
+}
+
+const emptyImport: ImportResult = {
+  created: 0,
+  updated: 0,
+  uncategorised: 0,
+  failed: [],
+  applied: false,
+  error: null,
+};
+
+/**
+ * Bring a vendor's staged products into the catalogue, unlisted.
+ *
+ * The client's model is that the admin sees everything a vendor offers and
+ * decides what to carry. That only works if the products are actually in
+ * `products` — staging is the sync's scratch space, and nothing in the admin
+ * or the storefront reads it. This is the step between the two.
+ *
+ * Everything arrives with `is_published = false`. Nothing reaches a shopper
+ * until someone lists it, and the vendor switch has to be on as well.
+ *
+ * Prices come from the vendor's rule via the same database function the
+ * repricing screen uses, so an imported product and a repriced one cannot
+ * disagree.
+ *
+ * Categories are resolved through `resolveCategorySlug`. A product whose shelf
+ * has no equivalent here arrives uncategorised rather than guessed at, and the
+ * count is reported so it does not pass unnoticed.
+ */
+export async function importStagedForVendor(
+  vendorId: string,
+  { apply }: { apply: boolean },
+): Promise<ImportResult> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return { ...emptyImport, error: "SUPABASE_SERVICE_ROLE_KEY isn't set." };
+
+  const vendor = await getVendor(vendorId);
+  if (!vendor) return { ...emptyImport, error: "That vendor no longer exists." };
+
+  const [{ data: staged, error: stagedError }, { data: categories }, { data: existing }] =
+    await Promise.all([
+      admin.from("staging_products").select("*").eq("source", vendor.key),
+      admin.from("categories").select("id, slug"),
+      admin.from("products").select("id, slug, source_sku, is_published").eq("source", vendor.key),
+    ]);
+
+  if (stagedError) return { ...emptyImport, error: stagedError.message };
+  if (!staged?.length) {
+    return { ...emptyImport, error: `Nothing is staged for ${vendor.name} yet. Run the sync first.` };
+  }
+
+  const known = new Set((categories ?? []).map((c: any) => c.slug as string));
+  const categoryId = new Map<string, string>(
+    (categories ?? []).map((c: any) => [c.slug as string, c.id as string]),
+  );
+  const bySku = new Map<string, any>(
+    (existing ?? []).map((p: any) => [String(p.source_sku), p]),
+  );
+  const takenSlugs = new Set<string>((existing ?? []).map((p: any) => p.slug as string));
+
+  // Slugs must be unique catalogue-wide, not just within this vendor.
+  const { data: allSlugs } = await admin.from("products").select("slug");
+  for (const s of allSlugs ?? []) takenSlugs.add((s as any).slug as string);
+
+  const result: ImportResult = { ...emptyImport, applied: apply };
+
+  for (const row of staged as any[]) {
+    const name = String(row.name ?? "").trim();
+    if (!name) {
+      result.failed.push({ name: "(unnamed)", reason: "no name" });
+      continue;
+    }
+
+    const sku = row.source_sku == null ? null : String(row.source_sku);
+    const prior = sku ? bySku.get(sku) : undefined;
+    const slug = prior?.slug ?? uniqueSlug(name, takenSlugs);
+    const catSlug = resolveCategorySlug(vendor.key, row.category ?? null, known);
+    if (!catSlug) result.uncategorised += 1;
+
+    if (!apply) {
+      if (prior) result.updated += 1;
+      else result.created += 1;
+      continue;
+    }
+
+    const price = await shelfPrice(admin, Number(row.price ?? 0), vendor);
+
+    const patch: Record<string, unknown> = {
+      name,
+      slug,
+      description: row.description ?? null,
+      short_description: row.short_description ?? null,
+      price,
+      currency: "BHD",
+      images: row.images ?? [],
+      category_id: catSlug ? (categoryId.get(catSlug) ?? null) : null,
+      rating: row.rating ?? 0,
+      review_count: row.review_count ?? 0,
+      in_stock: row.in_stock ?? true,
+      source: vendor.key,
+      source_sku: sku,
+      source_url: row.source_url ?? null,
+      source_price: Number(row.price) > 0 ? Number(row.price) : null,
+      source_currency: row.currency ?? vendor.currency,
+      supplier_dispatch_note: row.supplier_dispatch_note ?? null,
+      lead_days_min: row.lead_days_min ?? null,
+      lead_days_max: row.lead_days_max ?? null,
+      max_per_order: row.max_per_order ?? null,
+      // An existing product keeps whatever the admin decided. Only a genuinely
+      // new one is forced unlisted — sending false unconditionally would pull
+      // a product someone had deliberately put on the shop.
+      is_published: prior ? prior.is_published : false,
+    };
+
+    const { error } = sku
+      ? await admin.from("products").upsert(patch, { onConflict: "source,source_sku" })
+      : await admin.from("products").insert(patch);
+
+    if (error) {
+      result.failed.push({ name: name.slice(0, 60), reason: error.message });
+      continue;
+    }
+
+    if (prior) result.updated += 1;
+    else {
+      result.created += 1;
+      takenSlugs.add(slug);
+    }
+
+    await admin
+      .from("staging_products")
+      .update({ status: "promoted", promoted_at: new Date().toISOString() })
+      .eq("id", row.id);
+  }
+
+  return result;
+}
+
+/** A URL-safe slug that no product already holds. */
+function uniqueSlug(name: string, taken: Set<string>): string {
+  const base =
+    name
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 70) || "product";
+  if (!taken.has(base)) return base;
+  for (let n = 2; ; n += 1) {
+    const candidate = `${base}-${n}`;
+    if (!taken.has(candidate)) return candidate;
+  }
+}
+
+/** The shelf price for one supplier amount, via the vendor's own rule. */
+async function shelfPrice(
+  admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  amount: number,
+  v: Vendor,
+): Promise<number> {
+  if (!(amount > 0)) return 0;
+  const { data, error } = await admin.rpc("vendor_retail_price", {
+    p_amount: amount,
+    p_fx: v.fx_rate_to_bhd,
+    p_markup: v.markup_percent,
+    p_surcharge: v.surcharge_bhd,
+    p_round: v.round_prices,
+  });
+  if (error || data == null) {
+    // Same arithmetic without the ladder, so a missing function degrades to a
+    // sane price rather than importing everything at zero.
+    return Math.round(amount * v.fx_rate_to_bhd * (1 + v.markup_percent / 100) * 1000) / 1000;
+  }
+  return Number(data);
 }
