@@ -14,6 +14,8 @@ import { getSupabaseAdmin } from "./supabase/server";
  * no longer sells.
  *
  * So "stale" is a first-class state here, not an absence of data.
+ *
+ * Only applied runs are counted — see `getSyncStatus`.
  */
 
 /** Past this, a source is considered stale. Daily sync, so a missed day is a day late. */
@@ -105,14 +107,32 @@ export async function getSyncStatus(knownSources: string[] = []): Promise<SyncSt
     return { ready: false, message: error.message, sources: [] };
   }
 
+  /*
+    Only runs that were allowed to WRITE count.
+
+    This page answers one question — how fresh is what we hold — and a dry run
+    cannot change the answer. It fetches, compares, reports and discards. It
+    cannot make the catalogue fresher, so abandoning one halfway must not be
+    able to make it look staler.
+
+    That is not hypothetical. Two dry runs were killed mid-investigation on the
+    evening of 1 Sept and left without a `finished_at`. Both supplier cards went
+    red, and the warning banner with them, while the real syncs had both
+    succeeded earlier the same day and written everything they found. The page
+    reported the shop broken on the strength of two rehearsals.
+  */
   const latest = new Map<string, SyncRun>();
+  const everSeen = new Set<string>();
   for (const row of (data ?? []) as SyncRun[]) {
-    if (!latest.has(row.source)) latest.set(row.source, row);
+    everSeen.add(row.source);
+    if (row.applied && !latest.has(row.source)) latest.set(row.source, row);
   }
 
-  // A source that has never run at all still needs a row, or "never synced"
+  // A source that has never run for real still needs a row, or "never synced"
   // would be invisible — which is the exact failure this page exists to catch.
-  for (const s of knownSources) if (!latest.has(s)) latest.set(s, null as never);
+  // `everSeen` covers a source that has only ever been rehearsed: it has
+  // history, but nothing it fetched was ever kept, so "never" is the truth.
+  for (const s of [...knownSources, ...everSeen]) if (!latest.has(s)) latest.set(s, null as never);
 
   const sources: SourceSync[] = [...latest.entries()]
     .map(([source, run]) => ({ source, last: run ?? null, ...classify(run ?? null) }))
