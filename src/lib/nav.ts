@@ -1,7 +1,7 @@
 import type { NavGroup } from "./types";
 import { importedNav } from "./imported-data";
 import { primaryNav } from "./config";
-import { getAllProducts, getCategories } from "./data";
+import { getCategories } from "./data";
 
 /**
  * The navigation as captured — noon's own department → sub-category taxonomy,
@@ -25,19 +25,27 @@ const capturedNav: NavGroup[] = importedNav.length
  * anyway put six dead links in the menu — one of them, "Makeup", in the footer
  * of every page — each landing the shopper on a 404.
  *
- * So the menu is built from the catalogue rather than from the capture: a link
- * survives only if its category exists AND has something to sell. An empty
- * shelf is a dead end too, just a politer one, and `data.ts` already applies
- * that same rule to the sample catalogue.
+ * So a link survives only if a category row EXISTS for it. Note what that no
+ * longer says: it does not ask whether the category has anything in it today.
+ *
+ * It used to, and that was wrong once vendors became switchable. Whether a
+ * shelf is stocked is now a provisioning decision an admin makes and unmakes —
+ * switch noon off while Cult Beauty is still importing and every category
+ * empties at once, which took the entire menu with it. The client's
+ * requirement from the 1 Sep call is the opposite: the shop's structure holds
+ * still while vendors, categories and products are switched on and off beneath
+ * it.
+ *
+ * An empty category is not a dead link. /category/[slug] renders "Nothing here
+ * yet" for one that exists and 404s only for one that does not — which is
+ * exactly the line this filter draws.
  *
  * Groups whose children all disappear are dropped rather than left as a heading
  * that opens an empty dropdown.
  */
 export async function getNavGroups(): Promise<NavGroup[]> {
-  const [categories, products] = await Promise.all([getCategories(), getAllProducts()]);
-
-  const stocked = new Set(products.map((p) => p.category_slug));
-  const real = new Set(categories.filter((c) => stocked.has(c.slug)).map((c) => c.slug));
+  const categories = await getCategories();
+  const real = new Set(categories.map((c) => c.slug));
 
   return capturedNav
     .map((group) => ({
