@@ -655,11 +655,27 @@ if (!CONFIRM) {
     const patch = { source_price: record.price, source_currency: record.currency };
     // By URL first, because on a multi-variant product the parsed SKU is not
     // the one the row is stored under — the same trap as last_seen_at above.
-    let { count } = await sb
+    let { count, error } = await sb
       .from("products")
       .update(patch, { count: "exact" })
       .eq("source", site.key)
       .eq("source_url", url);
+
+    /*
+      Stop at the first missing column rather than failing 200 more times.
+
+      This runs on whatever database the machine points at, which may not have
+      had 0014 applied yet — and the sync's real job (staging) has already
+      succeeded by this point, so a missing column is a note, not a failure.
+    */
+    if (error?.code === "42703") {
+      console.log(
+        "Supplier prices not recorded: products.source_price is missing. " +
+          "Run supabase/migrations/0014_vendor_provisioning.sql.",
+      );
+      costsApplied = 0;
+      break;
+    }
 
     if (!count) {
       ({ count } = await sb
