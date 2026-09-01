@@ -124,7 +124,18 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "lead_days_max",
 ].join(",");
 
-/** Postgres "column does not exist" — i.e. migration 0012 hasn't run here yet. */
+/**
+ * The same list plus what migration 0014 adds.
+ *
+ * `is_listed` is the resolved answer to "does a shopper see this" — the
+ * product's own switch AND its vendor's AND that vendor's switch for the
+ * product's category. It is computed by trigger precisely so the storefront
+ * can filter on one public boolean without ever being granted `source`, which
+ * is the sourcing list. See 0014's header.
+ */
+const PROVISIONED_PRODUCT_COLUMNS = [PUBLIC_PRODUCT_COLUMNS, "is_listed"].join(",");
+
+/** Postgres "column does not exist" — i.e. a migration hasn't run here yet. */
 const UNDEFINED_COLUMN = "42703";
 
 async function loadProducts(): Promise<Product[]> {
@@ -134,8 +145,58 @@ async function loadProducts(): Promise<Product[]> {
     //
     // Filtered in this loader rather than at each call site: everything
     // downstream — listings, search, categories, related products, the
-    // sitemap, generateStaticParams — reads from here, so an unpublished
-    // product cannot reappear through a path someone forgot to filter.
+    // sitemap, generateStaticParams — reads from here, so an unlisted product
+    // cannot reappear through a path someone forgot to filter.
+    //
+    // Since 0014 the gate is `is_listed`, which already folds in the vendor
+    // and vendor-category switches. Filtering on `is_published` here instead
+    // would show products from a vendor that has been turned off.
+    const provisioned = await sb
+      .from("products")
+      .select(
+        `${PROVISIONED_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`,
+      )
+      .eq("is_listed", true)
+      .order("created_at", { ascending: false });
+
+    if (!provisioned.error) {
+      if (provisioned.data?.length) return provisioned.data.map(mapProductRow);
+
+      /*
+        The query worked and matched nothing. That is a LEGITIMATE answer here,
+        unlike everywhere else in this loader: an admin who switches off every
+        vendor has asked for an empty shop, and must get one.
+
+        So the usual "empty means misconfigured, serve samples" rule cannot
+        apply. It is still the right rule for a database with no catalogue at
+        all, which is what this distinguishes — one cheap count, only ever on
+        the empty path.
+      */
+      const { count, error: countError } = await sb
+        .from("products")
+        .select("id", { count: "exact", head: true });
+
+      if (!countError && (count ?? 0) > 0) return [];
+      warnFallback("products", countError);
+      return localProducts;
+    }
+
+    /*
+      Deploy-order safety net, same shape as the 0012 one below.
+
+      If this code ships before 0014 runs, `is_listed` does not exist. Falling
+      straight through to sample data would replace the real catalogue with 628
+      demo products, so instead we drop back to the 0012 behaviour — every
+      published product, vendor switches unenforced — and say so. Wrong
+      products on a live shop is far worse than an unenforced vendor filter.
+    */
+    if (provisioned.error.code === UNDEFINED_COLUMN) {
+      console.error(
+        "[data] products.is_listed is missing — run supabase/migrations/0014. " +
+          "Vendor and category provisioning is NOT being enforced.",
+      );
+    }
+
     const withVisibility = await sb
       .from("products")
       .select(`${PUBLIC_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`)

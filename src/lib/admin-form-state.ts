@@ -1,5 +1,6 @@
 import type { BulkUpdateResult, ValidationResult } from "./admin-products";
 import type { StockCsvResult } from "./inventory";
+import type { ImportResult, RepriceMode, RepriceResult } from "./vendors";
 
 /**
  * Form state shapes and their initial values for the admin's `useActionState`
@@ -51,3 +52,25 @@ export type StockCsvState =
   | { kind: "applied"; result: StockCsvResult };
 
 export const emptyStockCsvState: StockCsvState = { kind: "idle" };
+
+/**
+ * Vendor repricing. Both modes — recompute from the supplier price, and snap
+ * an existing BHD price onto the retail ladder — share one shape, because the
+ * screen shows the same before/after table either way.
+ */
+export type VendorPriceState =
+  | { kind: "idle" }
+  | { kind: "error"; message: string }
+  | { kind: "preview"; mode: RepriceMode; result: RepriceResult }
+  | { kind: "applied"; mode: RepriceMode; result: RepriceResult };
+
+export const emptyVendorPriceState: VendorPriceState = { kind: "idle" };
+
+/** Bringing a vendor's staged products into the catalogue. */
+export type VendorImportState =
+  | { kind: "idle" }
+  | { kind: "error"; message: string }
+  | { kind: "preview"; result: ImportResult }
+  | { kind: "applied"; result: ImportResult };
+
+export const emptyVendorImportState: VendorImportState = { kind: "idle" };

@@ -24,11 +24,21 @@ import {
   setStockLevel,
   type MovementReason,
 } from "@/lib/inventory";
+import {
+  createVendor,
+  importStagedForVendor,
+  priceVendor,
+  setVendorCategoryEnabled,
+  setVendorEnabled,
+  updateVendor,
+} from "@/lib/vendors";
 import type {
   PricingState,
   ProductFormState,
   StockAdjustState,
   StockCsvState,
+  VendorImportState,
+  VendorPriceState,
 } from "@/lib/admin-form-state";
 
 /**
@@ -74,6 +84,12 @@ function commaList(fd: FormData, key: string): string[] {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+/** Append params to a redirect target that may already carry a query string. */
+function withQuery(path: string, params: Record<string, string>): string {
+  const q = new URLSearchParams(params).toString();
+  return `${path}${path.includes("?") ? "&" : "?"}${q}`;
 }
 
 /**
@@ -474,4 +490,192 @@ export async function updateOrderStatusAction(formData: FormData): Promise<void>
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/inventory");
   revalidatePath("/account");
+}
+
+/* --------------------------- vendor provisioning --------------------------- */
+
+/**
+ * Switch a whole vendor on or off.
+ *
+ * The visibility itself is resolved by database trigger into
+ * `products.is_listed`, so there is nothing to recompute here — but every
+ * storefront surface has to be revalidated, because a vendor going dark
+ * changes listings, categories and search all at once.
+ */
+export async function setVendorEnabledAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = str(formData, "vendor_id");
+  const enabled = formData.get("enabled") === "1";
+  const back = String(formData.get("back") || "/admin/vendors");
+  if (!id) redirect(back);
+
+  await setVendorEnabled(id, enabled);
+
+  revalidatePath("/admin/vendors");
+  revalidatePath("/admin/products");
+  revalidateStorefront();
+
+  redirect(withQuery(back, { v: enabled ? "on" : "off" }));
+}
+
+/** Switch one category on or off for one vendor. */
+export async function setVendorCategoryAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const vendorId = str(formData, "vendor_id");
+  const categoryId = str(formData, "category_id");
+  const enabled = formData.get("enabled") === "1";
+  const back = String(formData.get("back") || "/admin/vendors");
+  if (!vendorId || !categoryId) redirect(back);
+
+  await setVendorCategoryEnabled(vendorId, categoryId, enabled);
+
+  revalidatePath("/admin/vendors");
+  revalidatePath("/admin/products");
+  revalidateStorefront();
+
+  redirect(withQuery(back, { c: enabled ? "on" : "off" }));
+}
+
+/** Save a vendor's name, kind and pricing rule. Does not touch any price. */
+export async function saveVendorAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = str(formData, "vendor_id");
+  const back = String(formData.get("back") || "/admin/vendors");
+  if (!id) redirect(back);
+
+  const kind = str(formData, "kind");
+  const fx = num(formData, "fx_rate_to_bhd");
+  const markup = num(formData, "markup_percent");
+  const surcharge = num(formData, "surcharge_bhd");
+
+  // A rate of zero would silently make every product free, so it is refused
+  // here as well as by the column's check constraint.
+  if (!Number.isFinite(fx) || fx <= 0) redirect(withQuery(back, { error: "rate" }));
+  if (!Number.isFinite(markup)) redirect(withQuery(back, { error: "markup" }));
+  if (!Number.isFinite(surcharge) || surcharge < 0) redirect(withQuery(back, { error: "surcharge" }));
+
+  await updateVendor(id, {
+    name: str(formData, "name") || "Unnamed vendor",
+    kind: kind === "api" || kind === "manual" ? kind : "scrape",
+    currency: (str(formData, "currency") || "BHD").toUpperCase().slice(0, 8),
+    fx_rate_to_bhd: fx,
+    markup_percent: markup,
+    surcharge_bhd: surcharge,
+    round_prices: bool(formData, "round_prices"),
+    notes: optStr(formData, "notes"),
+  });
+
+  revalidatePath("/admin/vendors");
+  redirect(withQuery(back, { saved: "1" }));
+}
+
+/**
+ * Add a vendor.
+ *
+ * `key` has to match `products.source` — the adapter key — or the vendor will
+ * own no products. It is not editable afterwards for the same reason.
+ */
+export async function createVendorAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const back = String(formData.get("back") || "/admin/vendors");
+  const key = str(formData, "key")
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "");
+  if (!key) redirect(withQuery(back, { error: "key" }));
+
+  const fx = num(formData, "fx_rate_to_bhd");
+  const kind = str(formData, "kind");
+
+  try {
+    await createVendor(key, {
+      name: str(formData, "name") || key,
+      kind: kind === "api" || kind === "manual" ? kind : "scrape",
+      currency: (str(formData, "currency") || "BHD").toUpperCase().slice(0, 8),
+      fx_rate_to_bhd: Number.isFinite(fx) && fx > 0 ? fx : 1,
+      markup_percent: 0,
+      surcharge_bhd: 0,
+      round_prices: true,
+      notes: optStr(formData, "notes"),
+    });
+  } catch {
+    // Almost always a duplicate key — the vendor already exists.
+    redirect(withQuery(back, { error: "exists" }));
+  }
+
+  revalidatePath("/admin/vendors");
+  redirect(withQuery(back, { created: key }));
+}
+
+/**
+ * Preview, then apply, a vendor's prices.
+ *
+ * Preview first is not politeness: repricing rewrites the shelf price of every
+ * product a vendor owns, and an exchange rate typed with the decimal point in
+ * the wrong place would do it silently. The two-step means someone sees
+ * "BHD 9.000 -> BHD 88.900" before it reaches a shopper.
+ */
+export async function vendorPriceAction(
+  _prev: VendorPriceState,
+  formData: FormData,
+): Promise<VendorPriceState> {
+  await requireAdmin();
+
+  const vendorId = str(formData, "vendor_id");
+  if (!vendorId) return { kind: "error", message: "No vendor was selected." };
+
+  const mode = str(formData, "mode") === "round" ? "round" : "reprice";
+  const apply = str(formData, "intent") === "apply";
+
+  try {
+    const result = await priceVendor(vendorId, mode, { apply });
+    if (result.error) return { kind: "error", message: result.error };
+
+    if (result.applied) {
+      revalidatePath("/admin/vendors");
+      revalidatePath("/admin/products");
+      revalidateStorefront();
+      return { kind: "applied", mode, result };
+    }
+    return { kind: "preview", mode, result };
+  } catch (e) {
+    return { kind: "error", message: (e as Error).message };
+  }
+}
+
+/**
+ * Bring a vendor's staged products into the catalogue, unlisted.
+ *
+ * Preview first, because this creates rows. Nothing it writes is visible to a
+ * shopper — every new product arrives unlisted — but importing 177 products
+ * into the wrong vendor would still be a mess to unpick.
+ */
+export async function vendorImportAction(
+  _prev: VendorImportState,
+  formData: FormData,
+): Promise<VendorImportState> {
+  await requireAdmin();
+
+  const vendorId = str(formData, "vendor_id");
+  if (!vendorId) return { kind: "error", message: "No vendor was selected." };
+
+  const apply = str(formData, "intent") === "apply";
+
+  try {
+    const result = await importStagedForVendor(vendorId, { apply });
+    if (result.error) return { kind: "error", message: result.error };
+
+    if (result.applied) {
+      revalidatePath("/admin/vendors");
+      revalidatePath("/admin/products");
+      revalidateStorefront();
+      return { kind: "applied", result };
+    }
+    return { kind: "preview", result };
+  } catch (e) {
+    return { kind: "error", message: (e as Error).message };
+  }
 }
