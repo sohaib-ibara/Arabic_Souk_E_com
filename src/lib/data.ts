@@ -27,6 +27,25 @@ const localCategories: Category[] = importedCategories.length
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * How long a product counts as new.
+ *
+ * The badge used to read `products.is_new`, and the flag had drifted so far
+ * from the word that it meant nothing: 301 of 332 listed products carried it,
+ * every one of them imported six weeks earlier, while the 31 that had arrived
+ * the previous day did not. A badge on 91% of a catalogue is decoration.
+ *
+ * A date cannot drift. It also cannot be forgotten, which the flag plainly was
+ * — nobody was ever going to go back and untick 301 boxes.
+ */
+const NEW_ARRIVAL_DAYS = 30;
+
+function isRecentArrival(createdAt: unknown): boolean {
+  if (typeof createdAt !== "string") return false;
+  const t = Date.parse(createdAt);
+  return Number.isFinite(t) && Date.now() - t < NEW_ARRIVAL_DAYS * 24 * 60 * 60 * 1000;
+}
+
 function mapProductRow(row: any): Product {
   const category = row.category ?? {};
   const brand = row.brand ?? {};
@@ -49,7 +68,7 @@ function mapProductRow(row: any): Product {
     stock_quantity: Number(row.stock_quantity ?? 0),
     in_stock: Boolean(row.in_stock),
     is_featured: Boolean(row.is_featured),
-    is_new: Boolean(row.is_new),
+    is_new: isRecentArrival(row.created_at),
     tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
     updated_at: row.updated_at ?? row.created_at ?? null,
     lead_days_min: row.lead_days_min != null ? Number(row.lead_days_min) : null,

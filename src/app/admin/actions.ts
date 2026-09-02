@@ -220,7 +220,6 @@ export async function saveProductAction(
     brand_id: optStr(formData, "brand_id"),
     in_stock: bool(formData, "in_stock"),
     is_featured: bool(formData, "is_featured"),
-    is_new: bool(formData, "is_new"),
     images: lines(formData, "images"),
     tags: commaList(formData, "tags"),
     source_url: sourceUrl,

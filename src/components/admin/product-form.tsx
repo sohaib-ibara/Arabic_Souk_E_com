@@ -358,7 +358,11 @@ export function ProductForm({
               defaultChecked={product ? product.in_stock : true}
             />
             <Check name="is_featured" label="Featured" defaultChecked={product?.is_featured} />
-            <Check name="is_new" label="New arrival" defaultChecked={product?.is_new} />
+            {/* No "New arrival" box. It is worked out from when the product
+                was added — see isRecentArrival in src/lib/data.ts — because the
+                flag drifted onto 301 six-week-old products and off the 31 that
+                had just landed. A tickbox nobody remembers to untick is not a
+                control, it is a slowly-rotting label. */}
           </div>
         </section>
 

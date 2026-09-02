@@ -278,7 +278,14 @@ export interface ProductInput {
   brand_id: string | null;
   in_stock: boolean;
   is_featured: boolean;
-  is_new: boolean;
+  /*
+    No `is_new`. Whether a product is a new arrival is worked out from when it
+    was added (isRecentArrival, src/lib/data.ts), so the column is not written
+    from the admin form any more. Leaving it out of the write rather than
+    sending `false` keeps whatever is already in the row: nothing reads it, and
+    quietly clearing 301 flags on the next save of an unrelated field is not
+    this function's business.
+  */
   images: string[];
   tags: string[];
   /** Supplier product page — internal only. See AdminProductRow.source_url. */
