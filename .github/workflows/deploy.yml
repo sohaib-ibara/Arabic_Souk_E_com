@@ -17,14 +17,17 @@
 #
 # It started as three — the token plus the account and project ids — which is
 # what Vercel's own CI documentation asks for. Those two ids are not secret,
-# they are visible in the dashboard URL, and the only way anybody had to read
-# them was to install the CLI and link the project locally. That is a lot of
-# setup, done once, to hand over two numbers this job can look up for itself:
-# `vercel link --project` finds the project by name. Setup instructions people
-# cannot follow are how a project ends up back on manual deploys.
+# they are printed in the dashboard URL, and the only way anybody had to read
+# them was to install the CLI and link the project on their own machine. That is
+# a lot of setup, done once, to hand over two numbers this job can look up for
+# itself. Setup instructions people cannot follow are how a project ends up back
+# on manual deploys.
 #
-# The ids are still honoured if VERCEL_ORG_ID and VERCEL_PROJECT_ID happen to be
-# set — that path is one HTTP call shorter, and it is what Vercel documents.
+# The lookup asks Vercel's API for the project by name and writes the link file
+# itself. `vercel link --project` was tried first: its flags have moved between
+# CLI versions, and a wrong flag fails with the same "not found" as a wrong
+# project name, so there is nothing in the message to act on. The projects
+# endpoint has not moved since v9 and answers in its own words.
 #
 # Application environment variables are NOT here. `vercel pull` fetches them
 # from the project's own settings, so Supabase, Stripe and the mail credentials
@@ -59,14 +62,7 @@ jobs:
     timeout-minutes: 25
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      # Optional. Set them and the link step is skipped; leave them unset and
-      # the project is found by name below.
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      # Not a secret — it is in the dashboard URL of every page of this
-      # project. No --scope alongside it: a personal token already carries the
-      # account it belongs to, and passing the slug from the dashboard URL
-      # ("<user>s-projects") as a scope is rejected.
+      # Not a secret — it is in the dashboard URL of every page of this project.
       VERCEL_PROJECT_NAME: arabic-souk-e-com
 
     steps:
@@ -103,10 +99,9 @@ jobs:
       - name: Install the Vercel CLI
         run: npm install --global vercel@latest
 
-      # Never fails the job. It exists so that when the next step cannot find
+      # Never fails the job. It exists so that when something below cannot find
       # the project, the log already says which account the token belongs to and
-      # exactly what that account contains - rather than "Project not found",
-      # which is true of a wrong name, a wrong account and a wrong token alike.
+      # what that account actually contains.
       - name: Who is this token, and what can it see?
         continue-on-error: true
         run: |
@@ -115,15 +110,35 @@ jobs:
           echo "--- projects visible to this token ---"
           vercel project ls --token="$VERCEL_TOKEN" || true
 
-      # Writes .vercel/project.json, which is all `vercel pull` and
-      # `vercel build` need in order to know what they are building.
+      # Writes .vercel/project.json, which is the whole of what `vercel pull`
+      # and `vercel build` need in order to know what they are building.
       - name: Find the project
         run: |
-          if [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
-            echo "Using the ids from repository secrets."
-          else
-            vercel link --yes --project "$VERCEL_PROJECT_NAME" --token="$VERCEL_TOKEN"
+          status=$(curl -sS -o /tmp/vercel-project.json -w '%{http_code}' -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_NAME")
+
+          if [ "$status" != "200" ]; then
+            echo "::error::Vercel answered $status for project '$VERCEL_PROJECT_NAME'"
+            cat /tmp/vercel-project.json || true
+            echo ""
+            echo "403 or 404 here means the token belongs to a different account,"
+            echo "or the project has been renamed. The step above lists what this"
+            echo "token can actually see."
+            exit 1
           fi
+
+          org=$(jq -r '.accountId // empty' /tmp/vercel-project.json)
+          project=$(jq -r '.id // empty' /tmp/vercel-project.json)
+
+          if [ -z "$org" ] || [ -z "$project" ]; then
+            echo "::error::The project was found but carried no id."
+            cat /tmp/vercel-project.json
+            exit 1
+          fi
+
+          mkdir -p .vercel
+          jq -n --arg org "$org" --arg project "$project" '{orgId: $org, projectId: $project}' > .vercel/project.json
+          echo "Linked to $VERCEL_PROJECT_NAME"
+          cat .vercel/project.json
 
       # Brings down the project's settings and its environment variables for
       # this target. The build needs them: 291 product pages are prerendered
@@ -153,7 +168,7 @@ jobs:
       # The point of the whole file: a green tick has to mean the shop is up.
       #
       # A build can succeed and the site still be broken — a missing environment
-      # variable, a table that does not exist yet, a route that throws on first
+      # variable, a table that is not there yet, a route that throws on first
       # render. Without this the job goes green and nobody looks again until a
       # customer says something.
       #

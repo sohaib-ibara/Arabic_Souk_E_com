@@ -68,6 +68,8 @@ not the question anybody is asking. With it, green means the shop is up.
 
 **One secret. About three minutes, and no terminal.**
 
+The workflow finds the project itself by asking Vercel's API for it by name, so there is nothing to look up and nothing to copy but the token.
+
 It was three secrets in the first draft — the token plus the account and project
 ids — because that is what Vercel's CI documentation asks for. The only way to
 read those two ids was to install the CLI and link the project locally, which is
@@ -118,15 +120,6 @@ Push anything, or **Actions → deploy → Run workflow**.
 Watch the last step, *Check the deployment actually serves*. Green there means
 the shop answered.
 
-### If you ever want the faster path
-
-Setting `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` as secrets too skips the lookup
-— one HTTP call shorter, and it is the method Vercel documents. Both are in the
-dashboard: Project → Settings → General for the project id, Account Settings →
-General for the account id. Entirely optional; the workflow works without them.
-
----
-
 ## Environment variables
 
 They stay **in Vercel**, and are not copied into GitHub.
@@ -147,7 +140,7 @@ succeeds, and ships an empty catalogue.
 | Symptom | Cause |
 | --- | --- |
 | Job fails at *Check the token is set* | `VERCEL_TOKEN` is missing or misspelled. |
-| `Project not found` at *Find the project* | The token belongs to a different account, or the project was renamed — update `VERCEL_PROJECT_NAME` in the workflow. |
+| A 403 or 404 at *Find the project* | The token belongs to a different Vercel account, or the project was renamed. The step above it lists every project the token can see, which tells you which. |
 | `Error: Not authorized` | The token was revoked, expired, or belongs to a different account than the project. Make a new one. |
 | Build succeeds, smoke check fails | The site deployed but does not serve. Check Vercel → the deployment → Runtime Logs. Usually a missing environment variable or a migration that has not been run. |
 | Deployment appears, live site unchanged | You were looking at a preview. Only `main` deploys to production. |
