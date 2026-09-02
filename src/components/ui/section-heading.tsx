@@ -31,8 +31,14 @@ export function SectionHeading({
       )}
     >
       <div className={cn(align === "center" && "flex flex-col items-center")}>
+        {/* The rule is the whole change: a short accent bar in front of the
+            eyebrow, so the eye finds where a section starts while scrolling
+            past rather than having to read the word. */}
         {eyebrow && (
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-brand">{eyebrow}</p>
+          <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-brand">
+            <span aria-hidden="true" className="h-px w-6 bg-linear-to-r from-brand to-gold" />
+            {eyebrow}
+          </p>
         )}
         <h2 className="mt-2 font-serif text-2xl sm:text-3xl">{title}</h2>
         {description && <p className="mt-2 max-w-xl text-sm text-muted">{description}</p>}
@@ -40,10 +46,16 @@ export function SectionHeading({
       {href && (
         <Link
           href={href}
-          className="hidden shrink-0 items-center gap-1 text-sm font-medium text-ink hover:text-brand sm:inline-flex"
+          className="group hidden shrink-0 items-center gap-1 text-sm font-medium text-ink transition-colors hover:text-brand sm:inline-flex"
         >
           {linkLabel}
-          <ChevronRightIcon width={16} height={16} />
+          {/* Moves with the cursor rather than only changing colour — the
+              arrow is the part that says "this goes somewhere". */}
+          <ChevronRightIcon
+            width={16}
+            height={16}
+            className="transition-transform duration-200 motion-safe:group-hover:translate-x-1"
+          />
         </Link>
       )}
     </div>

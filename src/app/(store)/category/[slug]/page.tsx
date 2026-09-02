@@ -11,6 +11,8 @@ import {
   type ProductSort,
 } from "@/lib/data";
 import { siteConfig } from "@/lib/config";
+import { accentFor } from "@/lib/accent";
+import { cn } from "@/lib/cn";
 
 export const revalidate = 3600;
 
@@ -56,6 +58,7 @@ export default async function CategoryPage({
   if (!category) notFound();
 
   const products = await getProducts({ category: slug, sort });
+  const accent = accentFor(category.slug);
 
   return (
     <Container className="py-8 sm:py-10">
@@ -67,8 +70,14 @@ export default async function CategoryPage({
         ]}
       />
 
-      <header className="mt-4">
-        <h1 className="font-serif text-3xl sm:text-4xl">{category.name}</h1>
+      {/*
+        The same accent this category wears on the homepage grid, so the tile
+        somebody pressed and the page they land on are recognisably the same
+        thing. Derived from the slug, so the two cannot disagree.
+      */}
+      <header className={cn("mt-4 rounded-3xl px-6 py-8 sm:px-8", accent.tint)}>
+        <span aria-hidden="true" className={cn("block h-0.5 w-10 rounded-full", accent.bar)} />
+        <h1 className="mt-4 font-serif text-3xl sm:text-4xl">{category.name}</h1>
         {category.description && (
           <p className="mt-2 max-w-2xl text-sm text-muted">{category.description}</p>
         )}

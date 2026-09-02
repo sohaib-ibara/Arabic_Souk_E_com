@@ -18,7 +18,7 @@ import {
   RecentlyViewed,
   RecordProductView,
 } from "@/components/product/recently-viewed";
-import { discountPercent } from "@/lib/format";
+import { deliveryWindow, discountPercent } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
 import { PRICE_DECIMALS } from "@/lib/format";
 
@@ -287,9 +287,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               */}
               <li className="flex items-center gap-2">
                 <TruckIcon width={18} height={18} className="text-brand" /> Delivery in{" "}
-                {product.lead_days_min && product.lead_days_max
-                  ? `${product.lead_days_min}–${product.lead_days_max} days`
-                  : siteConfig.shipping.etaDays}
+                {deliveryWindow(product.lead_days_min, product.lead_days_max)}
               </li>
               <li className="flex items-center gap-2">
                 <ShieldIcon width={18} height={18} className="text-brand" /> 100% authentic

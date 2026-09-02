@@ -19,6 +19,30 @@ import { siteConfig } from "./config";
  */
 export const PRICE_DECIMALS = 2;
 
+/**
+ * How long this product takes to arrive, in words.
+ *
+ * Per-product where we captured it, the shop-wide promise where we did not —
+ * 289 of the 294 listed products carry a real window, and the five that do not
+ * should say what the rest of the site says rather than nothing.
+ *
+ * A zero minimum is real in the data and reads badly as a range: "0–3 days"
+ * looks like a mistake, so it becomes "3 days or less". Written here once
+ * because the product page and the product card both need the same sentence,
+ * and the two had already drifted — the page's test treated a zero minimum as
+ * missing and fell back to the site-wide string.
+ */
+export function deliveryWindow(
+  min: number | null | undefined,
+  max: number | null | undefined,
+): string {
+  if (min == null || max == null) return siteConfig.shipping.etaDays;
+  if (max <= 0) return "same day";
+  if (min <= 0) return `${max} days or less`;
+  if (min === max) return `${min} days`;
+  return `${min}–${max} days`;
+}
+
 export function formatPrice(amount: number, currency: string = siteConfig.currency): string {
   const decimals = PRICE_DECIMALS;
   const n = new Intl.NumberFormat("en-US", {
