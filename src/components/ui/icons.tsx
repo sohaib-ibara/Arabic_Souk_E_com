@@ -55,9 +55,16 @@ export const StarIcon = (p: IconProps) => (
   </svg>
 );
 
+/*
+  Two symmetric arcs meeting at a point, rather than the hand-plotted curve that
+  was here: the old path had lobes of different heights and a flat bottom, which
+  read as a lumpy blob at the 16px it is actually drawn at. Built from arcs so
+  it stays true at any size and looks right filled as well as outlined — the
+  saved state fills it.
+*/
 export const HeartIcon = (p: IconProps) => (
   <svg {...base(p)}>
-    <path d="M12 20s-7-4.3-9.3-8.5C1.2 8.7 2.6 5.5 5.8 5.5c1.9 0 3.2 1.1 4.2 2.4 1-1.3 2.3-2.4 4.2-2.4 3.2 0 4.6 3.2 3.1 6C19 15.7 12 20 12 20Z" />
+    <path d="M12 20.25 4.32 12.7a4.78 4.78 0 0 1 0-6.79 4.9 4.9 0 0 1 6.86 0L12 6.72l.82-.81a4.9 4.9 0 0 1 6.86 0 4.78 4.78 0 0 1 0 6.79Z" />
   </svg>
 );
 

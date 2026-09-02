@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { CloseIcon } from "@/components/ui/icons";
 import { siteConfig } from "@/lib/config";
+import { useSignedIn } from "@/lib/session-state";
 
 /**
  * The sticky "Sign me up" tab on the right edge, opening a newsletter panel.
@@ -19,6 +20,12 @@ import { siteConfig } from "@/lib/config";
  *   It sits above the WhatsApp button rather than beside it — vertically
  *   centred on the edge, where the floating button occupies the bottom corner,
  *   so the two never overlap at any viewport height.
+ *
+ *   Guests only. Asking a member to sign up is the shop admitting it does not
+ *   know who they are, and it is on every page, so they would be asked on every
+ *   page. It stays hidden until the answer is in rather than showing and then
+ *   vanishing: a hundred milliseconds late costs a guest nothing, where the
+ *   flash costs a member the impression that the shop is paying attention.
  */
 export function SignupTab() {
   const [open, setOpen] = useState(false);
@@ -26,8 +33,12 @@ export function SignupTab() {
   const panelRef = useRef<HTMLDivElement>(null);
   const tabRef = useRef<HTMLButtonElement>(null);
 
-  // Anything under /checkout, including the payment step and the success page.
-  const hidden = pathname?.startsWith("/checkout") ?? false;
+  const signedIn = useSignedIn();
+
+  // Anything under /checkout, including the payment step and the success page;
+  // and anyone who has already done the thing it is asking for. `null` is "not
+  // known yet", which counts as hidden.
+  const hidden = (pathname?.startsWith("/checkout") ?? false) || signedIn !== false;
 
   useEffect(() => {
     if (!open) return;

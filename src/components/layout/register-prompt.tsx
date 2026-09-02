@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/components/cart/cart-provider";
 import { useNudgeSlot } from "@/lib/nudge-queue";
+import { fetchSignedIn } from "@/lib/session-state";
 import { CloseIcon } from "@/components/ui/icons";
 import { siteConfig } from "@/lib/config";
 
@@ -142,15 +143,6 @@ function suppressedUntilPassed(): boolean {
  * the engagement bar never causes the request at all. A failure answers "yes",
  * because staying quiet is the safe way to be wrong about this.
  */
-async function isSignedIn(): Promise<boolean> {
-  try {
-    const res = await fetch("/api/auth/session-state", { cache: "no-store" });
-    if (!res.ok) return true;
-    return Boolean((await res.json()).signedIn);
-  } catch {
-    return true;
-  }
-}
 
 export function RegisterPrompt() {
   const [open, setOpen] = useState(false);
@@ -221,7 +213,7 @@ export function RegisterPrompt() {
       // "signed in", and marking here would silence the rest of the visit on
       // the strength of one dropped request.
       shownThisSession.current = true;
-      if (await isSignedIn()) return;
+      if (await fetchSignedIn()) return;
       if (cancelled) return;
       // markShown() deliberately NOT called here. Wanting to open and being
       // allowed to are now different things, and recording the visit's one
