@@ -1,0 +1,167 @@
+# Deploy from here, not from Vercel's own Git integration.
+#
+# Why this exists. The repo was made private on 2 Sep 2026. Vercel's Hobby plan
+# only builds a commit whose AUTHOR owns the Vercel project, and it cannot be
+# given collaborators on a private repo — so every push since has produced a
+# deployment stuck at "Blocked", with the live site quietly serving a build from
+# before the change. Nothing failed loudly; the shop simply stopped moving.
+#
+#   The deployment was blocked because the commit author did not have
+#   contributing access to the project on Vercel.
+#
+# A deploy made with a token is authorised by whoever owns the token, so the
+# commit author is never consulted. That is the whole fix, and it keeps working
+# whatever the repo's visibility, whoever commits, and whoever joins later.
+#
+# One secret is required: VERCEL_TOKEN. Nothing else.
+#
+# It started as three — the token plus the account and project ids — which is
+# what Vercel's own CI documentation asks for. Those two ids are not secret,
+# they are visible in the dashboard URL, and the only way anybody had to read
+# them was to install the CLI and link the project locally. That is a lot of
+# setup, done once, to hand over two numbers this job can look up for itself:
+# `vercel link --project` finds the project by name. Setup instructions people
+# cannot follow are how a project ends up back on manual deploys.
+#
+# The ids are still honoured if VERCEL_ORG_ID and VERCEL_PROJECT_ID happen to be
+# set — that path is one HTTP call shorter, and it is what Vercel documents.
+#
+# Application environment variables are NOT here. `vercel pull` fetches them
+# from the project's own settings, so Supabase, Stripe and the mail credentials
+# stay in one place and are never copied into GitHub.
+name: deploy
+
+on:
+  push:
+    branches:
+      - main
+      # Working branches get a preview URL, which is what Vercel's integration
+      # used to give and what the client tests on before a merge. Deliberately
+      # not "**": the test/* branches carry CI evidence, not an application,
+      # and building them would spend minutes on a site nobody opens.
+      - "feat/**"
+      - "fix/**"
+      - "chore/**"
+  workflow_dispatch:
+
+concurrency:
+  # One deploy per branch at a time. Two builds of main racing means the older
+  # one can finish last and become the live site.
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # Optional. Set them and the link step is skipped; leave them unset and
+      # the project is found by name below.
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # Not secrets — both are in the dashboard URL of any page of this project:
+      # vercel.com/<scope>/<project>
+      VERCEL_SCOPE: sohaib-9939s-projects
+      VERCEL_PROJECT_NAME: arabic-souk-e-com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Fails early and in plain language. Without it the first run dies inside
+      # the Vercel CLI with an authentication error, which reads like a broken
+      # token rather than a missing one.
+      - name: Check the token is set
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Repository secret VERCEL_TOKEN is not set."
+            echo "Add it under Settings > Secrets and variables > Actions."
+            echo "Create the token at https://vercel.com/account/tokens"
+            exit 1
+          fi
+          echo "Token present."
+
+      - name: Is this production or a preview?
+        id: target
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            echo "environment=production" >> "$GITHUB_OUTPUT"
+            echo "flag=--prod"            >> "$GITHUB_OUTPUT"
+          else
+            echo "environment=preview" >> "$GITHUB_OUTPUT"
+            echo "flag="              >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install the Vercel CLI
+        run: npm install --global vercel@latest
+
+      # Writes .vercel/project.json, which is all `vercel pull` and
+      # `vercel build` need in order to know what they are building.
+      - name: Find the project
+        run: |
+          if [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "Using the ids from repository secrets."
+          else
+            vercel link --yes --project "$VERCEL_PROJECT_NAME" --scope "$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
+          fi
+
+      # Brings down the project's settings and its environment variables for
+      # this target. The build needs them: 291 product pages are prerendered
+      # from Supabase at build time, so a build without the keys succeeds and
+      # ships an empty catalogue.
+      - name: Pull the project settings
+        run: vercel pull --yes --environment=${{ steps.target.outputs.environment }} --token="$VERCEL_TOKEN"
+
+      # Built here rather than on Vercel, then uploaded ready-made. Same command
+      # Vercel runs, same Linux, and the install is left to the CLI so it
+      # resolves dependencies exactly as the platform does.
+      - name: Build
+        run: vercel build ${{ steps.target.outputs.flag }} --token="$VERCEL_TOKEN"
+
+      - name: Deploy
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt ${{ steps.target.outputs.flag }} --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed to $url"
+          {
+            echo "### ${{ steps.target.outputs.environment }} deploy"
+            echo ""
+            echo "$url"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # The point of the whole file: a green tick has to mean the shop is up.
+      #
+      # A build can succeed and the site still be broken — a missing environment
+      # variable, a table that does not exist yet, a route that throws on first
+      # render. Without this the job goes green and nobody looks again until a
+      # customer says something.
+      #
+      # Both pages are server-rendered against Supabase, so between them they
+      # exercise the database, the catalogue query and the layout.
+      - name: Check the deployment actually serves
+        run: |
+          url="${{ steps.deploy.outputs.url }}"
+          fail=0
+          for path in "/" "/shop"; do
+            code=""
+            # Up to five tries: the alias can take a few seconds to point at the
+            # new deployment, and a 404 in that window is not a broken site.
+            for attempt in 1 2 3 4 5; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url$path" || echo 000)
+              case "$code" in 200|301|302) break ;; esac
+              sleep 6
+            done
+            case "$code" in
+              200|301|302) echo "OK   $path -> $code" ;;
+              *) echo "::error::$path returned $code"; fail=1 ;;
+            esac
+          done
+          exit $fail
