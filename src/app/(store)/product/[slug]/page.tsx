@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductBuyBox } from "@/components/product/product-buy-box";
+import { StickyBuyBar } from "@/components/product/sticky-buy-bar";
 import { ProductGrid } from "@/components/product/product-grid";
 import { JsonLd } from "@/components/seo/json-ld";
 import { CheckIcon, LeafIcon, ShieldIcon, TruckIcon } from "@/components/ui/icons";
@@ -19,6 +20,9 @@ import {
 } from "@/components/product/recently-viewed";
 import { discountPercent } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
+
+/** Shared between the buy box and the sticky bar that follows it down the page. */
+const BUY_BOX_ID = "product-buy-box";
 
 export const revalidate = 3600;
 
@@ -260,7 +264,12 @@ export default async function ProductPage({ params }: { params: Params }) {
               In stock — ready to ship
             </p>
 
-            <ProductBuyBox product={product} />
+            {/* The id is the sticky bar's anchor: it watches this element
+                rather than a scroll offset, because how far down the button
+                sits depends on the name, the discount and the gallery. */}
+            <div id={BUY_BOX_ID}>
+              <ProductBuyBox product={product} />
+            </div>
 
             {/* Assurances */}
             <ul className="mt-8 grid gap-3 border-t border-line pt-6 text-sm text-ink/80 sm:grid-cols-2">
@@ -359,6 +368,7 @@ export default async function ProductPage({ params }: { params: Params }) {
       {/* Records this view, renders nothing. Below the fold in source order so
           it can never delay what the page is actually for. */}
       <RecordProductView slug={product.slug} />
+      <StickyBuyBar product={product} watch={BUY_BOX_ID} />
       <RecentlyViewed excludeSlug={product.slug} />
     </>
   );
