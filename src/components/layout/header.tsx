@@ -8,6 +8,7 @@ import type { NavGroup } from "@/lib/types";
 import { CartButton } from "@/components/cart/cart-button";
 import { ChevronRightIcon, CloseIcon, MenuIcon, SearchIcon, UserIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
+import { SearchSuggestions } from "./search-suggestions";
 
 /** Menu built from the live catalogue by the store layout — see lib/nav.ts. */
 export function Header({ groups }: { groups: NavGroup[] }) {
@@ -138,6 +139,19 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             </button>
           </form>
         </div>
+
+        {/* Suggestions hang below the header rather than inside the search bar:
+            that container is `overflow-hidden` so it can animate its height,
+            and a dropdown inside it would be clipped to nothing. */}
+        {searchOpen && (
+          <SearchSuggestions
+            query={query}
+            onPick={() => {
+              setSearchOpen(false);
+              setQuery("");
+            }}
+          />
+        )}
       </header>
 
       {/*
