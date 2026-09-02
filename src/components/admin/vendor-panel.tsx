@@ -310,7 +310,7 @@ function PricingRule({ vendor, back }: { vendor: Vendor; back: string }) {
           <input
             name="surcharge_bhd"
             type="number"
-            step="0.001"
+            step="0.01"
             min="0"
             defaultValue={vendor.surcharge_bhd}
             className={field}

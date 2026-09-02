@@ -165,7 +165,7 @@ export function ShopToolbar({
             type="number"
             inputMode="decimal"
             min={0}
-            step="0.001"
+            step="0.01"
             placeholder="Min"
             value={minInput}
             onChange={(e) => setMinInput(e.target.value)}
@@ -184,7 +184,7 @@ export function ShopToolbar({
             type="number"
             inputMode="decimal"
             min={0}
-            step="0.001"
+            step="0.01"
             placeholder="Max"
             value={maxInput}
             onChange={(e) => setMaxInput(e.target.value)}

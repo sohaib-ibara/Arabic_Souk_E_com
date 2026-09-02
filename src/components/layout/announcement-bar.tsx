@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/config";
+import { PRICE_DECIMALS } from "@/lib/format";
 
 /**
  * The promo strip, plus the one link people go hunting for after they've
@@ -28,7 +29,7 @@ export function AnnouncementBar() {
         <span className="hidden shrink-0 sm:block sm:w-40" aria-hidden />
         <span>
           Free delivery across Bahrain on orders over {siteConfig.currency}{" "}
-          {siteConfig.shipping.freeThreshold.toFixed(3)} · Authentic brands ·{" "}
+          {siteConfig.shipping.freeThreshold.toFixed(PRICE_DECIMALS)} · Authentic brands ·{" "}
           {siteConfig.shipping.etaDays} delivery
         </span>
 

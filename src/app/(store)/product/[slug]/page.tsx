@@ -20,6 +20,7 @@ import {
 } from "@/components/product/recently-viewed";
 import { discountPercent } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
+import { PRICE_DECIMALS } from "@/lib/format";
 
 /** Shared between the buy box and the sticky bar that follows it down the page. */
 const BUY_BOX_ID = "product-buy-box";
@@ -104,7 +105,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     offers: {
       "@type": "Offer",
       priceCurrency: product.currency,
-      price: product.price.toFixed(3),
+      price: product.price.toFixed(PRICE_DECIMALS),
       priceValidUntil: PRICE_VALID_UNTIL,
       itemCondition: "https://schema.org/NewCondition",
       availability: product.in_stock
