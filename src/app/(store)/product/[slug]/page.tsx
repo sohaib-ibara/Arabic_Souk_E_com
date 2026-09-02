@@ -13,6 +13,10 @@ import { ProductGrid } from "@/components/product/product-grid";
 import { JsonLd } from "@/components/seo/json-ld";
 import { CheckIcon, LeafIcon, ShieldIcon, TruckIcon } from "@/components/ui/icons";
 import { getAllProducts, getProductBySlug, getRelatedProducts } from "@/lib/data";
+import {
+  RecentlyViewed,
+  RecordProductView,
+} from "@/components/product/recently-viewed";
 import { discountPercent } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
 
@@ -351,6 +355,11 @@ export default async function ProductPage({ params }: { params: Params }) {
           </div>
         )}
       </Container>
+
+      {/* Records this view, renders nothing. Below the fold in source order so
+          it can never delay what the page is actually for. */}
+      <RecordProductView slug={product.slug} />
+      <RecentlyViewed excludeSlug={product.slug} />
     </>
   );
 }

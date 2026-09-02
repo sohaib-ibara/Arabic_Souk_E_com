@@ -8,7 +8,8 @@ import { ValueProps } from "@/components/home/value-props";
 import { BrandStrip } from "@/components/home/brand-strip";
 import { ProductGrid } from "@/components/product/product-grid";
 import { NewsletterForm } from "@/components/newsletter-form";
-import { getBrands, getCategories, getProducts } from "@/lib/data";
+import { RecentlyViewed } from "@/components/product/recently-viewed";
+import { getBestsellers, getBrands, getCategories, getProducts } from "@/lib/data";
 
 export const revalidate = 3600;
 
@@ -19,7 +20,10 @@ export default async function HomePage() {
   const [categories, brands, featured, newArrivals] = await Promise.all([
     getCategories(),
     getBrands(),
-    getProducts({ featured: true, limit: 8 }),
+    // Not getProducts({ featured: true }): only four products in the catalogue
+    // carry the flag, so this row rendered four cards under a heading promising
+    // the shop's best. getBestsellers keeps those four first and fills the rest.
+    getBestsellers(8),
     getProducts({ isNew: true, limit: 4 }),
   ]);
 
@@ -122,6 +126,10 @@ export default async function HomePage() {
           </div>
         </Container>
       </section>
+
+      {/* Renders only for someone who has looked at two or more products, so a
+          first-time visitor never sees an empty band here. */}
+      <RecentlyViewed />
 
       {/* Newsletter */}
       <section className="bg-ink py-16 text-cream">
