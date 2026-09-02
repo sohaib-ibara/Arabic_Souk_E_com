@@ -63,9 +63,10 @@ jobs:
       # the project is found by name below.
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      # Not secrets — both are in the dashboard URL of any page of this project:
-      # vercel.com/<scope>/<project>
-      VERCEL_SCOPE: sohaib-9939s-projects
+      # Not a secret — it is in the dashboard URL of every page of this
+      # project. No --scope alongside it: a personal token already carries the
+      # account it belongs to, and passing the slug from the dashboard URL
+      # ("<user>s-projects") as a scope is rejected.
       VERCEL_PROJECT_NAME: arabic-souk-e-com
 
     steps:
@@ -102,6 +103,18 @@ jobs:
       - name: Install the Vercel CLI
         run: npm install --global vercel@latest
 
+      # Never fails the job. It exists so that when the next step cannot find
+      # the project, the log already says which account the token belongs to and
+      # exactly what that account contains - rather than "Project not found",
+      # which is true of a wrong name, a wrong account and a wrong token alike.
+      - name: Who is this token, and what can it see?
+        continue-on-error: true
+        run: |
+          echo "--- whoami ---"
+          vercel whoami --token="$VERCEL_TOKEN" || true
+          echo "--- projects visible to this token ---"
+          vercel project ls --token="$VERCEL_TOKEN" || true
+
       # Writes .vercel/project.json, which is all `vercel pull` and
       # `vercel build` need in order to know what they are building.
       - name: Find the project
@@ -109,7 +122,7 @@ jobs:
           if [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
             echo "Using the ids from repository secrets."
           else
-            vercel link --yes --project "$VERCEL_PROJECT_NAME" --scope "$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
+            vercel link --yes --project "$VERCEL_PROJECT_NAME" --token="$VERCEL_TOKEN"
           fi
 
       # Brings down the project's settings and its environment variables for
