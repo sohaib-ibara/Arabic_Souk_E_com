@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/components/cart/cart-provider";
+import { useNudgeSlot } from "@/lib/nudge-queue";
 import { CloseIcon } from "@/components/ui/icons";
 import { siteConfig } from "@/lib/config";
 
@@ -166,6 +167,16 @@ export function RegisterPrompt() {
   const preview = searchParams.get(PREVIEW_PARAM) === "1";
   const blocked = !preview && (SUPPRESSED.some((p) => pathname?.startsWith(p)) || cartOpen);
 
+  /*
+    `open` is this component's own decision; `shown` is whether the shop has a
+    free moment for it. Second in the centre slot, behind the welcome offer:
+    that one gives the shopper something, this one asks them for something.
+
+    Waiting costs nothing. `open` stays true, so the prompt appears the moment
+    the slot frees rather than being spent on a moment it never got.
+  */
+  const shown = useNudgeSlot("register-prompt", "center", 2, open) || preview;
+
   // Count pages viewed. Runs on mount and on every client-side route change,
   // and persists across full page loads.
   useEffect(() => {
@@ -212,7 +223,11 @@ export function RegisterPrompt() {
       shownThisSession.current = true;
       if (await isSignedIn()) return;
       if (cancelled) return;
-      markShown();
+      // markShown() deliberately NOT called here. Wanting to open and being
+      // allowed to are now different things, and recording the visit's one
+      // showing on a prompt the queue then held back would silence it for the
+      // rest of the visit without the shopper ever seeing it. It is recorded
+      // when it actually appears -- see the effect below.
       setOpen(true);
     }
 
@@ -248,7 +263,7 @@ export function RegisterPrompt() {
 
   /* ---- Dismissal: Escape, click outside ---- */
   useEffect(() => {
-    if (!open) return;
+    if (!shown) return;
     closeRef.current?.focus();
 
     const onKey = (e: KeyboardEvent) => {
@@ -263,7 +278,12 @@ export function RegisterPrompt() {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onClick);
     };
-  }, [open, dismiss]);
+  }, [shown, dismiss]);
+
+  // Spend the once-a-visit budget only once it is genuinely on screen.
+  useEffect(() => {
+    if (shown && !preview) markShown();
+  }, [shown, preview]);
 
   // Navigating away with it open should close it, not drag it to the next page.
   const [lastPath, setLastPath] = useState(pathname);
@@ -273,7 +293,7 @@ export function RegisterPrompt() {
   }
 
   // `preview` opens it from the URL alone, with no state and no gates.
-  if ((!open && !preview) || blocked) return null;
+  if (!shown || blocked) return null;
 
   function accept(e: React.FormEvent) {
     e.preventDefault();

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { CloseIcon } from "@/components/ui/icons";
 import { siteConfig } from "@/lib/config";
+import { useNudgeSlot } from "@/lib/nudge-queue";
 
 /**
  * The welcome-offer modal, from the Cult Beauty reference the client sent.
@@ -30,14 +31,21 @@ import { siteConfig } from "@/lib/config";
 const STORAGE_KEY = "promo-dismissed-at";
 
 export function PromoModal() {
-  const [open, setOpen] = useState(false);
+  const [wants, setWants] = useState(false);
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const promo = siteConfig.promo;
 
+  /*
+    Highest priority in the centre slot: this one gives the shopper something,
+    where the register prompt asks them for something. If both are ready, the
+    offer goes first.
+  */
+  const open = useNudgeSlot("promo-modal", "center", 3, wants);
+
   const dismiss = useCallback(() => {
-    setOpen(false);
+    setWants(false);
     try {
       window.localStorage.setItem(STORAGE_KEY, String(Date.now()));
     } catch {
@@ -48,6 +56,21 @@ export function PromoModal() {
 
   const onCheckout = pathname?.startsWith("/checkout") ?? false;
 
+  /*
+    When it appears, and why not on a timer.
+
+    A modal on a countdown interrupts someone who is reading. Exit intent -- the
+    cursor leaving the top of the window, towards the tab bar or the back button
+    -- interrupts someone who has already stopped. Same offer, same capture, one
+    fewer person annoyed. It arms only after ARM_MS so a cursor that strays
+    upward in the first few seconds does not trigger it.
+
+    Touch devices have no cursor and so no exit intent. There the signal is
+    engagement rather than departure: whichever comes first of reading 60% of
+    the page or `delaySeconds` on it. Both are later than a desktop visitor
+    would see it, which is the right way round -- a modal costs more on a small
+    screen.
+  */
   useEffect(() => {
     if (!promo.enabled || onCheckout) return;
     if (typeof window === "undefined") return;
@@ -61,8 +84,38 @@ export function PromoModal() {
     const waitMs = promo.remindAfterDays * 24 * 60 * 60 * 1000;
     if (asked && Date.now() - asked < waitMs) return;
 
-    const t = window.setTimeout(() => setOpen(true), promo.delaySeconds * 1000);
-    return () => window.clearTimeout(t);
+    const ARM_MS = 8_000;
+    let armed = false;
+    const armTimer = window.setTimeout(() => {
+      armed = true;
+    }, ARM_MS);
+
+    const hasCursor = window.matchMedia("(pointer: fine)").matches;
+
+    if (hasCursor) {
+      const onLeave = (e: MouseEvent) => {
+        // relatedTarget is null when the pointer leaves the document itself
+        // rather than crossing between two elements inside it.
+        if (armed && e.clientY <= 0 && !e.relatedTarget) setWants(true);
+      };
+      document.addEventListener("mouseout", onLeave);
+      return () => {
+        window.clearTimeout(armTimer);
+        document.removeEventListener("mouseout", onLeave);
+      };
+    }
+
+    const timer = window.setTimeout(() => setWants(true), promo.delaySeconds * 1000);
+    const onScroll = () => {
+      const reach = window.scrollY + window.innerHeight;
+      if (reach / Math.max(1, document.documentElement.scrollHeight) > 0.6) setWants(true);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(armTimer);
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [promo.enabled, promo.delaySeconds, promo.remindAfterDays, onCheckout]);
 
   // Escape closes it, and the page behind must not scroll while it is up —

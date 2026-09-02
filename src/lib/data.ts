@@ -334,6 +334,35 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   return items;
 }
 
+/**
+ * The shelf to show when the question is "what should I look at?".
+ *
+ * `is_featured` alone could not answer it: four products in a catalogue of 332
+ * carry the flag, so the homepage's Bestsellers row rendered four cards under a
+ * heading promising the shop's best, and the cart nudge had almost nothing to
+ * suggest. Curation is a job nobody has done here yet, and a row that is empty
+ * until they do is worse than one that fills itself sensibly.
+ *
+ * So the four curated ones still come first — that is what the flag is for —
+ * and the rest of the row is filled by rating weighted by how many people left
+ * one. `log1p` on the count is what stops a lone five-star review outranking a
+ * 4.6 with four hundred: it rewards agreement without letting volume alone
+ * decide.
+ *
+ * In-stock only, like every other recommendation on the site. Suggesting
+ * something unbuyable to someone who is browsing is worse than suggesting
+ * nothing.
+ */
+export async function getBestsellers(limit = 8): Promise<Product[]> {
+  const items = await loadProducts();
+  const score = (p: Product) =>
+    (p.is_featured ? 1_000_000 : 0) + (p.rating ?? 0) * Math.log1p(p.review_count ?? 0);
+  return items
+    .filter((p) => p.in_stock)
+    .sort((a, b) => score(b) - score(a))
+    .slice(0, limit);
+}
+
 export async function getAllProducts(): Promise<Product[]> {
   return loadProducts();
 }

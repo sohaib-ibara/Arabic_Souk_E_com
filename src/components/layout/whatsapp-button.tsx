@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/lib/config";
+import { useNudgeSlot } from "@/lib/nudge-queue";
 
 /**
  * Floating WhatsApp button, wearing the shop's mascot.
@@ -20,8 +21,15 @@ import { siteConfig } from "@/lib/config";
  * and its absence costs nothing.
  */
 export function WhatsAppButton() {
-  const [greeting, setGreeting] = useState(false);
+  const [wantsGreeting, setWantsGreeting] = useState(false);
   const pathname = usePathname();
+
+  /*
+    Lowest priority in the corner. An offer of help is welcome, but it is worth
+    less than a bag someone has already filled, so the cart nudge takes the slot
+    when both are ready.
+  */
+  const greeting = useNudgeSlot("whatsapp-greeting", "corner", 1, wantsGreeting);
 
   // Prefilled so the shopper doesn't have to open with "hi" and wait, and so
   // staff can see at a glance which channel the message came from.
@@ -53,12 +61,12 @@ export function WhatsAppButton() {
     }
     if (greeted) return;
 
-    const t = window.setTimeout(() => setGreeting(true), 4000);
+    const t = window.setTimeout(() => setWantsGreeting(true), 4000);
     return () => window.clearTimeout(t);
   }, []);
 
   function close() {
-    setGreeting(false);
+    setWantsGreeting(false);
     try {
       window.sessionStorage.setItem("wa-greeted", "1");
     } catch {
