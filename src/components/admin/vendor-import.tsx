@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { vendorImportAction } from "@/app/admin/actions";
 import { emptyVendorImportState, type VendorImportState } from "@/lib/admin-form-state";
 import { Notice } from "@/components/admin/notice";
+import { adminButton } from "@/components/admin/button-styles";
 
 /**
  * Bring a vendor's staged products into the catalogue.
@@ -54,7 +55,7 @@ export function VendorImport({
             name="intent"
             value="preview"
             disabled={pending}
-            className="rounded-full border border-line bg-white px-5 py-2.5 text-sm font-medium transition-colors hover:border-brand hover:text-brand disabled:opacity-60"
+            className={adminButton("secondary")}
           >
             {pending ? "Working…" : "Check what would come in"}
           </button>
@@ -65,7 +66,7 @@ export function VendorImport({
               name="intent"
               value="apply"
               disabled={pending}
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              className={adminButton("primary")}
             >
               Bring in {total} product{total === 1 ? "" : "s"}
             </button>

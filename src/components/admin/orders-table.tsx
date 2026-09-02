@@ -3,6 +3,7 @@ import { formatPrice } from "@/lib/format";
 import { ORDER_STATUSES, type OrdersResult, type OrderStatus } from "@/lib/admin-orders";
 import { StatusBadge, formatDateTime } from "./order-bits";
 import { cn } from "@/lib/cn";
+import { adminButton } from "@/components/admin/button-styles";
 
 function hrefFor(params: { status: string; search: string; page?: number }) {
   const p = new URLSearchParams();
@@ -67,14 +68,14 @@ export function OrdersTable({
         />
         <button
           type="submit"
-          className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className={adminButton("primary")}
         >
           Search
         </button>
         {search && (
           <Link
             href={hrefFor({ status, search: "" })}
-            className="rounded-full border border-line px-5 py-2.5 text-sm text-muted transition-colors hover:text-ink"
+            className={adminButton("quiet")}
           >
             Clear
           </Link>
@@ -157,7 +158,7 @@ export function OrdersTable({
           {page > 1 ? (
             <Link
               href={hrefFor({ status, search, page: page - 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               ← Previous
             </Link>
@@ -170,7 +171,7 @@ export function OrdersTable({
           {page < pageCount ? (
             <Link
               href={hrefFor({ status, search, page: page + 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               Next →
             </Link>

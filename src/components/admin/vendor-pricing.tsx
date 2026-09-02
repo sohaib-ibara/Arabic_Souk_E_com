@@ -5,6 +5,7 @@ import { vendorPriceAction } from "@/app/admin/actions";
 import { emptyVendorPriceState, type VendorPriceState } from "@/lib/admin-form-state";
 import { formatPrice } from "@/lib/format";
 import { Notice } from "@/components/admin/notice";
+import { adminButton } from "@/components/admin/button-styles";
 
 /**
  * Preview-then-apply for a vendor's prices.
@@ -63,7 +64,7 @@ export function VendorPricing({
             name="intent"
             value="preview"
             disabled={pending}
-            className="rounded-full border border-line bg-white px-5 py-2.5 text-sm font-medium transition-colors hover:border-brand hover:text-brand disabled:opacity-60"
+            className={adminButton("secondary")}
           >
             {pending ? "Working…" : "Preview changes"}
           </button>
@@ -74,7 +75,7 @@ export function VendorPricing({
               name="intent"
               value="apply"
               disabled={pending}
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              className={adminButton("primary")}
             >
               Apply {state.result.changed} price change
               {state.result.changed === 1 ? "" : "s"}

@@ -2,6 +2,11 @@
 
 import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/cn";
+import {
+  adminButton,
+  type AdminButtonSize,
+  type AdminButtonVariant,
+} from "@/components/admin/button-styles";
 
 /**
  * A submit button that admits it is working.
@@ -28,6 +33,7 @@ export function SubmitButton({
   name,
   value,
   variant = "primary",
+  size = "md",
   title,
   "aria-label": ariaLabel,
 }: {
@@ -37,20 +43,12 @@ export function SubmitButton({
   className?: string;
   name?: string;
   value?: string;
-  variant?: "primary" | "secondary" | "bare";
+  variant?: AdminButtonVariant | "bare";
+  size?: AdminButtonSize;
   title?: string;
   "aria-label"?: string;
 }) {
   const { pending } = useFormStatus();
-
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-full text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60";
-  const variants = {
-    primary: "bg-ink px-4 py-2 text-white hover:opacity-90",
-    secondary:
-      "border border-line bg-white px-4 py-2 text-ink hover:border-brand hover:text-brand",
-    bare: "",
-  };
 
   return (
     <button
@@ -63,7 +61,16 @@ export function SubmitButton({
       /* aria-busy, not just a changed label: a screen reader user gets no
          benefit from a spinner they cannot see. */
       aria-busy={pending}
-      className={cn(base, variants[variant], className)}
+      /* "bare" opts out of the shared look for the handful of buttons that
+         carry their own colour, such as the on/off pills. */
+      className={
+        variant === "bare"
+          ? cn(
+              "inline-flex items-center justify-center gap-2 transition-all motion-safe:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60",
+              className,
+            )
+          : adminButton(variant, size, className)
+      }
     >
       {pending && <Spinner />}
       {pending ? (pendingLabel ?? children) : children}

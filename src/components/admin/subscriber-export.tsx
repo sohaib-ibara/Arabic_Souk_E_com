@@ -2,6 +2,7 @@
 
 import { toCsv } from "@/lib/csv";
 import type { Subscriber } from "@/lib/newsletter";
+import { adminButton } from "@/components/admin/button-styles";
 
 /**
  * Download the list as CSV.
@@ -30,7 +31,7 @@ export function SubscriberExport({ rows }: { rows: Subscriber[] }) {
     <button
       type="button"
       onClick={download}
-      className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+      className={adminButton("primary")}
     >
       Export CSV
     </button>

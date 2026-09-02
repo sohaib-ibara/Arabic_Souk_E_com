@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/format";
 import type { AdminProductRow, ListResult, Option } from "@/lib/admin-products";
 import { SubmitButton } from "@/components/admin/submit-button";
+import { adminButton } from "@/components/admin/button-styles";
 import {
   SelectAllOnPage,
   SelectionSummary,
@@ -140,14 +141,14 @@ export function ProductsTable({
         </select>
         <button
           type="submit"
-          className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className={adminButton("primary")}
         >
           Filter
         </button>
         {filtersActive && (
           <Link
             href="/admin/products"
-            className="rounded-full border border-line px-5 py-2.5 text-sm text-muted transition-colors hover:text-ink"
+            className={adminButton("quiet")}
           >
             Clear
           </Link>
@@ -278,7 +279,7 @@ export function ProductsTable({
           {page > 1 ? (
             <Link
               href={hrefFor({ search, categoryId, page: page - 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               ← Previous
             </Link>
@@ -291,7 +292,7 @@ export function ProductsTable({
           {page < pageCount ? (
             <Link
               href={hrefFor({ search, categoryId, page: page + 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               Next →
             </Link>

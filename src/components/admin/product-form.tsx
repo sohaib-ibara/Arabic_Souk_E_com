@@ -7,6 +7,7 @@ import { emptyProductFormState } from "@/lib/admin-form-state";
 import type { AdminProductRow, Option } from "@/lib/admin-products";
 import { cn } from "@/lib/cn";
 import { SubmitButton } from "@/components/admin/submit-button";
+import { adminButton } from "@/components/admin/button-styles";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand";
@@ -401,13 +402,13 @@ export function ProductForm({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            className={adminButton("primary", "lg")}
           >
             {pending ? "Saving…" : isEdit ? "Save changes" : "Create product"}
           </button>
           <Link
             href="/admin/products"
-            className="rounded-full border border-line px-6 py-3 text-sm text-muted transition-colors hover:text-ink"
+            className={adminButton("quiet", "lg")}
           >
             Cancel
           </Link>
@@ -443,7 +444,7 @@ export function ProductForm({
           <SubmitButton
             variant="bare"
             pendingLabel="Deleting"
-            className="rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
+            className={adminButton("danger")}
           >
             Delete
           </SubmitButton>

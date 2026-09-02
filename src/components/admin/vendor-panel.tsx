@@ -3,11 +3,12 @@ import {
   saveVendorAction,
   setVendorEnabledAction,
 } from "@/app/admin/actions";
-import type { Vendor, VendorCategory } from "@/lib/vendors";
+import type { Vendor } from "@/lib/vendors";
 import { VendorImport } from "@/components/admin/vendor-import";
 import { VendorPricing } from "@/components/admin/vendor-pricing";
 import { cn } from "@/lib/cn";
-import { VendorCategories } from "@/components/admin/vendor-categories";
+import { adminButton } from "@/components/admin/button-styles";
+import { SubmitButton } from "@/components/admin/submit-button";
 
 /**
  * Vendor provisioning.
@@ -27,15 +28,21 @@ const KIND_LABEL: Record<string, string> = {
   manual: "Manual",
 };
 
+/**
+ * The vendor cards: what each supplier is, and whether it is on.
+ *
+ * Deliberately short. The category ticklist lived here for a version and made
+ * each card fifty-four rows tall, which pushed the second vendor off the screen
+ * and made the one thing these cards are for - comparing suppliers at a glance
+ * - impossible. It is one panel with a vendor dropdown now; see
+ * VendorCategoryPicker.
+ */
 export function VendorList({
   vendors,
-  categoriesByVendor,
   selectedId,
   back,
 }: {
   vendors: Vendor[];
-  /** Every vendor's categories, so each card can show its own. */
-  categoriesByVendor: Record<string, VendorCategory[]>;
   selectedId: string | null;
   back: string;
 }) {
@@ -99,7 +106,7 @@ export function VendorList({
               <div className="flex shrink-0 items-center gap-2">
                 <Link
                   href={selected ? "/admin/vendors" : `/admin/vendors?vendor=${v.id}`}
-                  className="rounded-full border border-line px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+                  className={adminButton("secondary")}
                 >
                   {selected ? "Close" : "Configure"}
                 </Link>
@@ -108,31 +115,18 @@ export function VendorList({
                   <input type="hidden" name="vendor_id" value={v.id} />
                   <input type="hidden" name="enabled" value={v.is_enabled ? "0" : "1"} />
                   <input type="hidden" name="back" value={back} />
-                  <button
-                    type="submit"
-                    className={cn(
-                      "rounded-full px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90",
-                      v.is_enabled
-                        ? "border border-line bg-white text-ink"
-                        : "bg-ink text-white",
-                    )}
+                  {/* Turning a vendor ON is the eye-catching action; turning
+                      one off is the quiet one you should have to mean. */}
+                  <SubmitButton
+                    variant={v.is_enabled ? "secondary" : "primary"}
+                    pendingLabel={v.is_enabled ? "Turning off" : "Turning on"}
                   >
                     {v.is_enabled ? "Turn off" : "Turn on"}
-                  </button>
+                  </SubmitButton>
                 </form>
               </div>
             </div>
 
-            {/* The category choice lives here, in the vendor's own card, rather
-                than behind Configure and on a second page called Categories.
-                Two screens both named "categories" is what the client asked us
-                to stop doing. */}
-            <VendorCategories
-              vendorId={v.id}
-              vendorName={v.name}
-              categories={categoriesByVendor[v.id] ?? []}
-              back={back}
-            />
           </div>
         );
       })}

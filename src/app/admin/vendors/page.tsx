@@ -11,6 +11,7 @@ import {
   type VendorCategory,
 } from "@/lib/vendors";
 import { ShopSections } from "@/components/admin/shop-sections";
+import { VendorCategoryPicker } from "@/components/admin/vendor-categories";
 
 export const metadata: Metadata = {
   title: "Vendors · Admin",
@@ -92,15 +93,18 @@ export default async function AdminVendorsPage({
           )}
 
           <div className="mt-6">
-            <VendorList
-              vendors={vendors}
-              categoriesByVendor={categoriesByVendor}
-              selectedId={selected?.id ?? null}
-              back={back}
-            />
+            <VendorList vendors={vendors} selectedId={selected?.id ?? null} back={back} />
           </div>
 
           {selected && <VendorDetail vendor={selected} back={back} />}
+
+          {/* One panel, one dropdown, one Save — rather than a ticklist inside
+              every card, which buried the cards themselves. */}
+          <VendorCategoryPicker
+            vendors={vendors}
+            categoriesByVendor={categoriesByVendor}
+            back={back}
+          />
 
           {/* The other kind of category switch, kept on the same screen but
               plainly separated. It answers a different question from the ones

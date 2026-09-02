@@ -7,6 +7,7 @@ import { MovementsTable } from "@/components/admin/movements-table";
 import { isAdmin } from "@/lib/admin-auth";
 import { getInventoryItem, getProductMovements } from "@/lib/inventory";
 import { formatPrice } from "@/lib/format";
+import { adminButton } from "@/components/admin/button-styles";
 
 export const metadata: Metadata = {
   title: "Stock · Admin",
@@ -55,7 +56,7 @@ export default async function InventoryDetailPage({ params }: { params: Params }
         </div>
         <Link
           href={`/admin/products/${item.id}`}
-          className="rounded-full border border-line px-5 py-2.5 text-sm transition-colors hover:border-brand hover:text-brand"
+          className={adminButton("secondary")}
         >
           Edit product
         </Link>
