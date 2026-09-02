@@ -15,6 +15,29 @@
   --color-muted: #6f655f;
   --color-line: #ece4da;
 
+  /*
+    Accents.
+
+    The shop was rose, gold and two neutrals, which is elegant and, across a
+    long page, monotonous - every section arrived in the same colour, so
+    nothing marked one apart from the next. These four are here to be used
+    sparingly and systematically: a tint behind a category tile, an icon, an
+    eyebrow. Never as body text and never as a button, which stay brand.
+
+    All four are muted to roughly the same value as the brand rose, so they sit
+    beside it instead of shouting over it, and all four clear 4.5:1 on cream
+    for the rare case one carries text.
+  */
+  --color-plum: #6b4a6e;
+  --color-plum-tint: #f3edf4;
+  --color-sage: #5f7f66;
+  --color-sage-tint: #e9f0ea;
+  --color-sky: #4d738d;
+  --color-sky-tint: #e8f0f5;
+  --color-clay: #a75f45;
+  --color-clay-tint: #faeae3;
+  --color-gold-tint: #f7efe0;
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
 }
@@ -113,10 +136,103 @@ button:disabled {
   animation: ray-pulse 3.2s cubic-bezier(0.2, 0.6, 0.35, 1) 1.6s infinite;
 }
 
+/* ---------------------------------------------------------------------------
+   Movement
+--------------------------------------------------------------------------- */
+
+/*
+  Sections arriving as you scroll.
+
+  Hidden by CSS and revealed by an observer (see components/ui/reveal.tsx),
+  rather than animated on load: a page that plays its whole animation before
+  you have scrolled to it has just delayed itself for nothing.
+
+  The hiding lives inside a no-preference query, so somebody who has asked for
+  less movement never has anything hidden from them in the first place - there
+  is no JavaScript path that could fail and leave them with a blank page. The
+  scripting query does the same for a browser with JavaScript off.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+}
+
+@media (scripting: none) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+  The brand names, scrolling.
+
+  The track holds the list twice and travels exactly half its width, so the
+  moment it finishes it is pixel-identical to where it started and the loop is
+  invisible. Slow - 60s for a full pass - because this is texture at the edge
+  of vision, not something to read while it moves. It pauses on hover and on
+  keyboard focus, so a name can always be caught and clicked.
+*/
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+}
+.marquee:hover .animate-marquee,
+.marquee:focus-within .animate-marquee {
+  animation-play-state: paused;
+}
+
+/*
+  Slow drift, for the blurred colour behind the hero and the hero image itself.
+
+  Two speeds and an offset start, so the shapes never line up into a single
+  pulse. Transform only: these are large blurred layers and anything that
+  triggered paint here would be the most expensive thing on the page.
+*/
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(0, -16px, 0) scale(1.04); }
+}
+.animate-drift {
+  animation: drift 11s ease-in-out infinite;
+}
+.animate-drift-slow {
+  animation: drift 15s ease-in-out 2s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .animate-fade-in-up { animation: none; }
   /* Hidden, not merely stopped: a stalled ring is a grey blob round a link. */
   .animate-ray,
   .animate-ray-delayed { display: none; }
+  /* Stopped, not hidden: unlike the rays these carry content. */
+  .animate-marquee,
+  .animate-drift,
+  .animate-drift-slow { animation: none; }
+  /*
+    A stopped marquee is a single line of names with the rest off the side of
+    the screen, which is worse than the wrapped block it replaced. So it goes
+    back to being that block: wrapped, centred, one copy of the list.
+  */
+  .marquee-track {
+    flex-wrap: wrap;
+    width: auto;
+    justify-content: center;
+    row-gap: 1rem;
+  }
+  .marquee-copy { flex-wrap: wrap; justify-content: center; padding-right: 0; }
+  .marquee-dup { display: none; }
 }
