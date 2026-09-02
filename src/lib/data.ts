@@ -300,6 +300,9 @@ export type ProductSort = "featured" | "price-asc" | "price-desc" | "rating" | "
 export interface ProductQuery {
   category?: string;
   brand?: string;
+  /** Inclusive shelf-price bounds, in BHD. Either end may be given alone. */
+  priceMin?: number;
+  priceMax?: number;
   featured?: boolean;
   isNew?: boolean;
   search?: string;
@@ -331,6 +334,9 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   let items = await loadProducts();
   if (q.category) items = items.filter((p) => p.category_slug === q.category);
   if (q.brand) items = items.filter((p) => p.brand_slug === q.brand);
+  // Inclusive at both ends: someone who types 5 to 10 means to see the 10.
+  if (q.priceMin != null) items = items.filter((p) => p.price >= q.priceMin!);
+  if (q.priceMax != null) items = items.filter((p) => p.price <= q.priceMax!);
   // Curated shelves are a recommendation, so they only carry things a shopper
   // can actually buy. Category, search and the full shop still list everything,
   // marked unavailable — those are places people go looking for a specific item.

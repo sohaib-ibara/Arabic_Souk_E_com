@@ -39,7 +39,9 @@ export async function generateMetadata({
     // Filtered and searched permutations shouldn't be indexed as duplicates,
     // and a sort is the same products in a different order — pure duplication.
     robots:
-      search || sp.category || sp.brand || sp.sort ? { index: false, follow: true } : undefined,
+      search || sp.category || sp.brand || sp.sort || sp.price_min || sp.price_max
+        ? { index: false, follow: true }
+        : undefined,
   };
 }
 
@@ -49,11 +51,27 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
   const brand = str(sp.brand);
   const search = str(sp.search);
   const sort = (str(sp.sort) as ProductSort) ?? "featured";
+  const priceMin = str(sp.price_min);
+  const priceMax = str(sp.price_max);
+  // Anything that is not a non-negative number is ignored rather than treated
+  // as zero: `?price_min=cheap` should show the shop, not an empty one.
+  const bound = (v: string | undefined) => {
+    if (!v) return undefined;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+  };
 
   const [categories, brands, products] = await Promise.all([
     getCategories(),
     getBrands(),
-    getProducts({ category, brand, search, sort }),
+    getProducts({
+      category,
+      brand,
+      search,
+      sort,
+      priceMin: bound(priceMin),
+      priceMax: bound(priceMax),
+    }),
   ]);
 
   const activeCategory = categories.find((c) => c.slug === category);
@@ -75,6 +93,8 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
     if (brand) p.set("brand", brand);
     if (search) p.set("search", search);
     if (sort !== "featured") p.set("sort", sort);
+    if (priceMin) p.set("price_min", priceMin);
+    if (priceMax) p.set("price_max", priceMax);
     if (target > 1) p.set("page", String(target));
     const qs = p.toString();
     return qs ? `/shop?${qs}` : "/shop";
@@ -98,7 +118,11 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
       </header>
 
       <div className="mt-8">
-        <ShopToolbar categories={categories} filters={{ category, brand, search, sort }} />
+        <ShopToolbar
+          categories={categories}
+          brands={brands}
+          filters={{ category, brand, search, sort, priceMin, priceMax }}
+        />
       </div>
 
       <div className="mt-10">
