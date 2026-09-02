@@ -144,14 +144,38 @@ jobs:
       # this target. The build needs them: 291 product pages are prerendered
       # from Supabase at build time, so a build without the keys succeeds and
       # ships an empty catalogue.
+      #
+      # Run through a capture rather than plainly, so that if it fails its last
+      # words become a GitHub annotation. Otherwise the run's summary page says
+      # "Process completed with exit code 1" and the actual reason sits three
+      # clicks deeper inside the step's log — which cost two round trips to
+      # discover that a CLI flag was wrong.
       - name: Pull the project settings
-        run: vercel pull --yes --environment=${{ steps.target.outputs.environment }} --token="$VERCEL_TOKEN"
+        run: |
+          set +e
+          out=$(vercel pull --yes --environment=${{ steps.target.outputs.environment }} --token="$VERCEL_TOKEN" 2>&1)
+          code=$?
+          set -e
+          printf '%s\n' "$out"
+          if [ "$code" -ne 0 ]; then
+            echo "::error::vercel pull failed (exit $code): $(printf '%s' "$out" | grep -v '^[[:space:]]*$' | tail -n 3 | tr '\n' ' ')"
+            exit "$code"
+          fi
 
       # Built here rather than on Vercel, then uploaded ready-made. Same command
       # Vercel runs, same Linux, and the install is left to the CLI so it
       # resolves dependencies exactly as the platform does.
       - name: Build
-        run: vercel build ${{ steps.target.outputs.flag }} --token="$VERCEL_TOKEN"
+        run: |
+          set +e
+          out=$(vercel build ${{ steps.target.outputs.flag }} --token="$VERCEL_TOKEN" 2>&1)
+          code=$?
+          set -e
+          printf '%s\n' "$out"
+          if [ "$code" -ne 0 ]; then
+            echo "::error::vercel build failed (exit $code): $(printf '%s' "$out" | grep -v '^[[:space:]]*$' | tail -n 3 | tr '\n' ' ')"
+            exit "$code"
+          fi
 
       - name: Deploy
         id: deploy
