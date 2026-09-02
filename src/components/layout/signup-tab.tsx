@@ -121,7 +121,7 @@ export function SignupTab() {
             New arrivals, offers and beauty edits — straight to your inbox. We deliver across{" "}
             {siteConfig.country}.
           </p>
-          <NewsletterForm className="mt-4 max-w-none flex-col sm:flex-row" />
+          <NewsletterForm source="signup-tab" className="mt-4 max-w-none" />
           <p className="mt-3 text-xs text-muted">Unsubscribe any time.</p>
         </div>
       )}

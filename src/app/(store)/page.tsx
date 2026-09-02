@@ -29,7 +29,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero />
+      <Hero brandCount={brands.length} />
 
       {/* Value props */}
       <section className="border-y border-line bg-white/60">
@@ -138,7 +138,7 @@ export default async function HomePage() {
           <p className="mt-3 max-w-md text-sm text-cream/75">
             Be first to know about new arrivals, exclusive offers and beauty edits.
           </p>
-          <NewsletterForm tone="dark" className="mt-7 justify-center" />
+          <NewsletterForm tone="dark" source="homepage" className="mt-7 justify-center" />
         </Container>
       </section>
     </>

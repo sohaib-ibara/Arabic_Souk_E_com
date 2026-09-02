@@ -189,7 +189,7 @@ export function PromoModal() {
             </h2>
             <p className="mt-3 text-sm text-muted">{promo.body}</p>
 
-            <NewsletterForm className="mt-5 max-w-none" />
+            <NewsletterForm source="promo-modal" className="mt-5 max-w-none" />
 
             <p className="mt-3 text-xs text-muted">
               Use code{" "}

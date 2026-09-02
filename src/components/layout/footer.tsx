@@ -80,7 +80,7 @@ export function Footer({ categories }: { categories: Array<{ name: string; slug:
             <p className="mt-4 text-sm text-muted">
               Beauty edits, new arrivals and members-only offers — straight to your inbox.
             </p>
-            <NewsletterForm className="mt-4 max-w-full flex-col sm:flex-row" />
+            <NewsletterForm source="footer" className="mt-4 max-w-full" />
             <p className="mt-4 text-xs text-muted">
               {siteConfig.contact.address}
             </p>

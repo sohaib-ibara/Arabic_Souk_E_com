@@ -11,6 +11,7 @@ const links = [
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/subscribers", label: "Subscribers" },
   { href: "/admin/sync", label: "Supplier sync" },
 ];
 

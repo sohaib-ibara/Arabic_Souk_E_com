@@ -1,7 +1,15 @@
 import { LeafIcon, ShieldIcon, SparklesIcon, TruckIcon } from "@/components/ui/icons";
+import { siteConfig } from "@/lib/config";
 
 const items = [
-  { Icon: TruckIcon, title: "Fast local delivery", text: "Across Bahrain in 1–2 days" },
+  // From config, not written out again here: this said "1–2 days" for
+  // months after the shop-wide promise had been corrected everywhere else,
+  // because a second copy of a fact is a second thing to forget.
+  {
+    Icon: TruckIcon,
+    title: "Delivery across Bahrain",
+    text: `Usually ${siteConfig.shipping.etaDays}`,
+  },
   { Icon: ShieldIcon, title: "100% authentic", text: "Sourced from official brands" },
   { Icon: SparklesIcon, title: "Expert curated", text: "Only the best beauty picks" },
   { Icon: LeafIcon, title: "Conscious beauty", text: "Cruelty-free options, always" },
