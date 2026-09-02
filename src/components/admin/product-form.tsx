@@ -6,6 +6,8 @@ import { deleteProductAction, saveProductAction } from "@/app/admin/actions";
 import { emptyProductFormState } from "@/lib/admin-form-state";
 import type { AdminProductRow, Option } from "@/lib/admin-products";
 import { cn } from "@/lib/cn";
+import { SubmitButton } from "@/components/admin/submit-button";
+import { adminButton } from "@/components/admin/button-styles";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand";
@@ -358,7 +360,11 @@ export function ProductForm({
               defaultChecked={product ? product.in_stock : true}
             />
             <Check name="is_featured" label="Featured" defaultChecked={product?.is_featured} />
-            <Check name="is_new" label="New arrival" defaultChecked={product?.is_new} />
+            {/* No "New arrival" box. It is worked out from when the product
+                was added — see isRecentArrival in src/lib/data.ts — because the
+                flag drifted onto 301 six-week-old products and off the 31 that
+                had just landed. A tickbox nobody remembers to untick is not a
+                control, it is a slowly-rotting label. */}
           </div>
         </section>
 
@@ -396,13 +402,13 @@ export function ProductForm({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            className={adminButton("primary", "lg")}
           >
             {pending ? "Saving…" : isEdit ? "Save changes" : "Create product"}
           </button>
           <Link
             href="/admin/products"
-            className="rounded-full border border-line px-6 py-3 text-sm text-muted transition-colors hover:text-ink"
+            className={adminButton("quiet", "lg")}
           >
             Cancel
           </Link>
@@ -435,12 +441,13 @@ export function ProductForm({
               Removes it from the catalogue. Past order lines keep their recorded name and price.
             </p>
           </div>
-          <button
-            type="submit"
-            className="rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
+          <SubmitButton
+            variant="bare"
+            pendingLabel="Deleting"
+            className={adminButton("danger")}
           >
             Delete
-          </button>
+          </SubmitButton>
         </form>
       )}
     </>

@@ -105,7 +105,30 @@ export const siteConfig = {
   shipping: {
     freeThreshold: 20, // BHD
     standardFee: 2, // BHD
-    etaDays: "1–2 days",
+    /*
+      The shop-wide delivery promise.
+
+      It said "1–2 days", and that was not true of a single product on the
+      shelf. This store buys from the supplier after the customer pays, so
+      delivery IS the supplier's dispatch window, and those measured (2 Sep
+      2026, across the 332 listed products) run:
+
+        106 products  5–8 days      31 products  6–16 days
+         65 products  4–7 days     125 products  no window captured
+
+      p10 of the minimums to p90 of the maximums is 4 to 13, so that is what is
+      quoted. Deliberately conservative: under-promising on a noon item that
+      actually takes five days is a pleasant surprise, where the old value
+      over-promised by two weeks on every Cult Beauty order — and this string
+      reaches the order confirmation email, the checkout, and the tracking page,
+      so it was a promise made in writing after the customer had paid.
+
+      Products with their own supplier window show that instead; this is the
+      fallback and the marketing line. Re-derive it if the vendor mix changes:
+        select lead_days_min, lead_days_max, count(*) from products
+         where is_listed group by 1, 2 order by 3 desc;
+    */
+    etaDays: "4–13 days",
   },
   /**
    * The welcome offer, shown once per visit in a modal.

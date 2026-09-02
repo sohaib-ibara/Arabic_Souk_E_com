@@ -8,6 +8,7 @@ import {
   getAdminProduct,
   insertProduct,
   setPublished,
+  setPublishedByFilter,
   slugify,
   updateProductRow,
   type ProductInput,
@@ -27,6 +28,7 @@ import {
   importStagedForVendor,
   priceVendor,
   setCategoryEnabled,
+  setVendorCategories,
   setVendorCategoryEnabled,
   setVendorEnabled,
   updateVendor,
@@ -38,6 +40,12 @@ import type {
   VendorImportState,
   VendorPriceState,
 } from "@/lib/admin-form-state";
+import {
+  addHomePick,
+  clearHomePicks,
+  moveHomePick,
+  removeHomePick,
+} from "@/lib/home-picks";
 
 /**
  * Server actions for the admin console.
@@ -132,11 +140,38 @@ export async function setVisibilityAction(formData: FormData): Promise<void> {
   const publish = formData.get("publish") === "1";
   const back = String(formData.get("back") || "/admin/products");
 
-  if (!ids.length) {
+  /*
+    Two scopes, and the difference matters.
+
+    "page" is the rows that were ticked. "filtered" is everything the current
+    filter matches, which is what somebody means by "select all 177 Cult
+    Beauty products" - and which is re-evaluated here rather than sent up as a
+    list of ids, so it means what it means at the moment the button is pressed.
+  */
+  const wholeFilter = formData.get("scope") === "filtered";
+
+  if (!wholeFilter && !ids.length) {
     redirect(`${back}${back.includes("?") ? "&" : "?"}bulk=none`);
   }
 
-  const changed = await setPublished(ids, publish);
+  const changed = wholeFilter
+    ? await setPublishedByFilter(
+        {
+          search: str(formData, "f_search"),
+          categoryId: str(formData, "f_category"),
+          source: str(formData, "f_source"),
+          // Narrowed rather than cast: anything else in the field is a
+          // hand-edited form, and "no visibility filter" is the safe reading.
+          visibility:
+            str(formData, "f_visibility") === "listed"
+              ? "listed"
+              : str(formData, "f_visibility") === "hidden"
+                ? "hidden"
+                : undefined,
+        },
+        publish,
+      )
+    : await setPublished(ids, publish);
 
   // Every storefront surface reads from one loader that filters on this flag,
   // so listings, search and category pages all have to be refreshed — not just
@@ -220,7 +255,6 @@ export async function saveProductAction(
     brand_id: optStr(formData, "brand_id"),
     in_stock: bool(formData, "in_stock"),
     is_featured: bool(formData, "is_featured"),
-    is_new: bool(formData, "is_new"),
     images: lines(formData, "images"),
     tags: commaList(formData, "tags"),
     source_url: sourceUrl,
@@ -501,6 +535,32 @@ export async function setVendorCategoryAction(formData: FormData): Promise<void>
   redirect(withQuery(back, { c: enabled ? "on" : "off" }));
 }
 
+/**
+ * Save a vendor's whole category selection from one form.
+ *
+ * `enabled` carries the ticked boxes and `known` every category the form was
+ * drawn with, so a category added since then is left alone rather than
+ * switched off by omission. See setVendorCategories.
+ */
+export async function setVendorCategoriesAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const vendorId = str(formData, "vendor_id");
+  const back = String(formData.get("back") || "/admin/vendors");
+  if (!vendorId) redirect(back);
+
+  const enabled = formData.getAll("enabled").map(String).filter(Boolean);
+  const known = formData.getAll("known").map(String).filter(Boolean);
+
+  const { off } = await setVendorCategories(vendorId, enabled, known);
+
+  revalidatePath("/admin/vendors");
+  revalidatePath("/admin/products");
+  revalidateStorefront();
+
+  redirect(withQuery(back, { saved: "categories", off: String(off) }));
+}
+
 /** Save a vendor's name, kind and pricing rule. Does not touch any price. */
 export async function saveVendorAction(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -671,4 +731,54 @@ export async function setCategoryEnabledAction(formData: FormData): Promise<void
   revalidateStorefront();
 
   redirect(withQuery(back, { cat: enabled ? "on" : "off" }));
+}
+
+/* ------------------------- the home page shelf ------------------------- */
+
+/**
+ * A pick changes the Bestsellers row, and that row is on more than the home
+ * page: the cart nudge suggests from it, and the nudge lives in the store
+ * layout on every page. Revalidating "/" alone would leave a stale suggestion
+ * everywhere else, so the whole store shell goes.
+ */
+function revalidateHomeShelf() {
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/homepage");
+}
+
+/**
+ * Pin, unpin, reorder, clear.
+ *
+ * Four verbs, one action: they are all "here is what the row should be now",
+ * they all end in the same redirect, and splitting them would mean four copies
+ * of the same six lines of error handling.
+ *
+ * Every one of them saves immediately rather than collecting into a Save
+ * button. The screen shows a live preview of the row underneath, and a preview
+ * of unsaved state is a preview of something that does not exist.
+ */
+export async function homePickAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const intent = str(formData, "intent");
+  const productId = str(formData, "product_id");
+  const back = String(formData.get("back") || "/admin/homepage");
+
+  const known = ["add", "remove", "up", "down", "clear"];
+  // Checked before the try, because redirect() works by throwing: called in
+  // there it would be caught as a failure and reported as one.
+  if (!known.includes(intent)) redirect(back);
+
+  try {
+    if (intent === "add") await addHomePick(productId);
+    else if (intent === "remove") await removeHomePick(productId);
+    else if (intent === "up") await moveHomePick(productId, "up");
+    else if (intent === "down") await moveHomePick(productId, "down");
+    else await clearHomePicks();
+  } catch (e) {
+    redirect(withQuery(back, { error: (e as Error).message.slice(0, 160) }));
+  }
+
+  revalidateHomeShelf();
+  redirect(withQuery(back, { saved: intent }));
 }

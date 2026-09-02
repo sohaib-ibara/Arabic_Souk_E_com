@@ -4,6 +4,7 @@ import { getAllProducts, type DemandContact } from "./data";
 import { siteConfig } from "./config";
 import { reconcileOrderStock } from "./inventory";
 import { sendOrderConfirmation, type OrderEmail } from "./email";
+import { PRICE_DECIMALS } from "@/lib/format";
 
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
@@ -402,7 +403,7 @@ export async function createOrderAndIntent(input: CreateOrderInput): Promise<Cre
         metadata: {
           order_id: order.id,
           order_number: order.order_number,
-          store_total: total.toFixed(3),
+          store_total: total.toFixed(PRICE_DECIMALS),
           store_currency: currency,
           ...(presentment.converted ? { fx_rate: String(presentment.rate) } : {}),
         },

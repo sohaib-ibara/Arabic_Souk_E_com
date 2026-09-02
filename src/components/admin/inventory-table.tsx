@@ -3,6 +3,8 @@ import { siteConfig } from "@/lib/config";
 import { setAvailabilityAction } from "@/app/admin/actions";
 import type { InventoryFilter, InventoryList, InventoryRow } from "@/lib/inventory";
 import { cn } from "@/lib/cn";
+import { SubmitButton } from "@/components/admin/submit-button";
+import { adminButton } from "@/components/admin/button-styles";
 
 // "Running low" is gone: with nothing held on a shelf it matched 293 of 301
 // products, which is noise rather than a filter.
@@ -46,8 +48,9 @@ function AvailabilityToggle({ row }: { row: InventoryRow }) {
       <input type="hidden" name="product_id" value={row.id} />
       <input type="hidden" name="slug" value={row.slug} />
       <input type="hidden" name="available" value={row.inStock ? "0" : "1"} />
-      <button
-        type="submit"
+      <SubmitButton
+        variant="bare"
+        pendingLabel="Saving"
         className={cn(
           "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
           row.inStock
@@ -56,7 +59,7 @@ function AvailabilityToggle({ row }: { row: InventoryRow }) {
         )}
       >
         {row.inStock ? "Switch off" : "Switch on"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -105,14 +108,14 @@ export function InventoryTable({
         />
         <button
           type="submit"
-          className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className={adminButton("primary")}
         >
           Search
         </button>
         {search && (
           <Link
             href={hrefFor({ filter, search: "" })}
-            className="rounded-full border border-line px-5 py-2.5 text-sm text-muted transition-colors hover:text-ink"
+            className={adminButton("quiet")}
           >
             Clear
           </Link>
@@ -196,7 +199,7 @@ export function InventoryTable({
           {page > 1 ? (
             <Link
               href={hrefFor({ filter, search, page: page - 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               ← Previous
             </Link>
@@ -209,7 +212,7 @@ export function InventoryTable({
           {page < pageCount ? (
             <Link
               href={hrefFor({ filter, search, page: page + 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               Next →
             </Link>

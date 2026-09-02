@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/components/cart/cart-provider";
 import { BagIcon, CheckIcon, MinusIcon, PlusIcon } from "@/components/ui/icons";
+import { WishlistButton } from "./wishlist-button";
 
 export function ProductBuyBox({ product }: { product: Product }) {
   const { addItem, openCart } = useCart();
@@ -115,6 +116,16 @@ export function ProductBuyBox({ product }: { product: Product }) {
           Buy it now
         </Link>
       </div>
+
+      {/* Underneath rather than in the row above: three equal buttons make the
+          shopper choose between them, and only two of these are the decision
+          this page is asking for. */}
+      <WishlistButton
+        slug={product.slug}
+        name={product.name}
+        withLabel
+        className="w-full sm:w-auto"
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { adminButton } from "@/components/admin/button-styles";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export function LogoutButton() {
     <button
       onClick={logout}
       disabled={busy}
-      className="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-brand hover:text-brand disabled:opacity-60"
+      className={adminButton("secondary")}
     >
       {busy ? "Signing out…" : "Sign out"}
     </button>

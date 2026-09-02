@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
 import type { AdminProductRow, ListResult, Option } from "@/lib/admin-products";
+import { SubmitButton } from "@/components/admin/submit-button";
+import { adminButton } from "@/components/admin/button-styles";
+import {
+  SelectAllOnPage,
+  SelectionSummary,
+} from "@/components/admin/product-selection";
 
 /**
  * Two states, because there are only two.
@@ -135,14 +141,14 @@ export function ProductsTable({
         </select>
         <button
           type="submit"
-          className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className={adminButton("primary")}
         >
           Filter
         </button>
         {filtersActive && (
           <Link
             href="/admin/products"
-            className="rounded-full border border-line px-5 py-2.5 text-sm text-muted transition-colors hover:text-ink"
+            className={adminButton("quiet")}
           >
             Clear
           </Link>
@@ -157,28 +163,27 @@ export function ProductsTable({
           JavaScript off like the rest of the admin. */}
       <form action={action}>
         <input type="hidden" name="back" value={back} />
+        {/* The live filter, so "select all matching" can be re-run server-side
+            rather than trusting a list of ids from a page that may be old. */}
+        <input type="hidden" name="f_search" value={search} />
+        <input type="hidden" name="f_category" value={categoryId} />
+        <input type="hidden" name="f_source" value={source} />
+        <input type="hidden" name="f_visibility" value={visibility} />
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-sand/50 px-4 py-3">
-          <span className="text-sm text-muted">With selected:</span>
-          <button
-            type="submit"
-            name="publish"
-            value="1"
-            className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            List on storefront
-          </button>
-          <button
-            type="submit"
-            name="publish"
-            value="0"
-            className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium transition-colors hover:border-brand hover:text-brand"
-          >
-            Hide from storefront
-          </button>
-          <span className="text-xs text-muted">
-            Hidden products keep their data and orders — they just stop appearing.
-          </span>
+        <div className="mt-4 rounded-2xl border border-line bg-sand/50 px-4 py-3">
+          <SelectionSummary onPage={items.length} total={total} />
+
+          <div className="mt-2.5 flex flex-wrap items-center gap-3">
+            <SubmitButton name="publish" value="1" pendingLabel="Listing">
+              List on storefront
+            </SubmitButton>
+            <SubmitButton name="publish" value="0" variant="secondary" pendingLabel="Hiding">
+              Hide from storefront
+            </SubmitButton>
+            <span className="text-xs text-muted">
+              Hidden products keep their data and orders — they just stop appearing.
+            </span>
+          </div>
         </div>
 
         <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white">
@@ -186,7 +191,7 @@ export function ProductsTable({
             <thead className="bg-sand text-left text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="w-10 px-4 py-3 font-medium">
-                  <span className="sr-only">Select</span>
+                  <SelectAllOnPage />
                 </th>
                 <th className="px-4 py-3 font-medium">Product</th>
                 <th className="px-4 py-3 font-medium">Supplier</th>
@@ -274,7 +279,7 @@ export function ProductsTable({
           {page > 1 ? (
             <Link
               href={hrefFor({ search, categoryId, page: page - 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               ← Previous
             </Link>
@@ -287,7 +292,7 @@ export function ProductsTable({
           {page < pageCount ? (
             <Link
               href={hrefFor({ search, categoryId, page: page + 1 })}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition-colors hover:border-brand hover:text-brand"
+              className={adminButton("secondary")}
             >
               Next →
             </Link>

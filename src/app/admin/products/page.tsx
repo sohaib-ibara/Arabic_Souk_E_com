@@ -12,6 +12,7 @@ import {
   type ListResult,
 } from "@/lib/admin-products";
 import { setVisibilityAction } from "@/app/admin/actions";
+import { adminButton } from "@/components/admin/button-styles";
 
 export const metadata: Metadata = {
   title: "Products · Admin",
@@ -80,7 +81,7 @@ export default async function AdminProductsPage({
         {status.configured && (
           <Link
             href="/admin/products/new"
-            className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className={adminButton("primary")}
           >
             Add product
           </Link>

@@ -218,6 +218,55 @@ export async function listAdminProducts(q: ListQuery = {}): Promise<ListResult> 
   };
 }
 
+/**
+ * List or hide everything matching a filter, not just the page on screen.
+ *
+ * The bulk buttons worked on ticked rows, and rows come 25 at a time. Curating
+ * one supplier's 177 products meant eight pages of ticking, and the person
+ * doing it has no way to tell whether they missed a page.
+ *
+ * The filter is re-applied here rather than trusting a list of ids from the
+ * browser: the page the button was pressed on may be minutes old, and "every
+ * hidden Cult Beauty product" should mean what it means when the button is
+ * pressed, not what it meant when the page was drawn.
+ *
+ * Deliberately shares its clauses with `listAdminProducts` — if the two ever
+ * disagree, the count shown on the button is not the set it acts on.
+ */
+export async function setPublishedByFilter(
+  q: ListQuery,
+  published: boolean,
+): Promise<number> {
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("Supabase service role isn't configured.");
+
+  let query = admin.from("products").update({ is_published: published }, { count: "exact" });
+
+  if (q.search?.trim()) {
+    const s = q.search.trim().replace(/[%,]/g, "");
+    query = query.or(`name.ilike.%${s}%,slug.ilike.%${s}%`);
+  }
+  if (q.categoryId) query = query.eq("category_id", q.categoryId);
+  if (q.source === "none") query = query.is("source", null);
+  else if (q.source) query = query.eq("source", q.source);
+  if (q.visibility === "listed") query = query.eq("is_published", true);
+  else if (q.visibility === "hidden") query = query.eq("is_published", false);
+
+  /*
+    A PostgREST update needs a WHERE clause or it refuses the request, and with
+    no filters at all the clauses above add none. `is_published` is the column
+    being written, so matching on its opposite is both a valid predicate and
+    the correct one: rows already in the target state need no update.
+  */
+  if (!q.search?.trim() && !q.categoryId && !q.source && !q.visibility) {
+    query = query.eq("is_published", !published);
+  }
+
+  const { error, count } = await query;
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 export async function getAdminProduct(id: string): Promise<AdminProductRow | null> {
   const admin = getSupabaseAdmin();
   if (!admin) return null;
@@ -278,7 +327,14 @@ export interface ProductInput {
   brand_id: string | null;
   in_stock: boolean;
   is_featured: boolean;
-  is_new: boolean;
+  /*
+    No `is_new`. Whether a product is a new arrival is worked out from when it
+    was added (isRecentArrival, src/lib/data.ts), so the column is not written
+    from the admin form any more. Leaving it out of the write rather than
+    sending `false` keeps whatever is already in the row: nothing reads it, and
+    quietly clearing 301 flags on the next save of an unrelated field is not
+    this function's business.
+  */
   images: string[];
   tags: string[];
   /** Supplier product page — internal only. See AdminProductRow.source_url. */

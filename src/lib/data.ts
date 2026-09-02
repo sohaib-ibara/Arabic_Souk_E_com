@@ -2,6 +2,7 @@ import type { Brand, Category, Product } from "./types";
 import { sampleBrands, sampleCategories, sampleProducts } from "./sample-data";
 import { importedBrands, importedCategories, importedProducts } from "./imported-data";
 import { getSupabaseServer, getSupabaseAdmin } from "./supabase/server";
+import { getHomePickIds } from "./home-picks";
 
 /**
  * Local catalogue source. When a noon capture has been generated into
@@ -27,6 +28,25 @@ const localCategories: Category[] = importedCategories.length
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * How long a product counts as new.
+ *
+ * The badge used to read `products.is_new`, and the flag had drifted so far
+ * from the word that it meant nothing: 301 of 332 listed products carried it,
+ * every one of them imported six weeks earlier, while the 31 that had arrived
+ * the previous day did not. A badge on 91% of a catalogue is decoration.
+ *
+ * A date cannot drift. It also cannot be forgotten, which the flag plainly was
+ * — nobody was ever going to go back and untick 301 boxes.
+ */
+const NEW_ARRIVAL_DAYS = 30;
+
+function isRecentArrival(createdAt: unknown): boolean {
+  if (typeof createdAt !== "string") return false;
+  const t = Date.parse(createdAt);
+  return Number.isFinite(t) && Date.now() - t < NEW_ARRIVAL_DAYS * 24 * 60 * 60 * 1000;
+}
+
 function mapProductRow(row: any): Product {
   const category = row.category ?? {};
   const brand = row.brand ?? {};
@@ -49,7 +69,7 @@ function mapProductRow(row: any): Product {
     stock_quantity: Number(row.stock_quantity ?? 0),
     in_stock: Boolean(row.in_stock),
     is_featured: Boolean(row.is_featured),
-    is_new: Boolean(row.is_new),
+    is_new: isRecentArrival(row.created_at),
     tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
     updated_at: row.updated_at ?? row.created_at ?? null,
     lead_days_min: row.lead_days_min != null ? Number(row.lead_days_min) : null,
@@ -281,6 +301,9 @@ export type ProductSort = "featured" | "price-asc" | "price-desc" | "rating" | "
 export interface ProductQuery {
   category?: string;
   brand?: string;
+  /** Inclusive shelf-price bounds, in BHD. Either end may be given alone. */
+  priceMin?: number;
+  priceMax?: number;
   featured?: boolean;
   isNew?: boolean;
   search?: string;
@@ -312,6 +335,9 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   let items = await loadProducts();
   if (q.category) items = items.filter((p) => p.category_slug === q.category);
   if (q.brand) items = items.filter((p) => p.brand_slug === q.brand);
+  // Inclusive at both ends: someone who types 5 to 10 means to see the 10.
+  if (q.priceMin != null) items = items.filter((p) => p.price >= q.priceMin!);
+  if (q.priceMax != null) items = items.filter((p) => p.price <= q.priceMax!);
   // Curated shelves are a recommendation, so they only carry things a shopper
   // can actually buy. Category, search and the full shop still list everything,
   // marked unavailable — those are places people go looking for a specific item.
@@ -332,6 +358,50 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   items = sortProducts(items, q.sort ?? "featured");
   if (q.limit) items = items.slice(0, q.limit);
   return items;
+}
+
+/**
+ * The shelf to show when the question is "what should I look at?".
+ *
+ * `is_featured` alone could not answer it: four products in a catalogue of 332
+ * carry the flag, so the homepage's Bestsellers row rendered four cards under a
+ * heading promising the shop's best, and the cart nudge had almost nothing to
+ * suggest. A row that is empty until somebody curates it is worse than one
+ * that fills itself sensibly.
+ *
+ * So the row is two lists end to end. First whatever the admin pinned, in the
+ * order they pinned it — see home-picks.ts and migration 0019, which is the
+ * only part of this a human controls directly. Then the automatic ranking:
+ * featured first, and after that rating weighted by how many people left one.
+ *
+ * `log1p` on the count is what stops a lone five-star review outranking a
+ * 4.6 with four hundred: it rewards agreement without letting volume alone
+ * decide.
+ *
+ * In-stock only, like every other recommendation on the site. Suggesting
+ * something unbuyable to someone who is browsing is worse than suggesting
+ * nothing.
+ */
+export async function getBestsellers(limit = 8): Promise<Product[]> {
+  const [items, pickedIds] = await Promise.all([loadProducts(), getHomePickIds()]);
+
+  // In stock only, for the picks as much as for the ranking. A pinned product
+  // that has sold out drops out and the next one moves up, which is what
+  // anybody curating a shop window would expect without being told.
+  const available = items.filter((p) => p.in_stock);
+  const byId = new Map(available.map((p) => [p.id, p]));
+
+  const picked = pickedIds
+    .map((id) => byId.get(id))
+    .filter((p): p is Product => p !== undefined);
+  const pinned = new Set(picked.map((p) => p.id));
+
+  const score = (p: Product) =>
+    (p.is_featured ? 1_000_000 : 0) + (p.rating ?? 0) * Math.log1p(p.review_count ?? 0);
+
+  const rest = available.filter((p) => !pinned.has(p.id)).sort((a, b) => score(b) - score(a));
+
+  return [...picked, ...rest].slice(0, limit);
 }
 
 export async function getAllProducts(): Promise<Product[]> {

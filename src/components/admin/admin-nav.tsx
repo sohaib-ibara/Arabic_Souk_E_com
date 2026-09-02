@@ -7,10 +7,13 @@ import { cn } from "@/lib/cn";
 const links = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/products", label: "Products" },
+  { href: "/admin/homepage", label: "Home page" },
+  // Categories used to sit here as its own entry. Both kinds of category
+  // switch are on the Vendors page now - see shop-sections.tsx.
   { href: "/admin/vendors", label: "Vendors" },
-  { href: "/admin/categories", label: "Categories" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/subscribers", label: "Subscribers" },
   { href: "/admin/sync", label: "Supplier sync" },
 ];
 

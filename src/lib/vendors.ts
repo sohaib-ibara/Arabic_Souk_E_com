@@ -215,6 +215,56 @@ export async function setVendorEnabled(id: string, enabled: boolean): Promise<vo
  * holds exceptions. That keeps "no row = enabled" honest and means the table
  * stays small no matter how many categories exist.
  */
+/**
+ * Set a vendor's whole category selection in one go.
+ *
+ * The per-category toggle is one write and one page reload each. Turning a
+ * vendor's fifty-four categories off meant fifty-four of them, and no way to
+ * tell part-way through whether the list had been finished. This takes the
+ * ticked set and makes the table agree with it.
+ *
+ * `enabledIds` is what the form ticked; `allIds` is every category that was on
+ * screen when it was drawn. Anything in `allIds` and not in `enabledIds` is
+ * switched off, and — importantly — a category NOT in `allIds` is left alone
+ * rather than being switched off by omission: a category created since the
+ * page loaded must not be silently disabled by somebody saving an older form.
+ *
+ * The absent-row-means-enabled convention from 0014 is preserved, so enabling
+ * deletes rather than writing `true`.
+ */
+export async function setVendorCategories(
+  vendorId: string,
+  enabledIds: string[],
+  allIds: string[],
+): Promise<{ on: number; off: number }> {
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY isn't set.");
+
+  const enabled = new Set(enabledIds);
+  const known = allIds.filter((id) => id);
+  const toDisable = known.filter((id) => !enabled.has(id));
+  const toEnable = known.filter((id) => enabled.has(id));
+
+  if (toEnable.length) {
+    const { error } = await admin
+      .from("vendor_categories")
+      .delete()
+      .eq("vendor_id", vendorId)
+      .in("category_id", toEnable);
+    if (error) throw new Error(error.message);
+  }
+
+  if (toDisable.length) {
+    const { error } = await admin.from("vendor_categories").upsert(
+      toDisable.map((category_id) => ({ vendor_id: vendorId, category_id, is_enabled: false })),
+      { onConflict: "vendor_id,category_id" },
+    );
+    if (error) throw new Error(error.message);
+  }
+
+  return { on: toEnable.length, off: toDisable.length };
+}
+
 export async function setVendorCategoryEnabled(
   vendorId: string,
   categoryId: string,

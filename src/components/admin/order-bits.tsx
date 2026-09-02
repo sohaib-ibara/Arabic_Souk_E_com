@@ -1,6 +1,7 @@
 import { cn } from "@/lib/cn";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/admin-orders";
 import { updateOrderStatusAction } from "@/app/admin/actions";
+import { SubmitButton } from "@/components/admin/submit-button";
 
 const statusStyles: Record<OrderStatus, string> = {
   pending: "bg-amber-50 text-amber-700",
@@ -57,12 +58,12 @@ export function StatusForm({ id, status }: { id: string; status: OrderStatus }) 
           </option>
         ))}
       </select>
-      <button
-        type="submit"
+      <SubmitButton
+        pendingLabel="Updating"
         className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
       >
         Update
-      </button>
+      </SubmitButton>
     </form>
   );
 }

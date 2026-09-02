@@ -4,6 +4,7 @@ import { useActionState, useRef, useState, startTransition } from "react";
 import { stockCsvAction } from "@/app/admin/actions";
 import { emptyStockCsvState, type StockCsvState } from "@/lib/admin-form-state";
 import { cn } from "@/lib/cn";
+import { adminButton } from "@/components/admin/button-styles";
 
 /**
  * CSV stock tools. Like the pricing tools, the file is held in state rather
@@ -240,7 +241,7 @@ function CsvPanel({
           type="button"
           onClick={() => run(false)}
           disabled={!file || pending}
-          className="rounded-full border border-line px-5 py-2.5 text-sm font-medium transition-colors hover:border-brand hover:text-brand disabled:opacity-50"
+          className={adminButton("secondary")}
         >
           {pending ? "Working…" : mode === "count" ? "Check variance" : "Preview changes"}
         </button>

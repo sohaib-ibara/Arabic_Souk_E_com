@@ -6,7 +6,12 @@ import { siteConfig } from "@/lib/config";
 const HERO_IMG =
   "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=1400&q=80";
 
-export function Hero() {
+/**
+ * `brandCount` is passed in rather than guessed at. The stat read "50+" while
+ * the catalogue carried 148 brands - a hardcoded number is wrong in one
+ * direction the day it is written and the other direction a month later.
+ */
+export function Hero({ brandCount }: { brandCount: number }) {
   return (
     <section className="relative overflow-hidden bg-linear-to-b from-brand-tint/60 to-cream">
       <Container className="grid items-center gap-10 py-14 md:grid-cols-2 md:py-20">
@@ -37,7 +42,9 @@ export function Hero() {
           </div>
           <dl className="mt-10 flex gap-8">
             {[
-              { n: "50+", l: "Luxury brands" },
+              // Rounded DOWN to the ten below, so the claim stays true as the
+              // catalogue moves and never has to be walked back.
+              { n: `${Math.floor(brandCount / 10) * 10}+`, l: "Luxury brands" },
               { n: "100%", l: "Authentic" },
               { n: siteConfig.shipping.etaDays, l: "Delivery" },
             ].map((s) => (

@@ -5,6 +5,7 @@ import { adjustStockAction } from "@/app/admin/actions";
 import { emptyStockAdjustState } from "@/lib/admin-form-state";
 import { MANUAL_REASONS, reasonLabels, type InventoryRow } from "@/lib/inventory";
 import { cn } from "@/lib/cn";
+import { adminButton } from "@/components/admin/button-styles";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand";
@@ -115,7 +116,7 @@ export function StockAdjustForm({ product }: { product: InventoryRow }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          className={adminButton("primary", "lg")}
         >
           {pending ? "Recording…" : "Record change"}
         </button>

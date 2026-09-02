@@ -8,9 +8,11 @@ import { Footer } from "@/components/layout/footer";
 import { PromoModal } from "@/components/layout/promo-modal";
 import { SignupTab } from "@/components/layout/signup-tab";
 import { WhatsAppButton } from "@/components/layout/whatsapp-button";
+import { CartNudge } from "@/components/layout/cart-nudge";
 import { RegisterPrompt } from "@/components/layout/register-prompt";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getFooterCategories, getNavGroups } from "@/lib/nav";
+import { getBestsellers } from "@/lib/data";
 
 const organizationLd = {
   "@context": "https://schema.org",
@@ -56,10 +58,22 @@ export default async function StoreLayout({
   // Resolved here rather than imported as a constant: the menu has to be built
   // from the live catalogue so it can't offer a category that isn't there. The
   // header is a client component, so it takes the result as a prop.
-  const [navGroups, footerCategories] = await Promise.all([
+  const [navGroups, footerCategories, suggested] = await Promise.all([
     getNavGroups(),
     getFooterCategories(),
+    // Three, resolved here rather than fetched from the browser: the nudge is
+    // mounted on every page and would otherwise cost a request on every page,
+    // to show something most visitors never see.
+    getBestsellers(3),
   ]);
+
+  const nudgeProducts = suggested.map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    price: p.price,
+    currency: p.currency,
+    image: p.images[0] ?? null,
+  }));
 
   return (
     <CartProvider>
@@ -74,6 +88,9 @@ export default async function StoreLayout({
           none of it. */}
       <SignupTab />
       <WhatsAppButton />
+      {/* Shares the corner slot with the WhatsApp greeting — see
+          src/lib/nudge-queue.ts. Only one of them is ever on screen. */}
+      <CartNudge suggestions={nudgeProducts} />
       {/* Above the cart drawer, unlike the two floating controls: it is a
           modal, and a modal that renders behind something is a trap. It has
           its own delay and its own once-a-fortnight memory, so mounting it on

@@ -50,6 +50,32 @@ body {
   scrollbar-color: var(--color-line) transparent;
 }
 
+/*
+  Buttons look clickable.
+
+  Tailwind v4's preflight sets `appearance: button` on <button> but nothing for
+  the cursor, and every browser's own default is `cursor: default` — so the
+  whole admin, where almost every control IS a button, gave no hint that
+  anything was clickable. Staff reported clicking and not knowing whether it
+  had registered.
+
+  Set once here rather than as a `cursor-pointer` class on every button,
+  because the next button somebody adds would not have it.
+
+  Disabled buttons are excluded on purpose: a pointer over a control that will
+  not respond is the same wrong signal in the other direction.
+*/
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label:has(> input[type="checkbox"]),
+summary {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
@@ -63,7 +89,34 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/*
+  The rays behind "Track your order".
+
+  Two rings, staggered, expanding out of the pill and fading as they go — the
+  ripple a stone makes, not a flashing sign. The whole thing is 3.2s and mostly
+  invisible: it has to be findable out of the corner of the eye without being
+  the thing you look at while reading the page.
+
+  Composited properties only (transform, opacity) so it costs nothing on a
+  phone. It sits in the announcement bar, which is on every page, so a ray that
+  triggered layout would trigger it everywhere.
+*/
+@keyframes ray-pulse {
+  0%   { transform: scale(0.85); opacity: 0.5; }
+  60%  { opacity: 0; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+.animate-ray {
+  animation: ray-pulse 3.2s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+}
+.animate-ray-delayed {
+  animation: ray-pulse 3.2s cubic-bezier(0.2, 0.6, 0.35, 1) 1.6s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .animate-fade-in-up { animation: none; }
+  /* Hidden, not merely stopped: a stalled ring is a grey blob round a link. */
+  .animate-ray,
+  .animate-ray-delayed { display: none; }
 }
