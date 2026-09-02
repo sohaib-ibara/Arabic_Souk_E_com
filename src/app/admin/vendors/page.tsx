@@ -5,10 +5,12 @@ import { VendorDetail, VendorList } from "@/components/admin/vendor-panel";
 import { isAdmin } from "@/lib/admin-auth";
 import {
   getVendorsStatus,
+  listCategorySwitches,
   listVendorCategories,
   listVendors,
   type VendorCategory,
 } from "@/lib/vendors";
+import { ShopSections } from "@/components/admin/shop-sections";
 
 export const metadata: Metadata = {
   title: "Vendors · Admin",
@@ -53,8 +55,18 @@ export default async function AdminVendorsPage({
   const vendors = await listVendors();
   const selected = vendors.find((v) => v.id === selectedId) ?? null;
 
-  let categories: VendorCategory[] = [];
-  if (selected) categories = await listVendorCategories(selected.id);
+  /*
+    Every vendor's categories, not just the open one's: the choice now lives on
+    the card. Two or three vendors makes this a handful of queries, and it is
+    what lets somebody looking at "noon: 301 products" change what noon sells
+    without first discovering that Configure is where that used to live.
+  */
+  const perVendor = await Promise.all(
+    vendors.map(async (v) => [v.id, await listVendorCategories(v.id)] as const),
+  );
+  const categoriesByVendor: Record<string, VendorCategory[]> = Object.fromEntries(perVendor);
+
+  const sections = await listCategorySwitches();
 
   // Preserved through every switch so the redirect lands back on the vendor
   // that was open, not at the top of the list.
@@ -80,12 +92,21 @@ export default async function AdminVendorsPage({
           )}
 
           <div className="mt-6">
-            <VendorList vendors={vendors} selectedId={selected?.id ?? null} back={back} />
+            <VendorList
+              vendors={vendors}
+              categoriesByVendor={categoriesByVendor}
+              selectedId={selected?.id ?? null}
+              back={back}
+            />
           </div>
 
-          {selected && (
-            <VendorDetail vendor={selected} categories={categories} back={back} />
-          )}
+          {selected && <VendorDetail vendor={selected} back={back} />}
+
+          {/* The other kind of category switch, kept on the same screen but
+              plainly separated. It answers a different question from the ones
+              on the cards, and having it on a page of its own is what made the
+              two look like duplicates of each other. */}
+          <ShopSections sections={sections} back={back} />
         </>
       )}
     </Container>

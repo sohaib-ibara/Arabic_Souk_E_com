@@ -6,6 +6,7 @@ import { deleteProductAction, saveProductAction } from "@/app/admin/actions";
 import { emptyProductFormState } from "@/lib/admin-form-state";
 import type { AdminProductRow, Option } from "@/lib/admin-products";
 import { cn } from "@/lib/cn";
+import { SubmitButton } from "@/components/admin/submit-button";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand";
@@ -439,12 +440,13 @@ export function ProductForm({
               Removes it from the catalogue. Past order lines keep their recorded name and price.
             </p>
           </div>
-          <button
-            type="submit"
+          <SubmitButton
+            variant="bare"
+            pendingLabel="Deleting"
             className="rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
           >
             Delete
-          </button>
+          </SubmitButton>
         </form>
       )}
     </>

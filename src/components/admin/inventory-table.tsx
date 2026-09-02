@@ -3,6 +3,7 @@ import { siteConfig } from "@/lib/config";
 import { setAvailabilityAction } from "@/app/admin/actions";
 import type { InventoryFilter, InventoryList, InventoryRow } from "@/lib/inventory";
 import { cn } from "@/lib/cn";
+import { SubmitButton } from "@/components/admin/submit-button";
 
 // "Running low" is gone: with nothing held on a shelf it matched 293 of 301
 // products, which is noise rather than a filter.
@@ -46,8 +47,9 @@ function AvailabilityToggle({ row }: { row: InventoryRow }) {
       <input type="hidden" name="product_id" value={row.id} />
       <input type="hidden" name="slug" value={row.slug} />
       <input type="hidden" name="available" value={row.inStock ? "0" : "1"} />
-      <button
-        type="submit"
+      <SubmitButton
+        variant="bare"
+        pendingLabel="Saving"
         className={cn(
           "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
           row.inStock
@@ -56,7 +58,7 @@ function AvailabilityToggle({ row }: { row: InventoryRow }) {
         )}
       >
         {row.inStock ? "Switch off" : "Switch on"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

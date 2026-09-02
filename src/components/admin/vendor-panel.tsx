@@ -1,13 +1,13 @@
 import Link from "next/link";
 import {
   saveVendorAction,
-  setVendorCategoryAction,
   setVendorEnabledAction,
 } from "@/app/admin/actions";
 import type { Vendor, VendorCategory } from "@/lib/vendors";
 import { VendorImport } from "@/components/admin/vendor-import";
 import { VendorPricing } from "@/components/admin/vendor-pricing";
 import { cn } from "@/lib/cn";
+import { VendorCategories } from "@/components/admin/vendor-categories";
 
 /**
  * Vendor provisioning.
@@ -29,10 +29,13 @@ const KIND_LABEL: Record<string, string> = {
 
 export function VendorList({
   vendors,
+  categoriesByVendor,
   selectedId,
   back,
 }: {
   vendors: Vendor[];
+  /** Every vendor's categories, so each card can show its own. */
+  categoriesByVendor: Record<string, VendorCategory[]>;
   selectedId: string | null;
   back: string;
 }) {
@@ -119,6 +122,17 @@ export function VendorList({
                 </form>
               </div>
             </div>
+
+            {/* The category choice lives here, in the vendor's own card, rather
+                than behind Configure and on a second page called Categories.
+                Two screens both named "categories" is what the client asked us
+                to stop doing. */}
+            <VendorCategories
+              vendorId={v.id}
+              vendorName={v.name}
+              categories={categoriesByVendor[v.id] ?? []}
+              back={back}
+            />
           </div>
         );
       })}
@@ -126,18 +140,20 @@ export function VendorList({
   );
 }
 
+/**
+ * The settings behind Configure: pricing, importing, the vendor key.
+ *
+ * Categories are deliberately NOT here any more — they are on the card itself,
+ * where somebody looking at "noon: 301 products" can change what noon sells
+ * without first working out that Configure is where that lives.
+ */
 export function VendorDetail({
   vendor,
-  categories,
   back,
 }: {
   vendor: Vendor;
-  categories: VendorCategory[];
   back: string;
 }) {
-  const stocked = categories.filter((c) => c.product_count > 0);
-  const empty = categories.filter((c) => c.product_count === 0);
-
   return (
     <div className="mt-8 space-y-6">
       <div>
@@ -150,8 +166,8 @@ export function VendorDetail({
 
       {!vendor.is_enabled && (
         <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          This vendor is switched off, so none of its products are on the shop whatever the
-          category switches below say. They take effect when you turn it on.
+          This vendor is switched off, so none of its products are on the shop whatever its
+          category choices say. They take effect when you turn it on.
         </p>
       )}
 
@@ -170,76 +186,7 @@ export function VendorDetail({
         />
       </div>
 
-      <div className="rounded-2xl border border-line bg-white p-5">
-        <h3 className="font-medium">Categories</h3>
-        <p className="mt-1 text-sm text-muted">
-          Switching a category off hides only {vendor.name}&rsquo;s products in it. Other
-          vendors&rsquo; products stay exactly where they are, and the category itself never
-          disappears from the shop.
-        </p>
-
-        {stocked.length > 0 && (
-          <CategoryRows rows={stocked} vendorId={vendor.id} back={back} />
-        )}
-
-        {empty.length > 0 && (
-          <details className="mt-4">
-            <summary className="cursor-pointer text-sm text-muted hover:text-ink">
-              {empty.length} categories this vendor has no products in
-            </summary>
-            <CategoryRows rows={empty} vendorId={vendor.id} back={back} />
-          </details>
-        )}
-
-        {categories.length === 0 && (
-          <p className="mt-3 text-sm text-muted">No categories exist yet.</p>
-        )}
-      </div>
     </div>
-  );
-}
-
-function CategoryRows({
-  rows,
-  vendorId,
-  back,
-}: {
-  rows: VendorCategory[];
-  vendorId: string;
-  back: string;
-}) {
-  return (
-    <ul className="mt-3 divide-y divide-line rounded-2xl border border-line">
-      {rows.map((c) => (
-        <li key={c.category_id} className="flex items-center justify-between gap-4 px-4 py-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm">{c.category_name}</p>
-            <p className="text-xs text-muted">
-              {c.product_count === 0
-                ? "no products"
-                : `${c.listed_count} of ${c.product_count} visible`}
-            </p>
-          </div>
-          <form action={setVendorCategoryAction} className="shrink-0">
-            <input type="hidden" name="vendor_id" value={vendorId} />
-            <input type="hidden" name="category_id" value={c.category_id} />
-            <input type="hidden" name="enabled" value={c.is_enabled ? "0" : "1"} />
-            <input type="hidden" name="back" value={back} />
-            <button
-              type="submit"
-              className={cn(
-                "rounded-full border px-4 py-1.5 text-xs font-medium transition-colors",
-                c.is_enabled
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300"
-                  : "border-line bg-white text-muted hover:border-brand hover:text-brand",
-              )}
-            >
-              {c.is_enabled ? "On" : "Off"}
-            </button>
-          </form>
-        </li>
-      ))}
-    </ul>
   );
 }
 
