@@ -5,6 +5,7 @@ import { Price } from "@/components/ui/price";
 import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { AddToCartButton } from "./add-to-cart-button";
+import { WishlistButton } from "./wishlist-button";
 import { discountPercent } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -47,6 +48,13 @@ export function ProductCard({
               {dp ? <Badge tone="sale">-{dp}%</Badge> : null}
             </>
           )}
+        </div>
+
+        {/* Opposite corner to the badges, and above the hover button: this is
+            the quiet second option and must never be mistaken for the loud
+            first one. */}
+        <div className="absolute right-3 top-3">
+          <WishlistButton slug={product.slug} name={product.name} />
         </div>
 
         {/* Hover add-to-bag (desktop) */}
