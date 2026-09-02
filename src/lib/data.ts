@@ -2,6 +2,7 @@ import type { Brand, Category, Product } from "./types";
 import { sampleBrands, sampleCategories, sampleProducts } from "./sample-data";
 import { importedBrands, importedCategories, importedProducts } from "./imported-data";
 import { getSupabaseServer, getSupabaseAdmin } from "./supabase/server";
+import { getHomePickIds } from "./home-picks";
 
 /**
  * Local catalogue source. When a noon capture has been generated into
@@ -365,12 +366,15 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
  * `is_featured` alone could not answer it: four products in a catalogue of 332
  * carry the flag, so the homepage's Bestsellers row rendered four cards under a
  * heading promising the shop's best, and the cart nudge had almost nothing to
- * suggest. Curation is a job nobody has done here yet, and a row that is empty
- * until they do is worse than one that fills itself sensibly.
+ * suggest. A row that is empty until somebody curates it is worse than one
+ * that fills itself sensibly.
  *
- * So the four curated ones still come first — that is what the flag is for —
- * and the rest of the row is filled by rating weighted by how many people left
- * one. `log1p` on the count is what stops a lone five-star review outranking a
+ * So the row is two lists end to end. First whatever the admin pinned, in the
+ * order they pinned it — see home-picks.ts and migration 0019, which is the
+ * only part of this a human controls directly. Then the automatic ranking:
+ * featured first, and after that rating weighted by how many people left one.
+ *
+ * `log1p` on the count is what stops a lone five-star review outranking a
  * 4.6 with four hundred: it rewards agreement without letting volume alone
  * decide.
  *
@@ -379,13 +383,25 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
  * nothing.
  */
 export async function getBestsellers(limit = 8): Promise<Product[]> {
-  const items = await loadProducts();
+  const [items, pickedIds] = await Promise.all([loadProducts(), getHomePickIds()]);
+
+  // In stock only, for the picks as much as for the ranking. A pinned product
+  // that has sold out drops out and the next one moves up, which is what
+  // anybody curating a shop window would expect without being told.
+  const available = items.filter((p) => p.in_stock);
+  const byId = new Map(available.map((p) => [p.id, p]));
+
+  const picked = pickedIds
+    .map((id) => byId.get(id))
+    .filter((p): p is Product => p !== undefined);
+  const pinned = new Set(picked.map((p) => p.id));
+
   const score = (p: Product) =>
     (p.is_featured ? 1_000_000 : 0) + (p.rating ?? 0) * Math.log1p(p.review_count ?? 0);
-  return items
-    .filter((p) => p.in_stock)
-    .sort((a, b) => score(b) - score(a))
-    .slice(0, limit);
+
+  const rest = available.filter((p) => !pinned.has(p.id)).sort((a, b) => score(b) - score(a));
+
+  return [...picked, ...rest].slice(0, limit);
 }
 
 export async function getAllProducts(): Promise<Product[]> {

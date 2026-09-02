@@ -34,6 +34,7 @@ export function SubmitButton({
   value,
   variant = "primary",
   size = "md",
+  disabled,
   title,
   "aria-label": ariaLabel,
 }: {
@@ -45,6 +46,12 @@ export function SubmitButton({
   value?: string;
   variant?: AdminButtonVariant | "bare";
   size?: AdminButtonSize;
+  /**
+   * Greyed out for a reason of the caller's own — "move up" on the first row,
+   * "add" when the list is full. Kept separate from `pending` so that the
+   * in-flight disable can never be turned off by a caller.
+   */
+  disabled?: boolean;
   title?: string;
   "aria-label"?: string;
 }) {
@@ -55,7 +62,7 @@ export function SubmitButton({
       type="submit"
       name={name}
       value={value}
-      disabled={pending}
+      disabled={pending || disabled}
       title={title}
       aria-label={ariaLabel}
       /* aria-busy, not just a changed label: a screen reader user gets no

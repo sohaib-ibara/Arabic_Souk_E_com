@@ -40,6 +40,12 @@ import type {
   VendorImportState,
   VendorPriceState,
 } from "@/lib/admin-form-state";
+import {
+  addHomePick,
+  clearHomePicks,
+  moveHomePick,
+  removeHomePick,
+} from "@/lib/home-picks";
 
 /**
  * Server actions for the admin console.
@@ -725,4 +731,54 @@ export async function setCategoryEnabledAction(formData: FormData): Promise<void
   revalidateStorefront();
 
   redirect(withQuery(back, { cat: enabled ? "on" : "off" }));
+}
+
+/* ------------------------- the home page shelf ------------------------- */
+
+/**
+ * A pick changes the Bestsellers row, and that row is on more than the home
+ * page: the cart nudge suggests from it, and the nudge lives in the store
+ * layout on every page. Revalidating "/" alone would leave a stale suggestion
+ * everywhere else, so the whole store shell goes.
+ */
+function revalidateHomeShelf() {
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/homepage");
+}
+
+/**
+ * Pin, unpin, reorder, clear.
+ *
+ * Four verbs, one action: they are all "here is what the row should be now",
+ * they all end in the same redirect, and splitting them would mean four copies
+ * of the same six lines of error handling.
+ *
+ * Every one of them saves immediately rather than collecting into a Save
+ * button. The screen shows a live preview of the row underneath, and a preview
+ * of unsaved state is a preview of something that does not exist.
+ */
+export async function homePickAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const intent = str(formData, "intent");
+  const productId = str(formData, "product_id");
+  const back = String(formData.get("back") || "/admin/homepage");
+
+  const known = ["add", "remove", "up", "down", "clear"];
+  // Checked before the try, because redirect() works by throwing: called in
+  // there it would be caught as a failure and reported as one.
+  if (!known.includes(intent)) redirect(back);
+
+  try {
+    if (intent === "add") await addHomePick(productId);
+    else if (intent === "remove") await removeHomePick(productId);
+    else if (intent === "up") await moveHomePick(productId, "up");
+    else if (intent === "down") await moveHomePick(productId, "down");
+    else await clearHomePicks();
+  } catch (e) {
+    redirect(withQuery(back, { error: (e as Error).message.slice(0, 160) }));
+  }
+
+  revalidateHomeShelf();
+  redirect(withQuery(back, { saved: intent }));
 }
