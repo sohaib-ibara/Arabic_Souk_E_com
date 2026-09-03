@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/admin/submit-button";
 import { cn } from "@/lib/cn";
 import type { Option, Tally } from "@/lib/admin-products";
 
@@ -43,17 +44,24 @@ export function CatalogueBrowser({
   sources,
   byVendor,
   vendorNames,
+  vendorIds,
+  rulesOff,
   categories,
   source,
   categoryId,
   search,
   visibility,
   total,
+  ruleAction,
 }: {
   sources: Array<{ key: string } & Tally>;
   byVendor: Record<string, Record<string, Tally>>;
   /** Supplier key to display name, straight from the vendors table. */
   vendorNames: Record<string, string>;
+  /** Supplier key to vendor row id, for the standing-rule form. */
+  vendorIds: Record<string, string>;
+  /** Standing rules in force, keyed `<supplier>:<category>`. */
+  rulesOff: Record<string, true>;
   categories: Option[];
   source: string;
   categoryId: string;
@@ -61,6 +69,8 @@ export function CatalogueBrowser({
   visibility: string;
   /** Every product in the catalogue, for the "All suppliers" card. */
   total: number;
+  /** Server action behind the standing-rule switch. */
+  ruleAction: (formData: FormData) => void | Promise<void>;
 }) {
   const allListed = sources.reduce((n, s) => n + s.listed, 0);
   const label = (key: string) => vendorNames[key] ?? key;
@@ -147,7 +157,106 @@ export function CatalogueBrowser({
           Nothing from this supplier has a category yet.
         </p>
       )}
+
+      {/*
+        The standing rule, offered where the context for it already is.
+
+        This used to be a panel of fifty-four checkboxes on the Vendors screen
+        called "What we sell from each vendor", which looked exactly like the
+        supplier-then-category navigation here and was never once used — the
+        vendor_categories table had no rows in it. It was not the same thing as
+        the bulk Hide below, though, and deleting it outright would have taken
+        the difference with it:
+
+          Hide from storefront  — these 23 products, now.
+          The rule below        — this supplier's products in this category,
+                                  including the ones imported next week.
+
+        Only shown standing at a supplier AND a category, because that pair is
+        the whole of what the rule is about. Not offered for hand-added stock:
+        those products have no vendor, so no vendor switch can reach them (see
+        compute_is_listed in migration 0015).
+      */}
+      {source && source !== "none" && categoryId && vendorIds[source] && (
+        <StandingRule
+          vendorId={vendorIds[source]}
+          vendorName={label(source)}
+          categoryId={categoryId}
+          categoryName={categories.find((c) => c.id === categoryId)?.name ?? "this category"}
+          count={counts[categoryId]?.count ?? 0}
+          off={Boolean(rulesOff[`${source}:${categoryId}`])}
+          back={browseHref({ search, visibility, source, categoryId })}
+          action={ruleAction}
+        />
+      )}
     </section>
+  );
+}
+
+function StandingRule({
+  vendorId,
+  vendorName,
+  categoryId,
+  categoryName,
+  count,
+  off,
+  back,
+  action,
+}: {
+  vendorId: string;
+  vendorName: string;
+  categoryId: string;
+  categoryName: string;
+  count: number;
+  /** True when a rule is already holding these products off the shop. */
+  off: boolean;
+  back: string;
+  action: (formData: FormData) => void | Promise<void>;
+}) {
+  return (
+    <form
+      action={action}
+      className={cn(
+        "mt-5 rounded-xl border p-4",
+        off ? "border-amber-200 bg-amber-50" : "border-line bg-sand/40",
+      )}
+    >
+      <input type="hidden" name="vendor_id" value={vendorId} />
+      <input type="hidden" name="category_id" value={categoryId} />
+      <input type="hidden" name="enabled" value={off ? "1" : "0"} />
+      <input type="hidden" name="back" value={back} />
+
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">Standing rule</p>
+
+      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-3">
+        <p className={cn("text-sm", off ? "text-amber-900" : "text-ink")}>
+          {off ? (
+            <>
+              <strong>{vendorName}</strong>&rsquo;s {categoryName} products are held off the shop,
+              whatever each one&rsquo;s own switch says.
+            </>
+          ) : (
+            <>
+              You sell <strong>{vendorName}</strong>&rsquo;s {categoryName} products.
+            </>
+          )}
+        </p>
+
+        <SubmitButton
+          variant={off ? "primary" : "secondary"}
+          size="sm"
+          pendingLabel={off ? "Switching on" : "Switching off"}
+        >
+          {off ? `Sell ${vendorName}'s ${categoryName} again` : `Stop selling these`}
+        </SubmitButton>
+      </div>
+
+      <p className="mt-2 text-xs text-muted">
+        {off
+          ? "Lifting this puts back only the ones that were listed before — each product still has its own switch."
+          : `Hides ${count === 1 ? "this product" : `all ${count}`} and anything ${vendorName} adds to ${categoryName} later, until you switch it back. To hide only some of them, tick the ones you mean in the table below instead.`}
+      </p>
+    </form>
   );
 }
 

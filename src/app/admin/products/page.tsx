@@ -11,7 +11,7 @@ import {
   listAdminProducts,
   type ListResult,
 } from "@/lib/admin-products";
-import { setVisibilityAction } from "@/app/admin/actions";
+import { setVendorCategoryAction, setVisibilityAction } from "@/app/admin/actions";
 import { adminButton } from "@/components/admin/button-styles";
 
 export const metadata: Metadata = {
@@ -71,7 +71,7 @@ export default async function AdminProductsPage({
     getCategoryOptions(),
   ]);
 
-  const { status, sources, byVendor, vendorNames } = breakdown;
+  const { status, sources, byVendor, vendorNames, vendorIds, rulesOff } = breakdown;
   const result: ListResult = listed.ok
     ? listed.result
     : { items: [], total: 0, page, perPage: 25, pageCount: 1 };
@@ -139,12 +139,15 @@ export default async function AdminProductsPage({
           sources={sources}
           byVendor={byVendor}
           vendorNames={vendorNames}
+          vendorIds={vendorIds}
+          rulesOff={rulesOff}
           categories={categories}
           source={source}
           categoryId={categoryId}
           search={search}
           visibility={visibility}
           total={status.productCount}
+          ruleAction={setVendorCategoryAction}
         />
       )}
 

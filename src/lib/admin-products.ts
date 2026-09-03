@@ -442,6 +442,17 @@ export interface CatalogueBreakdown {
    * added — would have appeared as its raw adapter key in both.
    */
   vendorNames: Record<string, string>;
+  /** Supplier key to vendor row id, for the standing-rule switch. */
+  vendorIds: Record<string, string>;
+  /**
+   * The standing rules currently in force, keyed `<supplier>:<category>`.
+   *
+   * A key present here means "we do not sell this supplier's products in this
+   * category" — every one of them is off the shop, including any imported
+   * later, until the rule is lifted. Absent means no rule, which is the state
+   * everything starts in; see migration 0014.
+   */
+  rulesOff: Record<string, true>;
   /**
    * Products per supplier, per category — the shape the browser needs.
    *
@@ -465,6 +476,8 @@ export async function getCatalogueBreakdown(): Promise<CatalogueBreakdown> {
       sources: [],
       byVendor: {},
       vendorNames: {},
+      vendorIds: {},
+      rulesOff: {},
     };
   }
 
@@ -472,9 +485,10 @@ export async function getCatalogueBreakdown(): Promise<CatalogueBreakdown> {
   // enough that counting in memory beats adding one. Three columns of 547
   // rows is about 50KB, which is cheaper than the second round trip that
   // asking for the counts separately would cost.
-  const [{ data, error }, vendorRes] = await Promise.all([
+  const [{ data, error }, vendorRes, ruleRes] = await Promise.all([
     admin.from("products").select("source, category_id, is_listed"),
-    admin.from("vendors").select("key, name"),
+    admin.from("vendors").select("id, key, name"),
+    admin.from("vendor_categories").select("vendor_id, category_id, is_enabled"),
   ]);
   if (error) {
     return {
@@ -486,12 +500,29 @@ export async function getCatalogueBreakdown(): Promise<CatalogueBreakdown> {
       sources: [],
       byVendor: {},
       vendorNames: {},
+      vendorIds: {},
+      rulesOff: {},
     };
   }
 
   const vendorNames: Record<string, string> = { none: "Added by hand" };
-  for (const v of (vendorRes.data ?? []) as Array<{ key: string; name: string }>) {
+  const vendorIds: Record<string, string> = {};
+  const keyById = new Map<string, string>();
+  for (const v of (vendorRes.data ?? []) as Array<{ id: string; key: string; name: string }>) {
     vendorNames[v.key] = v.name;
+    vendorIds[v.key] = v.id;
+    keyById.set(v.id, v.key);
+  }
+
+  const rulesOff: Record<string, true> = {};
+  for (const r of (ruleRes.data ?? []) as Array<{
+    vendor_id: string;
+    category_id: string;
+    is_enabled: boolean | null;
+  }>) {
+    if (r.is_enabled !== false) continue;
+    const key = keyById.get(r.vendor_id);
+    if (key) rulesOff[`${key}:${r.category_id}`] = true;
   }
 
   const rows = (data ?? []) as Array<{
@@ -538,6 +569,8 @@ export async function getCatalogueBreakdown(): Promise<CatalogueBreakdown> {
       .sort((a, b) => b.count - a.count),
     byVendor,
     vendorNames,
+    vendorIds,
+    rulesOff,
   };
 }
 

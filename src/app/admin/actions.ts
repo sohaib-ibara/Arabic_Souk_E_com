@@ -28,7 +28,6 @@ import {
   importStagedForVendor,
   priceVendor,
   setCategoryEnabled,
-  setVendorCategories,
   setVendorCategoryEnabled,
   setVendorEnabled,
   updateVendor,
@@ -535,31 +534,6 @@ export async function setVendorCategoryAction(formData: FormData): Promise<void>
   redirect(withQuery(back, { c: enabled ? "on" : "off" }));
 }
 
-/**
- * Save a vendor's whole category selection from one form.
- *
- * `enabled` carries the ticked boxes and `known` every category the form was
- * drawn with, so a category added since then is left alone rather than
- * switched off by omission. See setVendorCategories.
- */
-export async function setVendorCategoriesAction(formData: FormData): Promise<void> {
-  await requireAdmin();
-
-  const vendorId = str(formData, "vendor_id");
-  const back = String(formData.get("back") || "/admin/vendors");
-  if (!vendorId) redirect(back);
-
-  const enabled = formData.getAll("enabled").map(String).filter(Boolean);
-  const known = formData.getAll("known").map(String).filter(Boolean);
-
-  const { off } = await setVendorCategories(vendorId, enabled, known);
-
-  revalidatePath("/admin/vendors");
-  revalidatePath("/admin/products");
-  revalidateStorefront();
-
-  redirect(withQuery(back, { saved: "categories", off: String(off) }));
-}
 
 /** Save a vendor's name, kind and pricing rule. Does not touch any price. */
 export async function saveVendorAction(formData: FormData): Promise<void> {

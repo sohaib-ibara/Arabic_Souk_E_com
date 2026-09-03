@@ -5,7 +5,6 @@ import { VendorDetail, VendorList } from "@/components/admin/vendor-panel";
 import { isAdmin } from "@/lib/admin-auth";
 import { getVendorBoard } from "@/lib/vendors";
 import { ShopSections } from "@/components/admin/shop-sections";
-import { VendorCategoryPicker } from "@/components/admin/vendor-categories";
 
 export const metadata: Metadata = {
   title: "Vendors · Admin",
@@ -44,7 +43,7 @@ export default async function AdminVendorsPage({
     already fetched. Fourteen queries for a screen that needs five tables.
     Everything it draws now comes back together; see getVendorBoard.
   */
-  const { status, vendors, categoriesByVendor, sections } = await getVendorBoard();
+  const { status, vendors, sections } = await getVendorBoard();
 
   if (!status.ready) {
     return (
@@ -99,14 +98,14 @@ export default async function AdminVendorsPage({
           */}
           {selected && <VendorDetail key={selected.id} vendor={selected} back={back} />}
 
-          {/* One panel, one dropdown, one Save — rather than a ticklist inside
-              every card, which buried the cards themselves. */}
-          <VendorCategoryPicker
-            vendors={vendors}
-            categoriesByVendor={categoriesByVendor}
-            back={back}
-          />
-
+          {/*
+            "What we sell from each vendor" used to sit here — a vendor
+            dropdown over fifty-four checkboxes. It was never used once, and
+            once Products grew a supplier-then-category browser of its own the
+            two were indistinguishable at a glance while doing different
+            things. The rule it set now lives on Products, offered as a single
+            button at the supplier and category it applies to.
+          */}
           {/* The other kind of category switch, kept on the same screen but
               plainly separated. It answers a different question from the ones
               on the cards, and having it on a page of its own is what made the
