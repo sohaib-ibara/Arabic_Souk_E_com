@@ -423,10 +423,36 @@ export async function getSourceOptions(): Promise<Array<{ key: string; count: nu
  * One read answers both. The count comes from the rows we were fetching
  * anyway, and "could we read the table at all" from whether it errored.
  */
-export async function getCatalogueBreakdown(): Promise<{
+export interface Tally {
+  count: number;
+  /** How many of those a shopper can currently see. */
+  listed: number;
+}
+
+export interface CatalogueBreakdown {
   status: CatalogueStatus;
-  sources: Array<{ key: string; count: number }>;
-}> {
+  /** Products per supplier key, biggest first. "none" is added by hand. */
+  sources: Array<{ key: string } & Tally>;
+  /**
+   * Supplier key to display name, from the vendors table.
+   *
+   * Read rather than hard-coded. There were two copies of a
+   * `{ noon: "noon", cultbeauty: "Cult Beauty" }` map in the components, and a
+   * supplier added through the Vendors screen — which is the only way one gets
+   * added — would have appeared as its raw adapter key in both.
+   */
+  vendorNames: Record<string, string>;
+  /**
+   * Products per supplier, per category — the shape the browser needs.
+   *
+   * Keyed supplier → category id, with `""` for a product that has no
+   * category. The supplier key `""` holds the totals across all of them, so
+   * "All suppliers" needs no second pass.
+   */
+  byVendor: Record<string, Record<string, Tally>>;
+}
+
+export async function getCatalogueBreakdown(): Promise<CatalogueBreakdown> {
   const admin = getSupabaseAdmin();
   if (!admin) {
     return {
@@ -437,12 +463,19 @@ export async function getCatalogueBreakdown(): Promise<{
           "SUPABASE_SERVICE_ROLE_KEY isn't set — add it to .env.local to manage the catalogue.",
       },
       sources: [],
+      byVendor: {},
+      vendorNames: {},
     };
   }
 
   // No group-by over PostgREST without a view, and the catalogue is small
-  // enough that counting in memory beats adding one.
-  const { data, error } = await admin.from("products").select("source");
+  // enough that counting in memory beats adding one. Three columns of 547
+  // rows is about 50KB, which is cheaper than the second round trip that
+  // asking for the counts separately would cost.
+  const [{ data, error }, vendorRes] = await Promise.all([
+    admin.from("products").select("source, category_id, is_listed"),
+    admin.from("vendors").select("key, name"),
+  ]);
   if (error) {
     return {
       status: {
@@ -451,14 +484,44 @@ export async function getCatalogueBreakdown(): Promise<{
         error: `Couldn't reach the products table — has migration 0001 been run? (${error.message})`,
       },
       sources: [],
+      byVendor: {},
+      vendorNames: {},
     };
   }
 
-  const rows = (data ?? []) as Array<{ source: string | null }>;
-  const counts = new Map<string, number>();
+  const vendorNames: Record<string, string> = { none: "Added by hand" };
+  for (const v of (vendorRes.data ?? []) as Array<{ key: string; name: string }>) {
+    vendorNames[v.key] = v.name;
+  }
+
+  const rows = (data ?? []) as Array<{
+    source: string | null;
+    category_id: string | null;
+    is_listed: boolean | null;
+  }>;
+
+  const sources = new Map<string, Tally>();
+  const byVendor: Record<string, Record<string, Tally>> = {};
+
+  const bump = (bucket: Record<string, Tally>, key: string, listed: boolean) => {
+    const t = (bucket[key] ??= { count: 0, listed: 0 });
+    t.count += 1;
+    if (listed) t.listed += 1;
+  };
+
   for (const row of rows) {
     const key = row.source ?? "none";
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    const category = row.category_id ?? "";
+    const listed = row.is_listed !== false;
+
+    const tally = sources.get(key) ?? { count: 0, listed: 0 };
+    tally.count += 1;
+    if (listed) tally.listed += 1;
+    sources.set(key, tally);
+
+    bump((byVendor[key] ??= {}), category, listed);
+    // "" is every supplier at once, so the All view is the same lookup.
+    bump((byVendor[""] ??= {}), category, listed);
   }
 
   return {
@@ -470,9 +533,11 @@ export async function getCatalogueBreakdown(): Promise<{
           ? "The products table is empty, so the storefront is still serving the bundled sample catalogue. Run supabase/seed-noon.sql (or add a product below) for changes here to appear on the store."
           : null,
     },
-    sources: [...counts.entries()]
-      .map(([key, count]) => ({ key, count }))
+    sources: [...sources.entries()]
+      .map(([key, tally]) => ({ key, ...tally }))
       .sort((a, b) => b.count - a.count),
+    byVendor,
+    vendorNames,
   };
 }
 

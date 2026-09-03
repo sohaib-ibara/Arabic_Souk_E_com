@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Notice } from "@/components/admin/notice";
-import { AddSearch, PickList, ShelfPreview } from "@/components/admin/home-shelf";
+import { ShelfPreview } from "@/components/admin/home-shelf";
+import { HomeShelfEditor } from "@/components/admin/home-shelf-editor";
 import { isAdmin } from "@/lib/admin-auth";
 import { getBestsellers } from "@/lib/data";
-import {
-  listHomePicks,
-  MAX_HOME_PICKS,
-  searchPickable,
-  type HomePick,
-} from "@/lib/home-picks";
+import { listHomePicks } from "@/lib/home-picks";
 
 export const metadata: Metadata = {
   title: "Home page · Admin",
@@ -17,19 +13,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-const str = (v: string | string[] | undefined): string => (Array.isArray(v) ? v[0] : v) ?? "";
-
-/** How the row reports what just happened, in the words of the thing that did it. */
-const SAVED: Record<string, string> = {
-  add: "Pinned to the home page.",
-  remove: "Removed from the home page.",
-  up: "Moved up.",
-  down: "Moved down.",
-  clear: "The list is empty again — the row ranks itself.",
-};
 
 /**
  * Choosing what leads the home page.
@@ -42,39 +25,24 @@ const SAVED: Record<string, string> = {
  * Its own screen rather than a column on Products, because it is a decision
  * about one row of one page and it involves eight products out of hundreds.
  * Buried in a table it would be eight checkboxes with no way to see the order.
+ *
+ * The editing itself is a client component. Searching and reordering are both
+ * things you do continuously — typing a name, dragging a card — and a server
+ * round trip per keystroke and per nudge made both feel like paperwork. The
+ * preview stays here on the server, built by the very function the home page
+ * calls, so it cannot drift from what a shopper sees; the editor refreshes the
+ * route after each save and it catches up on its own.
  */
-export default async function AdminHomepagePage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
+export default async function AdminHomepagePage() {
   if (!(await isAdmin())) return null;
 
-  const sp = await searchParams;
-  const term = str(sp.q).slice(0, 80);
-  const error = str(sp.error);
-  const saved = SAVED[str(sp.saved)];
-
-  /*
-    Search only when asked, but always draw the preview: it is the answer to
-    "did that do what I wanted", and it has to be there before the first click.
-
-    All three go out together. The pick list used to be awaited first, and the
-    search was gated on the `ready` it returned — so the two queries that do
-    not depend on it waited for it anyway. A search against a database with no
-    picks table returns nothing and is discarded, since the screen renders the
-    "not available yet" notice in that state rather than any of this.
-  */
-  const [{ ready, message, picks }, results, preview] = await Promise.all([
+  // Two queries, one wave. Neither needs the other's answer.
+  const [{ ready, message, picks }, preview] = await Promise.all([
     listHomePicks(),
-    term ? searchPickable(term) : Promise.resolve<HomePick[]>([]),
     getBestsellers(8),
   ]);
 
   const pinnedIds = new Set(picks.map((p) => p.product_id));
-
-  // Carried through every form so a save comes back to the same search.
-  const back = term ? `/admin/homepage?q=${encodeURIComponent(term)}` : "/admin/homepage";
 
   return (
     <Container className="py-10">
@@ -91,31 +59,23 @@ export default async function AdminHomepagePage({
         </Notice>
       ) : (
         <>
-          {error && (
-            <Notice tone="danger" className="mt-6">
-              {error}
-            </Notice>
-          )}
-          {saved && !error && (
-            <Notice tone="success" className="mt-6">
-              {saved} The shop updates within a few seconds.
-            </Notice>
-          )}
-
           <Notice tone="info" className="mt-6">
             Pin up to eight. They fill the row from the left in the order below, and whatever
             is left over is filled by the shop&rsquo;s own ranking — best rated first. Pin
             nothing and the whole row is chosen automatically, which is how it worked before.
           </Notice>
 
-          <PickList picks={picks} back={back} />
-          <AddSearch
-            term={term}
-            results={results}
-            pinnedIds={pinnedIds}
-            full={picks.length >= MAX_HOME_PICKS}
-            back={back}
-          />
+          {/*
+            Deliberately NOT keyed on the picks.
+
+            Keying it would remount on every refresh, and the editor refreshes
+            after each save — so adding a product from the search would clear
+            the search box and the results underneath it, which is precisely
+            the behaviour the old form-and-redirect version had. The editor
+            takes a newly rendered list on its own instead; see the note there.
+          */}
+          <HomeShelfEditor initialPicks={picks} />
+
           <ShelfPreview products={preview} pinnedIds={pinnedIds} />
         </>
       )}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
-import type { AdminProductRow, ListResult, Option } from "@/lib/admin-products";
+import type { AdminProductRow, ListResult } from "@/lib/admin-products";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { adminButton } from "@/components/admin/button-styles";
 import {
@@ -33,14 +33,6 @@ function VisibilityPill({ product }: { product: AdminProductRow }) {
   return <span className="rounded-full bg-sand px-2 py-0.5 text-xs text-muted">Hidden</span>;
 }
 
-/** Human name for a supplier key. "—" is a product someone added by hand. */
-const SOURCE_LABELS: Record<string, string> = {
-  noon: "noon",
-  cultbeauty: "Cult Beauty",
-  none: "Added by hand",
-};
-const sourceLabel = (key: string | null) => SOURCE_LABELS[key ?? "none"] ?? key ?? "—";
-
 interface Filters {
   search?: string;
   categoryId?: string;
@@ -63,8 +55,7 @@ function hrefFor(params: Filters) {
 
 export function ProductsTable({
   result,
-  categories,
-  sources,
+  vendorNames,
   search,
   categoryId,
   source,
@@ -72,8 +63,8 @@ export function ProductsTable({
   action,
 }: {
   result: ListResult;
-  categories: Option[];
-  sources: Array<{ key: string; count: number }>;
+  /** Supplier key to display name, straight from the vendors table. */
+  vendorNames: Record<string, string>;
   search: string;
   categoryId: string;
   source: string;
@@ -84,7 +75,6 @@ export function ProductsTable({
   const { items, total, page, pageCount, perPage } = result;
   const first = total === 0 ? 0 : (page - 1) * perPage + 1;
   const last = Math.min(total, page * perPage);
-  const filtersActive = Boolean(search || categoryId || source || visibility);
   // Where the bulk action should return to, so a curation pass stays on the
   // supplier and page the person was working through.
   const back = hrefFor({ search, categoryId, source, visibility, page });
@@ -101,34 +91,16 @@ export function ProductsTable({
           aria-label="Search products"
           className="min-w-60 flex-1 rounded-full border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-brand"
         />
-        <select
-          name="category"
-          defaultValue={categoryId}
-          aria-label="Filter by category"
-          className="rounded-full border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-brand"
-        >
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        {/* Supplier. The filter the curation job is actually done through:
-            "show me Cult Beauty" then list or hide in bulk. */}
-        <select
-          name="source"
-          defaultValue={source}
-          aria-label="Filter by supplier"
-          className="rounded-full border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-brand"
-        >
-          <option value="">All suppliers</option>
-          {sources.map((s) => (
-            <option key={s.key} value={s.key}>
-              {sourceLabel(s.key)} ({s.count})
-            </option>
-          ))}
-        </select>
+        {/*
+          Supplier and category are chosen in the browser above, not here.
+
+          They were two more dropdowns in this row, which meant two ways to say
+          the same thing and no sign that one narrows the other. They travel as
+          hidden fields so that searching inside "Cult Beauty > Skin Cleansers"
+          stays inside it, rather than throwing the selection away.
+        */}
+        <input type="hidden" name="source" value={source} />
+        <input type="hidden" name="category" value={categoryId} />
         <select
           name="visibility"
           defaultValue={visibility}
@@ -145,12 +117,9 @@ export function ProductsTable({
         >
           Filter
         </button>
-        {filtersActive && (
-          <Link
-            href="/admin/products"
-            className={adminButton("quiet")}
-          >
-            Clear
+        {(search || visibility) && (
+          <Link href={hrefFor({ source, categoryId })} className={adminButton("quiet")}>
+            Clear search
           </Link>
         )}
       </form>
@@ -233,7 +202,7 @@ export function ProductsTable({
                       <p className="text-xs text-muted">{p.slug}</p>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-muted">
-                      {sourceLabel(p.source)}
+                      {vendorNames[p.source ?? "none"] ?? p.source ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-muted">{p.category_name ?? "—"}</td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">

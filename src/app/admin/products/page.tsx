@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Notice } from "@/components/admin/notice";
 import { ProductsTable } from "@/components/admin/products-table";
+import { CatalogueBrowser } from "@/components/admin/catalogue-browser";
 import { isAdmin } from "@/lib/admin-auth";
 import {
   getCatalogueBreakdown,
@@ -70,7 +71,7 @@ export default async function AdminProductsPage({
     getCategoryOptions(),
   ]);
 
-  const { status, sources } = breakdown;
+  const { status, sources, byVendor, vendorNames } = breakdown;
   const result: ListResult = listed.ok
     ? listed.result
     : { items: [], total: 0, page, perPage: 25, pageCount: 1 };
@@ -84,7 +85,7 @@ export default async function AdminProductsPage({
         <div>
           <h1 className="font-serif text-3xl sm:text-4xl">Products</h1>
           <p className="mt-1 text-sm text-muted">
-            Add products, edit details and change prices.
+            Pick a supplier, then a category, then work through what&rsquo;s in it.
           </p>
         </div>
         {status.configured && (
@@ -133,11 +134,24 @@ export default async function AdminProductsPage({
         </Notice>
       )}
 
+      {status.configured && (
+        <CatalogueBrowser
+          sources={sources}
+          byVendor={byVendor}
+          vendorNames={vendorNames}
+          categories={categories}
+          source={source}
+          categoryId={categoryId}
+          search={search}
+          visibility={visibility}
+          total={status.productCount}
+        />
+      )}
+
       {status.configured && !loadError && (
         <ProductsTable
           result={result}
-          categories={categories}
-          sources={sources}
+          vendorNames={vendorNames}
           search={search}
           categoryId={categoryId}
           source={source}
