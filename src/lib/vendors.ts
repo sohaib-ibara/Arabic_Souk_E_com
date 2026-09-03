@@ -514,7 +514,10 @@ export async function importStagedForVendor(
     await Promise.all([
       admin.from("staging_products").select("*").eq("source", vendor.key),
       admin.from("categories").select("id, slug"),
-      admin.from("products").select("id, slug, source_sku, is_published").eq("source", vendor.key),
+      admin
+        .from("products")
+        .select("id, slug, source_sku, is_published, price")
+        .eq("source", vendor.key),
     ]);
 
   if (stagedError) return { ...emptyImport, error: stagedError.message };
@@ -556,7 +559,20 @@ export async function importStagedForVendor(
       continue;
     }
 
-    const price = await shelfPrice(admin, Number(row.price ?? 0), vendor);
+    /*
+      A price of zero is how noon says "we cannot sell you this today", not a
+      price. Writing it through put 43 products on the shop reading BHD 0.00 —
+      out of stock, correctly badged, and priced at nothing.
+
+      So a zero never overwrites a price we already hold. The card then shows
+      the last real price under an Out of stock badge, which is what a shopper
+      expects and what every other shop does. A genuinely new product arriving
+      at zero still gets zero: there is no earlier price to keep, and it stays
+      hidden until somebody lists it.
+    */
+    const computed = await shelfPrice(admin, Number(row.price ?? 0), vendor);
+    const priorPrice = Number(prior?.price ?? 0);
+    const price = computed > 0 ? computed : priorPrice > 0 ? priorPrice : 0;
 
     const patch: Record<string, unknown> = {
       name,

@@ -96,7 +96,18 @@ export default async function AdminVendorsPage({
             <VendorList vendors={vendors} selectedId={selected?.id ?? null} back={back} />
           </div>
 
-          {selected && <VendorDetail vendor={selected} back={back} />}
+          {/*
+            Keyed on the vendor, so switching vendor builds a new panel rather
+            than re-using the old one.
+
+            Without it React keeps the same component instances: the import
+            panel's useActionState held on to the previous vendor's result, and
+            the pricing form is uncontrolled, so its defaultValues never
+            refreshed. The screen then showed "Cult Beauty" as a heading over
+            noon's currency, rate and notes — and pressing Save there would have
+            written SAR and 0.1 onto Cult Beauty.
+          */}
+          {selected && <VendorDetail key={selected.id} vendor={selected} back={back} />}
 
           {/* One panel, one dropdown, one Save — rather than a ticklist inside
               every card, which buried the cards themselves. */}

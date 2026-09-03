@@ -92,14 +92,39 @@ jobs:
           mv "$RUNNER_TEMP/package.json.app"      package.json
           mv "$RUNNER_TEMP/package-lock.json.app" package-lock.json
 
+      # Cult Beauty's product pages do not say what a product is. Its breadcrumb
+      # is the brand path, so the only way to learn that something is a lipstick
+      # is to see it on the lipstick shelf — which is what this walk records.
+      #
+      # It used to be missing here. The map is written as a dot-file under
+      # scripts/import/, everything matching that pattern is gitignored as raw
+      # supplier material, and so a cloud run had no map at all: every Cult
+      # product it adopted was staged with no category. 243 of the 246 now in
+      # the catalogue arrived that way, and the sync had been reporting it
+      # honestly as `no_category_map` the whole time.
+      #
+      # Rebuilt each run rather than committed. A committed file would fix the
+      # cloud runs and then rot — it would know nothing of the 40 products a
+      # night this job adopts, which are precisely the ones needing a category.
+      # Aisles change far more slowly than products, so a nightly rebuild is
+      # generous; it is here because it costs a few minutes and removes a class
+      # of problem rather than an instance of one.
+      #
+      # Rate-limited by the script itself (800ms between pages, 5 pages per
+      # category, robots-permitted pages only). It never fails the job: a sync
+      # that still detects every price change is worth far more than one that
+      # refuses to run because a taxonomy walk timed out.
+      - name: Rebuild the category map
+        if: ${{ (github.event.inputs.site || 'cultbeauty') == 'cultbeauty' }}
+        continue-on-error: true
+        timeout-minutes: 12
+        env:
+          SITE: cultbeauty
+        run: node scripts/import/map-categories.mjs
+
       # Cult Beauty needs no browser — that is the whole reason it can run here.
       # A source that needed one would need a residential IP too, and would not
       # belong in this workflow.
-      #
-      # ⚠️ The category map is a local build artefact and is gitignored, so runs
-      # here have none: new products are staged UNCATEGORISED and the run says
-      # so. Change detection on products we already hold is unaffected, and is
-      # the half that matters daily. Fix by moving the map into the database.
       - name: Sync
         env:
           SITE: ${{ github.event.inputs.site || 'cultbeauty' }}
