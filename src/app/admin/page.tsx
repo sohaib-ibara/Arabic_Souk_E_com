@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getAdminOverview } from "@/lib/admin-data";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { isAdmin } from "@/lib/admin-auth";
-import { getInventoryStats, getInventoryStatus, type InventoryStats } from "@/lib/inventory";
+import { getInventoryOverview, type InventoryStats } from "@/lib/inventory";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -17,16 +17,13 @@ export default async function AdminPage() {
   // too so the overview query never runs for an anonymous request.
   if (!(await isAdmin())) return null;
 
-  const [overview, inventoryStatus] = await Promise.all([
-    getAdminOverview(),
-    getInventoryStatus(),
-  ]);
+  const [overview, stock] = await Promise.all([getAdminOverview(), getInventoryOverview()]);
 
-  // Only query stock once migration 0005 is in — otherwise the overview would
-  // show a scary error for a feature that simply isn't installed yet.
-  const inventory: InventoryStats | null = inventoryStatus.ready
-    ? await getInventoryStats()
-    : null;
+  // Null until migration 0005 is in, so the tiles simply don't render rather
+  // than showing a scary error for a feature that isn't installed yet. The
+  // readiness now comes back with the figures instead of from a probe ahead of
+  // them, which is what lets this sit inside the Promise.all above.
+  const inventory: InventoryStats | null = stock.status.ready ? stock.stats : null;
 
   return <AdminDashboard overview={overview} inventory={inventory} />;
 }

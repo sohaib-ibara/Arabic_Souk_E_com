@@ -408,20 +408,72 @@ export async function setPublished(ids: string[], published: boolean): Promise<n
 
 /** Which suppliers are represented in the catalogue, for the filter dropdown. */
 export async function getSourceOptions(): Promise<Array<{ key: string; count: number }>> {
+  return (await getCatalogueBreakdown()).sources;
+}
+
+/**
+ * The supplier breakdown, and the catalogue status it already tells us.
+ *
+ * These were two queries against the same table, one waiting on the other:
+ * `getCatalogueStatus` asked Postgres for an exact count of products before
+ * the screen would ask for anything else, and then `getSourceOptions` read
+ * every product's `source` — whose length is that same count. Measured at
+ * 238ms and 274ms, the first of them blocking everything.
+ *
+ * One read answers both. The count comes from the rows we were fetching
+ * anyway, and "could we read the table at all" from whether it errored.
+ */
+export async function getCatalogueBreakdown(): Promise<{
+  status: CatalogueStatus;
+  sources: Array<{ key: string; count: number }>;
+}> {
   const admin = getSupabaseAdmin();
-  if (!admin) return [];
+  if (!admin) {
+    return {
+      status: {
+        configured: false,
+        productCount: 0,
+        error:
+          "SUPABASE_SERVICE_ROLE_KEY isn't set — add it to .env.local to manage the catalogue.",
+      },
+      sources: [],
+    };
+  }
+
   // No group-by over PostgREST without a view, and the catalogue is small
   // enough that counting in memory beats adding one.
   const { data, error } = await admin.from("products").select("source");
-  if (error) return [];
+  if (error) {
+    return {
+      status: {
+        configured: false,
+        productCount: 0,
+        error: `Couldn't reach the products table — has migration 0001 been run? (${error.message})`,
+      },
+      sources: [],
+    };
+  }
+
+  const rows = (data ?? []) as Array<{ source: string | null }>;
   const counts = new Map<string, number>();
-  for (const row of (data ?? []) as Array<{ source: string | null }>) {
+  for (const row of rows) {
     const key = row.source ?? "none";
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
-  return [...counts.entries()]
-    .map(([key, count]) => ({ key, count }))
-    .sort((a, b) => b.count - a.count);
+
+  return {
+    status: {
+      configured: true,
+      productCount: rows.length,
+      error:
+        rows.length === 0
+          ? "The products table is empty, so the storefront is still serving the bundled sample catalogue. Run supabase/seed-noon.sql (or add a product below) for changes here to appear on the store."
+          : null,
+    },
+    sources: [...counts.entries()]
+      .map(([key, count]) => ({ key, count }))
+      .sort((a, b) => b.count - a.count),
+  };
 }
 
 /* ------------------------------------------------------------------ */

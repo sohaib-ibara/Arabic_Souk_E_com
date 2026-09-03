@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from "./supabase/server";
-import { getAllProducts, getBrands, getCategories } from "./data";
+import { getCatalogueCounts } from "./data";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -41,14 +41,34 @@ export interface AdminOverview {
  * of throwing, so the dashboard still renders.
  */
 export async function getAdminOverview(): Promise<AdminOverview> {
-  const [products, categories, brands] = await Promise.all([
-    getAllProducts(),
-    getCategories(),
-    getBrands(),
+  const admin = getSupabaseAdmin();
+
+  /*
+    One wave, not two.
+
+    The catalogue counts and the demand queries read different tables and
+    neither needs the other's answer, but this used to await the counts, then
+    await the demand block — so the overview paid the round-trip latency twice
+    over. On the deployed site that is a function in iad1 talking to Supabase,
+    where a round trip is the dominant cost of the whole page.
+  */
+  const [counts, demand] = await Promise.all([
+    getCatalogueCounts(),
+    admin
+      ? Promise.all([
+          admin.from("demand_by_product").select("*").order("total_quantity", { ascending: false }),
+          admin.from("demand_signals").select("*", { count: "exact", head: true }),
+          admin
+            .from("demand_signals")
+            .select("*, items:demand_signal_items(count)")
+            .order("created_at", { ascending: false })
+            .limit(25),
+        ])
+      : null,
   ]);
 
   const overview: AdminOverview = {
-    catalogue: { products: products.length, categories: categories.length, brands: brands.length },
+    catalogue: counts,
     demandAvailable: false,
     demandError: null,
     stats: { attempts: 0, itemsRequested: 0, productsWanted: 0 },
@@ -56,23 +76,14 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     recent: [],
   };
 
-  const admin = getSupabaseAdmin();
-  if (!admin) {
+  if (!demand) {
     overview.demandError =
       "SUPABASE_SERVICE_ROLE_KEY isn't set — add it to .env.local (and run migration 0003) to monitor demand.";
     return overview;
   }
 
   try {
-    const [byProduct, attemptsHead, recent] = await Promise.all([
-      admin.from("demand_by_product").select("*").order("total_quantity", { ascending: false }),
-      admin.from("demand_signals").select("*", { count: "exact", head: true }),
-      admin
-        .from("demand_signals")
-        .select("*, items:demand_signal_items(count)")
-        .order("created_at", { ascending: false })
-        .limit(25),
-    ]);
+    const [byProduct, attemptsHead, recent] = demand;
 
     const firstError = byProduct.error || attemptsHead.error || recent.error;
     if (firstError) throw new Error(firstError.message);

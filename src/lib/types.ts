@@ -32,7 +32,16 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
+  /**
+   * The long description — populated only by `getProductBySlug`.
+   *
+   * Null on anything that came from a listing loader, which does not fetch the
+   * column: it is over a third of the catalogue by weight and only the product
+   * page shows it. If you need it somewhere new, fetch that product by slug
+   * rather than adding the column back to every list.
+   */
   description: string | null;
+  /** Shown on the product page, and matched by the storefront's search. */
   short_description: string | null;
   price: number;
   compare_at_price: number | null;

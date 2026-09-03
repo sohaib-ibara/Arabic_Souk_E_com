@@ -127,29 +127,9 @@ export interface InventoryStatus {
   error: string | null;
 }
 
-/** Whether the inventory migrations have been applied and the view is reachable. */
-export async function getInventoryStatus(): Promise<InventoryStatus> {
-  const admin = getSupabaseAdmin();
-  if (!admin) {
-    return {
-      ready: false,
-      error: "SUPABASE_SERVICE_ROLE_KEY isn't set — add it to .env.local to manage inventory.",
-    };
-  }
-  // Ask for the 0006 flags specifically. Selecting only `id` would succeed
-  // against the older 0005 view too, and the screens would then render every
-  // status as false instead of saying the migration is outstanding.
-  const { error } = await admin
-    .from("inventory_overview")
-    .select("id,is_oversold,is_unavailable", { head: true, count: "exact" });
-  if (error) {
-    return {
-      ready: false,
-      error: `Inventory isn't available yet — run supabase/migrations/0005_inventory.sql and 0006_simplify_inventory.sql in the Supabase SQL editor. (${error.message})`,
-    };
-  }
-  return { ready: true, error: null };
-}
+const NOT_INSTALLED =
+  "Inventory isn't available yet — run supabase/migrations/0005_inventory.sql and " +
+  "0006_simplify_inventory.sql in the Supabase SQL editor.";
 
 /* -------------------------------- listing ------------------------------- */
 
@@ -240,7 +220,28 @@ export interface InventoryStats {
   valuationIncomplete: boolean;
 }
 
-export async function getInventoryStats(): Promise<InventoryStats> {
+export interface InventoryOverview {
+  status: InventoryStatus;
+  stats: InventoryStats;
+}
+
+/**
+ * The stock figures, and whether stock is installed at all — from one query.
+ *
+ * These were two: a `head: true, count: 'exact'` probe against the view to
+ * decide whether migrations 0005/0006 had been run, and then, only if it
+ * answered yes, the query that actually reads the rows. Sequential, because
+ * the second was conditional on the first — so both the overview and the
+ * inventory screen waited out two full round trips before anything else could
+ * start, and the probe was the more expensive of the two: an exact count over
+ * a view has to walk it, and it was measured at 190ms against 100ms for
+ * reading every row of the same view.
+ *
+ * The read answers both questions by itself. It selects the 0006 flags, so a
+ * database still on 0005 fails it exactly as the probe did — the reason the
+ * probe named those columns rather than just `id`.
+ */
+export async function getInventoryOverview(): Promise<InventoryOverview> {
   const empty: InventoryStats = {
     productCount: 0,
     unavailableCount: 0,
@@ -251,12 +252,25 @@ export async function getInventoryStats(): Promise<InventoryStats> {
     valuationIncomplete: true,
   };
   const admin = getSupabaseAdmin();
-  if (!admin) return empty;
+  if (!admin) {
+    return {
+      status: {
+        ready: false,
+        error: "SUPABASE_SERVICE_ROLE_KEY isn't set — add it to .env.local to manage inventory.",
+      },
+      stats: empty,
+    };
+  }
 
   const { data, error } = await admin
     .from("inventory_overview")
     .select("stock_quantity,cost_price,is_low,is_oversold,is_unavailable");
-  if (error || !data) return empty;
+  if (error || !data) {
+    return {
+      status: { ready: false, error: `${NOT_INSTALLED} (${error?.message ?? "no rows returned"})` },
+      stats: empty,
+    };
+  }
 
   const stats = { ...empty };
   let anyCost = false;
@@ -276,7 +290,7 @@ export async function getInventoryStats(): Promise<InventoryStats> {
 
   stats.totalValue = Math.round(stats.totalValue * 1000) / 1000;
   stats.valuationIncomplete = !anyCost;
-  return stats;
+  return { status: { ready: true, error: null }, stats };
 }
 
 /* ------------------------------- movements ------------------------------ */

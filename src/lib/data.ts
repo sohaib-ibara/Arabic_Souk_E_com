@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Brand, Category, Product } from "./types";
 import { sampleBrands, sampleCategories, sampleProducts } from "./sample-data";
 import { importedBrands, importedCategories, importedProducts } from "./imported-data";
@@ -110,7 +111,20 @@ const LEGACY_PRODUCT_COLUMNS = [
   "id",
   "name",
   "slug",
-  "description",
+  /*
+    `description` is deliberately NOT here.
+
+    It is 36% of the catalogue by weight — 239KB of the 657KB every one of
+    these queries returns — and exactly one screen reads it: the product page.
+    Nothing that lists products shows it, and the storefront's search matches
+    name, brand, category, short_description and tags, so leaving it out
+    narrows nothing a shopper can observe. `short_description` IS searched, and
+    stays.
+
+    `getProductBySlug` fetches it, for the one product that needs it. Anything
+    that reaches a Product through a listing loader will find `description`
+    null — see the note on the type.
+  */
   "short_description",
   "price",
   "compare_at_price",
@@ -155,10 +169,32 @@ const PUBLIC_PRODUCT_COLUMNS = [
  */
 const PROVISIONED_PRODUCT_COLUMNS = [PUBLIC_PRODUCT_COLUMNS, "is_listed"].join(",");
 
+/**
+ * The listing set plus the long description, for a single product.
+ *
+ * Only `getProductBySlug` uses this, and only ever for one row — which is why
+ * the column can be left out of every list without anybody losing it.
+ */
+const DETAIL_PRODUCT_COLUMNS = [PROVISIONED_PRODUCT_COLUMNS, "description"].join(",");
+
 /** Postgres "column does not exist" — i.e. a migration hasn't run here yet. */
 const UNDEFINED_COLUMN = "42703";
 
-async function loadProducts(): Promise<Product[]> {
+/*
+  The three loaders below are memoised per request with React's `cache`.
+
+  Everything in this file reads through them, and a single render routinely
+  asks more than once: the admin home-page screen calls `getBestsellers`, which
+  loads the catalogue, while the storefront preview beside it loads it again.
+  Next already de-duplicates the identical GET at the fetch layer, so the
+  network cost was hidden — but the 700KB response was still parsed and mapped
+  into several hundred objects each time, on the server, per request.
+
+  `cache` is per-request, not a cache in the "stale data" sense: two shoppers,
+  or the same shopper on the next click, share nothing. Admin screens must show
+  what was just saved, so anything longer-lived would be wrong here.
+*/
+const loadProducts = cache(async function loadProducts(): Promise<Product[]> {
   const sb = getSupabaseServer();
   if (sb) {
     // The single gate for "is this product listed at all".
@@ -171,13 +207,33 @@ async function loadProducts(): Promise<Product[]> {
     // Since 0014 the gate is `is_listed`, which already folds in the vendor
     // and vendor-category switches. Filtering on `is_published` here instead
     // would show products from a vendor that has been turned off.
+    /*
+      Ordered by created_at, then by id — and the id is not decoration.
+
+      299 of the 329 listed products carry the SAME created_at, to the
+      microsecond: they were bulk-imported in one transaction. Ordering by that
+      column alone therefore leaves almost the whole catalogue in whatever
+      order Postgres happened to return, which is a property of the query plan,
+      not of the data. Change a column in the select list and the plan can
+      change with it — which is exactly how this was found, when dropping
+      `description` reshuffled /shop while returning an identical set.
+
+      Every sort downstream inherits it, because Array.prototype.sort is stable
+      and almost every product ties on featured-then-rating too. So the shop's
+      order could differ between two deployments, or two requests, with nobody
+      having changed anything — and paging through /shop could show the same
+      product twice while skipping another.
+
+      `id` is arbitrary but unique and fixed, which is all a tiebreak has to be.
+    */
     const provisioned = await sb
       .from("products")
       .select(
         `${PROVISIONED_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`,
       )
       .eq("is_listed", true)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true });
 
     if (!provisioned.error) {
       if (provisioned.data?.length) return provisioned.data.map(mapProductRow);
@@ -221,7 +277,8 @@ async function loadProducts(): Promise<Product[]> {
       .from("products")
       .select(`${PUBLIC_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`)
       .eq("is_published", true)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true });
 
     if (!withVisibility.error && withVisibility.data?.length) {
       return withVisibility.data.map(mapProductRow);
@@ -245,7 +302,8 @@ async function loadProducts(): Promise<Product[]> {
       const legacy = await sb
         .from("products")
         .select(`${LEGACY_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true });
       if (!legacy.error && legacy.data?.length) return legacy.data.map(mapProductRow);
       warnFallback("products", legacy.error);
       return localProducts;
@@ -254,9 +312,9 @@ async function loadProducts(): Promise<Product[]> {
     warnFallback("products", withVisibility.error);
   }
   return localProducts;
-}
+});
 
-async function loadCategories(): Promise<Category[]> {
+const loadCategories = cache(async function loadCategories(): Promise<Category[]> {
   const sb = getSupabaseServer();
   if (sb) {
     const { data, error } = await sb.from("categories").select("*").order("sort_order");
@@ -284,9 +342,9 @@ async function loadCategories(): Promise<Category[]> {
     warnFallback("categories", error);
   }
   return localCategories;
-}
+});
 
-async function loadBrands(): Promise<Brand[]> {
+const loadBrands = cache(async function loadBrands(): Promise<Brand[]> {
   const sb = getSupabaseServer();
   if (sb) {
     const { data, error } = await sb.from("brands").select("*").order("name");
@@ -294,7 +352,7 @@ async function loadBrands(): Promise<Brand[]> {
     warnFallback("brands", error);
   }
   return localBrands;
-}
+});
 
 export type ProductSort = "featured" | "price-asc" | "price-desc" | "rating" | "newest";
 
@@ -408,7 +466,32 @@ export async function getAllProducts(): Promise<Product[]> {
   return loadProducts();
 }
 
+/**
+ * One product, by slug — fetched as one row rather than found in the whole
+ * catalogue.
+ *
+ * This used to load every listed product and `.find()` through them, so
+ * opening a single product page downloaded 657KB and built several hundred
+ * objects to use one. It is also the only reader of `description`, which is
+ * why that column is fetched here and nowhere else.
+ *
+ * The fallback path is unchanged and still matters: a missing column means a
+ * migration hasn't run, and `loadProducts` is where every deploy-order case
+ * and the bundled sample catalogue are handled. A slug that simply doesn't
+ * exist is NOT that case — it returns null without loading anything, so a
+ * mistyped URL costs one query rather than the catalogue.
+ */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const sb = getSupabaseServer();
+  if (sb) {
+    const { data, error } = await sb
+      .from("products")
+      .select(`${DETAIL_PRODUCT_COLUMNS}, category:categories(name,slug), brand:brands(name,slug)`)
+      .eq("slug", slug)
+      .eq("is_listed", true)
+      .maybeSingle();
+    if (!error) return data ? mapProductRow(data) : null;
+  }
   const items = await loadProducts();
   return items.find((p) => p.slug === slug) ?? null;
 }
@@ -434,6 +517,74 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 export async function getBrands(): Promise<Brand[]> {
   return loadBrands();
+}
+
+export interface CatalogueCounts {
+  products: number;
+  categories: number;
+  brands: number;
+}
+
+/**
+ * How many products, categories and brands the shop is showing — as counts.
+ *
+ * The admin overview prints exactly these three numbers, and used to get them
+ * by calling `getAllProducts()`, `getCategories()` and `getBrands()` and taking
+ * `.length`. That is 726KB over the wire (691KB of it products, including every
+ * description and image URL in the catalogue), parsed, mapped into objects, and
+ * then thrown away except for three integers. Measured at 229ms for the
+ * products call alone from a warm connection.
+ *
+ * Postgres can count without sending rows, so ask it to. The counts must agree
+ * with what the loaders would have returned, which is the only subtlety here:
+ *
+ *   - Products are counted with the same `is_listed` gate the loader uses.
+ *   - Categories exclude the switched-off ones, and `is_enabled is null` has to
+ *     count as on — the column arrives in 0015 and a plain `neq` would drop
+ *     every NULL row, since NULL <> false is NULL, not true.
+ *   - A missing column (a migration outstanding) errors, and a zero count is
+ *     ambiguous — an empty table means the storefront is serving the bundled
+ *     sample catalogue, which the loader knows how to detect and this does not.
+ *
+ * Both of those defer to the loader, which is the slow path this replaces —
+ * so the rare, ambiguous case is exactly as correct as it was before, and the
+ * ordinary case costs three head requests.
+ */
+export async function getCatalogueCounts(): Promise<CatalogueCounts> {
+  const sb = getSupabaseServer();
+  if (!sb) {
+    return {
+      products: localProducts.length,
+      categories: localCategories.length,
+      brands: localBrands.length,
+    };
+  }
+
+  const [p, c, b] = await Promise.all([
+    sb.from("products").select("id", { count: "exact", head: true }).eq("is_listed", true),
+    sb
+      .from("categories")
+      .select("id", { count: "exact", head: true })
+      .or("is_enabled.is.null,is_enabled.eq.true"),
+    sb.from("brands").select("id", { count: "exact", head: true }),
+  ]);
+
+  const [products, categories, brands] = await Promise.all([
+    settle(p, getAllProducts),
+    settle(c, getCategories),
+    settle(b, getBrands),
+  ]);
+
+  return { products, categories, brands };
+}
+
+/** A head count when it is unambiguous, and the full loader when it isn't. */
+async function settle(
+  head: { count: number | null; error: unknown },
+  load: () => Promise<unknown[]>,
+): Promise<number> {
+  if (!head.error && (head.count ?? 0) > 0) return head.count!;
+  return (await load()).length;
 }
 
 /** Shopper contact details captured at checkout (all optional). */
