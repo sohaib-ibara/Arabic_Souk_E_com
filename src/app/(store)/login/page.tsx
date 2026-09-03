@@ -17,12 +17,20 @@ export const metadata: Metadata = {
 // Reads the auth cookie — must not be cached.
 export const dynamic = "force-dynamic";
 
+/** What /auth/callback reports back when a confirmation link fails. */
+const confirmNotice: Record<string, string> = {
+  expired:
+    "That confirmation link has expired or has already been used. Links are good for one sign-in, and not for long.",
+  failed:
+    "We couldn't confirm your email from that link. It may have been cut in half by your mail app — try opening it again, or ask for a new one.",
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; confirm?: string }>;
 }) {
-  const { next } = await searchParams;
+  const { next, confirm } = await searchParams;
 
   // Staff and shoppers hold separate sessions, so a signed-in admin has no
   // customer session and would otherwise be shown a sign-in form — including
@@ -40,6 +48,22 @@ export default async function LoginPage({
       <div className="w-full max-w-sm rounded-2xl border border-line bg-white p-8">
         <h1 className="font-serif text-2xl">Sign in</h1>
         <p className="mt-1 text-sm text-muted">Welcome back to {siteConfig.name}.</p>
+
+        {/*
+          A confirmation link that did not work has to say so here, because
+          here is where it lands. Without this the shopper is returned to a
+          plain sign-in form having just clicked "confirm my email", with no
+          way to tell whether it worked -- and their password will not sign
+          them in until the address is confirmed, so they are stuck.
+        */}
+        {confirmNotice[confirm ?? ""] && (
+          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <p>{confirmNotice[confirm!]}</p>
+            <Link href={registerHref} className="mt-2 inline-block font-medium underline">
+              Send a new confirmation link
+            </Link>
+          </div>
+        )}
 
         <LoginForm next={next} />
 

@@ -4,13 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 
+/*
+  Ordered the way the work runs, not the way the screens were built.
+
+  Overview is where you land. Home page is what a shopper sees first, so it
+  comes next. Vendors decides who we buy from and what of theirs is on the
+  shop, which is the decision Products then works inside — so Vendors leads
+  Products rather than following it. Everything after that is downstream of a
+  catalogue already being there: stock, then orders, then the people and the
+  suppliers behind them.
+*/
 const links = [
   { href: "/admin", label: "Overview" },
-  { href: "/admin/products", label: "Products" },
   { href: "/admin/homepage", label: "Home page" },
   // Categories used to sit here as its own entry. Both kinds of category
   // switch are on the Vendors page now - see shop-sections.tsx.
   { href: "/admin/vendors", label: "Vendors" },
+  { href: "/admin/products", label: "Products" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/subscribers", label: "Subscribers" },

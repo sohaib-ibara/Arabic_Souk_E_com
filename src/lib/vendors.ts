@@ -70,16 +70,6 @@ export interface Vendor extends VendorRow {
   staged_count: number;
 }
 
-export interface VendorCategory {
-  category_id: string;
-  category_name: string;
-  category_slug: string;
-  /** Products this vendor has in this category. */
-  product_count: number;
-  listed_count: number;
-  /** No row in vendor_categories means enabled — see 0014. */
-  is_enabled: boolean;
-}
 
 export interface VendorsStatus {
   ready: boolean;
@@ -129,8 +119,6 @@ function mapVendorRow(v: any): VendorRow {
 export interface VendorBoard {
   status: VendorsStatus;
   vendors: Vendor[];
-  /** Keyed by vendor id — the category switches for each. */
-  categoriesByVendor: Record<string, VendorCategory[]>;
   /** The other kind of switch: whether a category is on the shop at all. */
   sections: CategorySwitch[];
 }
@@ -144,7 +132,7 @@ export interface VendorBoard {
  * simply queued behind each other, and most were the same three tables read
  * over and over.
  *
- * The shape that caused it: `listVendorCategories(id)` called `getVendor(id)`,
+ * The shape that caused it: a per-vendor category loader called `getVendor`,
  * which called `listVendors()` — four queries including a full catalogue scan
  * — to learn one vendor's `key`. The page then called it once per vendor.
  * Next de-duplicates identical GETs within a render, which hid the repeats at
@@ -165,7 +153,6 @@ export async function getVendorBoard(): Promise<VendorBoard> {
         "SUPABASE_SERVICE_ROLE_KEY isn't set — add it to .env.local to manage vendors.",
       ),
       vendors: [],
-      categoriesByVendor: {},
       sections: [],
     };
   }
@@ -187,7 +174,7 @@ export async function getVendorBoard(): Promise<VendorBoard> {
 
   const status = vendorsStatusFrom(vendorRes.error);
   if (!status.ready) {
-    return { status, vendors: [], categoriesByVendor: {}, sections: [] };
+    return { status, vendors: [], sections: [] };
   }
 
   /*
@@ -245,32 +232,6 @@ export async function getVendorBoard(): Promise<VendorBoard> {
     };
   });
 
-  const categoriesByVendor: Record<string, VendorCategory[]> = {};
-  for (const v of rawVendors) {
-    const mine = bySource.get(v.key) ?? [];
-    const inCategory = new Map<string, any[]>();
-    for (const p of mine) {
-      const list = inCategory.get(p.category_id);
-      if (list) list.push(p);
-      else inCategory.set(p.category_id, [p]);
-    }
-    const off = offByVendor.get(v.id);
-    categoriesByVendor[v.id] = cats.map((c) => {
-      const here = inCategory.get(c.id) ?? [];
-      return {
-        category_id: c.id,
-        category_name: c.name,
-        category_slug: c.slug,
-        product_count: here.length,
-        listed_count: here.filter((p: any) => p.is_listed).length,
-        // Absent means enabled. 0014 chose that so a newly imported product in
-        // a category nobody has configured appears under the vendor's own
-        // switch rather than vanishing.
-        is_enabled: !off?.has(c.id),
-      };
-    });
-  }
-
   const vendorName = new Map(rawVendors.map((v) => [v.id as string, v.name as string]));
   const byCategory = new Map<string, any[]>();
   for (const p of products) {
@@ -295,7 +256,7 @@ export async function getVendorBoard(): Promise<VendorBoard> {
     };
   });
 
-  return { status, vendors, categoriesByVendor, sections };
+  return { status, vendors, sections };
 }
 
 /**
@@ -314,50 +275,6 @@ export async function getVendor(id: string): Promise<VendorRow | null> {
   return mapVendorRow(data);
 }
 
-/**
- * The category switches for one vendor.
- *
- * Every category is returned, not just the ones this vendor stocks, because
- * turning a category on ahead of an import is a reasonable thing to want —
- * and because a category with no products is exactly where someone will look
- * when a newly imported product doesn't appear.
- *
- * The Vendors screen does NOT use this — it needs the same answer for every
- * vendor at once, and asking per vendor is what made that page slow. See
- * `getVendorBoard`. This remains for a caller that genuinely wants one.
- */
-export async function listVendorCategories(vendorId: string): Promise<VendorCategory[]> {
-  const admin = getSupabaseAdmin();
-  if (!admin) return [];
-
-  const vendor = await getVendor(vendorId);
-  if (!vendor) return [];
-
-  const [{ data: categories }, { data: rows }, { data: products }] = await Promise.all([
-    admin.from("categories").select("id, name, slug").order("sort_order").order("name"),
-    admin.from("vendor_categories").select("category_id, is_enabled").eq("vendor_id", vendorId),
-    admin.from("products").select("category_id, is_listed").eq("source", vendor.key),
-  ]);
-
-  const explicit = new Map<string, boolean>(
-    (rows ?? []).map((r: any) => [r.category_id as string, Boolean(r.is_enabled)]),
-  );
-
-  return (categories ?? []).map((c: any) => {
-    const mine = (products ?? []).filter((p: any) => p.category_id === c.id);
-    return {
-      category_id: c.id,
-      category_name: c.name,
-      category_slug: c.slug,
-      product_count: mine.length,
-      listed_count: mine.filter((p: any) => p.is_listed).length,
-      // Absent means enabled. 0014 chose that so a newly imported product in a
-      // category nobody has configured appears under the vendor's own switch
-      // rather than vanishing.
-      is_enabled: explicit.get(c.id) ?? true,
-    };
-  });
-}
 
 /* --------------------------- writes --------------------------- */
 
@@ -375,55 +292,6 @@ export async function setVendorEnabled(id: string, enabled: boolean): Promise<vo
  * holds exceptions. That keeps "no row = enabled" honest and means the table
  * stays small no matter how many categories exist.
  */
-/**
- * Set a vendor's whole category selection in one go.
- *
- * The per-category toggle is one write and one page reload each. Turning a
- * vendor's fifty-four categories off meant fifty-four of them, and no way to
- * tell part-way through whether the list had been finished. This takes the
- * ticked set and makes the table agree with it.
- *
- * `enabledIds` is what the form ticked; `allIds` is every category that was on
- * screen when it was drawn. Anything in `allIds` and not in `enabledIds` is
- * switched off, and — importantly — a category NOT in `allIds` is left alone
- * rather than being switched off by omission: a category created since the
- * page loaded must not be silently disabled by somebody saving an older form.
- *
- * The absent-row-means-enabled convention from 0014 is preserved, so enabling
- * deletes rather than writing `true`.
- */
-export async function setVendorCategories(
-  vendorId: string,
-  enabledIds: string[],
-  allIds: string[],
-): Promise<{ on: number; off: number }> {
-  const admin = getSupabaseAdmin();
-  if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY isn't set.");
-
-  const enabled = new Set(enabledIds);
-  const known = allIds.filter((id) => id);
-  const toDisable = known.filter((id) => !enabled.has(id));
-  const toEnable = known.filter((id) => enabled.has(id));
-
-  if (toEnable.length) {
-    const { error } = await admin
-      .from("vendor_categories")
-      .delete()
-      .eq("vendor_id", vendorId)
-      .in("category_id", toEnable);
-    if (error) throw new Error(error.message);
-  }
-
-  if (toDisable.length) {
-    const { error } = await admin.from("vendor_categories").upsert(
-      toDisable.map((category_id) => ({ vendor_id: vendorId, category_id, is_enabled: false })),
-      { onConflict: "vendor_id,category_id" },
-    );
-    if (error) throw new Error(error.message);
-  }
-
-  return { on: toEnable.length, off: toDisable.length };
-}
 
 export async function setVendorCategoryEnabled(
   vendorId: string,

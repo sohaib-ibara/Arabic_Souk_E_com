@@ -28,7 +28,6 @@ import {
   importStagedForVendor,
   priceVendor,
   setCategoryEnabled,
-  setVendorCategories,
   setVendorCategoryEnabled,
   setVendorEnabled,
   updateVendor,
@@ -41,10 +40,10 @@ import type {
   VendorPriceState,
 } from "@/lib/admin-form-state";
 import {
-  addHomePick,
-  clearHomePicks,
-  moveHomePick,
-  removeHomePick,
+  MAX_HOME_PICKS,
+  searchPickable,
+  setHomePicks,
+  type HomePick,
 } from "@/lib/home-picks";
 
 /**
@@ -535,31 +534,6 @@ export async function setVendorCategoryAction(formData: FormData): Promise<void>
   redirect(withQuery(back, { c: enabled ? "on" : "off" }));
 }
 
-/**
- * Save a vendor's whole category selection from one form.
- *
- * `enabled` carries the ticked boxes and `known` every category the form was
- * drawn with, so a category added since then is left alone rather than
- * switched off by omission. See setVendorCategories.
- */
-export async function setVendorCategoriesAction(formData: FormData): Promise<void> {
-  await requireAdmin();
-
-  const vendorId = str(formData, "vendor_id");
-  const back = String(formData.get("back") || "/admin/vendors");
-  if (!vendorId) redirect(back);
-
-  const enabled = formData.getAll("enabled").map(String).filter(Boolean);
-  const known = formData.getAll("known").map(String).filter(Boolean);
-
-  const { off } = await setVendorCategories(vendorId, enabled, known);
-
-  revalidatePath("/admin/vendors");
-  revalidatePath("/admin/products");
-  revalidateStorefront();
-
-  redirect(withQuery(back, { saved: "categories", off: String(off) }));
-}
 
 /** Save a vendor's name, kind and pricing rule. Does not touch any price. */
 export async function saveVendorAction(formData: FormData): Promise<void> {
@@ -747,38 +721,64 @@ function revalidateHomeShelf() {
 }
 
 /**
- * Pin, unpin, reorder, clear.
+ * Search the catalogue for something to pin, as somebody types.
  *
- * Four verbs, one action: they are all "here is what the row should be now",
- * they all end in the same redirect, and splitting them would mean four copies
- * of the same six lines of error handling.
+ * Returns rows rather than redirecting, because the caller is a search box
+ * that updates under the cursor — a redirect per keystroke would throw away
+ * what they were typing.
  *
- * Every one of them saves immediately rather than collecting into a Save
- * button. The screen shows a live preview of the row underneath, and a preview
- * of unsaved state is a preview of something that does not exist.
+ * `requireAdmin` is not belt-and-braces here. A Server Action is a POST
+ * endpoint reachable by anyone who can guess its id, whatever the page around
+ * it renders, and this one reads the catalogue with the service-role client.
  */
-export async function homePickAction(formData: FormData): Promise<void> {
+export async function searchPickableAction(term: string): Promise<HomePick[]> {
+  await requireAdmin();
+  if (typeof term !== "string") return [];
+  return searchPickable(term.slice(0, 80));
+}
+
+/**
+ * Save the pinned row as a whole list.
+ *
+ * Add, remove and reorder are all "here is what the row should be now" — which
+ * is exactly what `setHomePicks` takes — so dragging a card, pressing Remove
+ * and pressing Add all come back through this one action. The alternative was
+ * a verb per gesture and a server that has to reconstruct the intended order
+ * from a diff.
+ *
+ * Returns the error rather than throwing it. The editor keeps the list on
+ * screen and rolls its own optimistic reorder back; an unhandled throw in a
+ * Server Action reaches the client as a generic message with nothing to say.
+ */
+export async function saveHomePicksAction(
+  ids: string[],
+): Promise<{ ok: true } | { ok: false; error: string }> {
   await requireAdmin();
 
-  const intent = str(formData, "intent");
-  const productId = str(formData, "product_id");
-  const back = String(formData.get("back") || "/admin/homepage");
+  if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string")) {
+    return { ok: false, error: "That didn't look like a list of products." };
+  }
+  /*
+    Refuse an over-long list rather than silently keeping the first eight.
 
-  const known = ["add", "remove", "up", "down", "clear"];
-  // Checked before the try, because redirect() works by throwing: called in
-  // there it would be caught as a failure and reported as one.
-  if (!known.includes(intent)) redirect(back);
+    setHomePicks slices, which is the right thing for it to do — it is the last
+    line of defence. But a caller that sent nine meant something by the ninth,
+    and quietly dropping it would leave somebody hunting for a product they
+    believe they pinned.
+  */
+  if (ids.length > MAX_HOME_PICKS) {
+    return {
+      ok: false,
+      error: `The row holds ${MAX_HOME_PICKS} products. Remove one before adding another.`,
+    };
+  }
 
   try {
-    if (intent === "add") await addHomePick(productId);
-    else if (intent === "remove") await removeHomePick(productId);
-    else if (intent === "up") await moveHomePick(productId, "up");
-    else if (intent === "down") await moveHomePick(productId, "down");
-    else await clearHomePicks();
+    await setHomePicks(ids);
   } catch (e) {
-    redirect(withQuery(back, { error: (e as Error).message.slice(0, 160) }));
+    return { ok: false, error: (e as Error).message.slice(0, 160) };
   }
 
   revalidateHomeShelf();
-  redirect(withQuery(back, { saved: intent }));
+  return { ok: true };
 }

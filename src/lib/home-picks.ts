@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getSupabaseAdmin, getSupabaseServer } from "./supabase/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -39,6 +40,20 @@ export interface HomePick {
   in_stock: boolean;
   /** The resolved answer to "can a shopper see this" — see migration 0014. */
   is_listed: boolean;
+  /**
+   * Which supplier this came from, by display name — staff-only.
+   *
+   * Two suppliers stock near-identical products under near-identical names,
+   * and choosing between them is a real decision: they have different prices,
+   * different delivery windows, and one of them cannot be re-synced from the
+   * cloud. A search for "hair dryer brush" returns several and the name alone
+   * does not say which is whose.
+   *
+   * Never rendered on the storefront. `products.source` is deliberately not
+   * granted to the anon role (migration 0014), so this is only ever populated
+   * on the admin path.
+   */
+  vendor: string | null;
 }
 
 export interface HomePicksResult {
@@ -49,9 +64,25 @@ export interface HomePicksResult {
 }
 
 const PICK_SELECT =
-  "product_id, sort_order, product:products(name, slug, price, images, in_stock, is_listed)";
+  "product_id, sort_order, product:products(name, slug, price, images, in_stock, is_listed, source)";
 
-function mapPick(row: any): HomePick | null {
+/**
+ * Supplier key to display name, once per request.
+ *
+ * `products.source` holds the adapter key — "cultbeauty", "noon" — and the
+ * screen should say "Cult Beauty". Memoised because both the pick list and a
+ * search resolve names, and neither should cost a round trip the other has
+ * already paid for. Falls back to the raw key: a supplier with no vendor row
+ * is a provisioning gap worth seeing, not worth hiding behind a blank.
+ */
+const vendorNames = cache(async function vendorNames(): Promise<Map<string, string>> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return new Map();
+  const { data } = await admin.from("vendors").select("key, name");
+  return new Map((data ?? []).map((v: any) => [String(v.key), String(v.name)]));
+});
+
+function mapPick(row: any, names: Map<string, string>): HomePick | null {
   // PostgREST returns an object for a to-one embed and an array when it cannot
   // work out the cardinality. Accept either rather than depend on which.
   const p = Array.isArray(row.product) ? row.product[0] : row.product;
@@ -66,7 +97,14 @@ function mapPick(row: any): HomePick | null {
     image: Array.isArray(p.images) && p.images.length ? String(p.images[0]) : null,
     in_stock: Boolean(p.in_stock),
     is_listed: p.is_listed !== false,
+    vendor: vendorLabel(p.source, names),
   };
+}
+
+/** "cultbeauty" -> "Cult Beauty"; null for a product somebody added by hand. */
+function vendorLabel(source: unknown, names: Map<string, string>): string | null {
+  if (typeof source !== "string" || !source) return null;
+  return names.get(source) ?? source;
 }
 
 /**
@@ -122,10 +160,11 @@ export async function listHomePicks(): Promise<HomePicksResult> {
     };
   }
 
+  const names = await vendorNames();
   return {
     ready: true,
     message: null,
-    picks: (data ?? []).map(mapPick).filter((p): p is HomePick => p !== null),
+    picks: (data ?? []).map((r) => mapPick(r, names)).filter((p): p is HomePick => p !== null),
   };
 }
 
@@ -141,11 +180,29 @@ export async function searchPickable(term: string, limit = 12): Promise<HomePick
   const s = term.trim().replace(/[%,]/g, "");
   if (!admin || !s) return [];
 
-  const { data, error } = await admin
+  /*
+    Every word has to match, not the phrase.
+
+    A single `ilike %term%` needs the words in the order and spacing the
+    supplier used, so "mascara waterproof" found nothing while "waterproof
+    mascara" found six — which reads as a broken search when you are typing
+    into it live. Splitting on whitespace and requiring each word somewhere in
+    the name is what people expect from a search box, and is what makes typing
+    progressively narrow the list instead of emptying it.
+
+    PostgREST spells AND-of-ORs as repeated `.or()` calls, one per word: every
+    call is another AND clause, and each word may match the name or the slug.
+  */
+  const words = s.split(/\s+/).filter(Boolean).slice(0, 6);
+
+  let query = admin
     .from("products")
-    .select("id, name, slug, price, images, in_stock, is_listed")
-    .eq("is_listed", true)
-    .or(`name.ilike.%${s}%,slug.ilike.%${s}%`)
+    .select("id, name, slug, price, images, in_stock, is_listed, source")
+    .eq("is_listed", true);
+
+  for (const w of words) query = query.or(`name.ilike.%${w}%,slug.ilike.%${w}%`);
+
+  const { data, error } = await query
     // In stock first, then the cheapest way to get a stable order.
     .order("in_stock", { ascending: false })
     .order("name", { ascending: true })
@@ -153,6 +210,7 @@ export async function searchPickable(term: string, limit = 12): Promise<HomePick
 
   if (error || !data) return [];
 
+  const names = await vendorNames();
   return data.map((row: any) => ({
     product_id: row.id,
     name: row.name,
@@ -161,6 +219,7 @@ export async function searchPickable(term: string, limit = 12): Promise<HomePick
     image: Array.isArray(row.images) && row.images.length ? String(row.images[0]) : null,
     in_stock: Boolean(row.in_stock),
     is_listed: true,
+    vendor: vendorLabel(row.source, names),
   }));
 }
 
@@ -214,38 +273,10 @@ export async function setHomePicks(ids: string[]): Promise<number> {
    order somebody else has since changed.
    ------------------------------------------------------------------------- */
 
-async function currentIds(): Promise<string[]> {
-  const { ready, message, picks } = await listHomePicks();
-  if (!ready) throw new Error(message ?? "The home page picks are unavailable.");
-  return picks.map((p) => p.product_id);
-}
-
-export async function addHomePick(productId: string): Promise<void> {
-  const ids = await currentIds();
-  if (ids.includes(productId)) return; // Already pinned; nothing to say.
-  if (ids.length >= MAX_HOME_PICKS) {
-    throw new Error(
-      `The row holds ${MAX_HOME_PICKS} products. Remove one before adding another.`,
-    );
-  }
-  await setHomePicks([...ids, productId]);
-}
-
-export async function removeHomePick(productId: string): Promise<void> {
-  const ids = await currentIds();
-  await setHomePicks(ids.filter((id) => id !== productId));
-}
-
-/** Swap with the neighbour. At either end this does nothing, on purpose. */
-export async function moveHomePick(productId: string, dir: "up" | "down"): Promise<void> {
-  const ids = await currentIds();
-  const i = ids.indexOf(productId);
-  const j = dir === "up" ? i - 1 : i + 1;
-  if (i === -1 || j < 0 || j >= ids.length) return;
-  [ids[i], ids[j]] = [ids[j], ids[i]];
-  await setHomePicks(ids);
-}
-
-export async function clearHomePicks(): Promise<void> {
-  await setHomePicks([]);
-}
+/*
+  add / remove / move / clear used to live here, one function each, and each
+  one re-read the list, changed a single element and wrote the whole thing
+  back. The editor now sends the finished list for every gesture — a drag has
+  no single-element equivalent to send — so they had four callers between them
+  and now have none. `setHomePicks` above was always the thing doing the work.
+*/
