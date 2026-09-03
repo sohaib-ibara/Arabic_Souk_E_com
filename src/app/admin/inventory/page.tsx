@@ -6,8 +6,7 @@ import { MovementsTable } from "@/components/admin/movements-table";
 import { BulkStockUpdate, StockTake } from "@/components/admin/stock-csv";
 import { isAdmin } from "@/lib/admin-auth";
 import {
-  getInventoryStats,
-  getInventoryStatus,
+  getInventoryOverview,
   getRecentMovements,
   listInventory,
   type InventoryFilter,
@@ -69,26 +68,39 @@ export default async function AdminInventoryPage({
   const parsedPage = Number.parseInt(str(sp.page) || "1", 10);
   const page = Number.isNaN(parsedPage) ? 1 : parsedPage;
 
-  const status = await getInventoryStatus();
+  /*
+    All four in one wave.
 
-  if (!status.ready) {
-    return (
-      <Container className="py-10">
-        <h1 className="font-serif text-3xl sm:text-4xl">Inventory</h1>
-        <Notice tone="warning" title="Inventory isn’t set up yet" className="mt-6">
-          {status.error}
-        </Notice>
-      </Container>
-    );
-  }
+    The readiness check used to be awaited on its own, ahead of this, so the
+    page sat through a round trip before it could even ask for what it came
+    for. It now arrives with the figures — see getInventoryOverview.
 
-  const [stats, result, recent] = await Promise.all([
-    getInventoryStats(),
+    The table and the movements are asked for regardless. If the migrations
+    really are outstanding they fail, which they are already written to
+    survive: listInventory throws and is caught below, getRecentMovements
+    returns nothing. Two doomed queries in a state that exists once, at setup,
+    against a round trip on every load for everyone else.
+  */
+  const [stock, result, recent] = await Promise.all([
+    getInventoryOverview(),
     listInventory({ filter, search, page }).catch(
       () => ({ items: [], total: 0, page, perPage: 25, pageCount: 1 }) as InventoryList,
     ),
     getRecentMovements(15),
   ]);
+
+  if (!stock.status.ready) {
+    return (
+      <Container className="py-10">
+        <h1 className="font-serif text-3xl sm:text-4xl">Inventory</h1>
+        <Notice tone="warning" title="Inventory isn’t set up yet" className="mt-6">
+          {stock.status.error}
+        </Notice>
+      </Container>
+    );
+  }
+
+  const stats = stock.stats;
 
   return (
     <Container className="py-10">

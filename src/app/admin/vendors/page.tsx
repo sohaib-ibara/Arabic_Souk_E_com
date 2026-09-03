@@ -3,13 +3,7 @@ import { Container } from "@/components/ui/container";
 import { Notice } from "@/components/admin/notice";
 import { VendorDetail, VendorList } from "@/components/admin/vendor-panel";
 import { isAdmin } from "@/lib/admin-auth";
-import {
-  getVendorsStatus,
-  listCategorySwitches,
-  listVendorCategories,
-  listVendors,
-  type VendorCategory,
-} from "@/lib/vendors";
+import { getVendorBoard } from "@/lib/vendors";
 import { ShopSections } from "@/components/admin/shop-sections";
 import { VendorCategoryPicker } from "@/components/admin/vendor-categories";
 
@@ -40,7 +34,17 @@ export default async function AdminVendorsPage({
 
   const sp = await searchParams;
   const selectedId = str(sp.vendor);
-  const status = await getVendorsStatus();
+
+  /*
+    One call, one wave of queries.
+
+    This page used to read in four stages — is the table there, then the
+    vendors, then each vendor's categories, then the shop sections — each
+    waiting on the one before it, and each re-reading tables the last had
+    already fetched. Fourteen queries for a screen that needs five tables.
+    Everything it draws now comes back together; see getVendorBoard.
+  */
+  const { status, vendors, categoriesByVendor, sections } = await getVendorBoard();
 
   if (!status.ready) {
     return (
@@ -53,21 +57,7 @@ export default async function AdminVendorsPage({
     );
   }
 
-  const vendors = await listVendors();
   const selected = vendors.find((v) => v.id === selectedId) ?? null;
-
-  /*
-    Every vendor's categories, not just the open one's: the choice now lives on
-    the card. Two or three vendors makes this a handful of queries, and it is
-    what lets somebody looking at "noon: 301 products" change what noon sells
-    without first discovering that Configure is where that used to live.
-  */
-  const perVendor = await Promise.all(
-    vendors.map(async (v) => [v.id, await listVendorCategories(v.id)] as const),
-  );
-  const categoriesByVendor: Record<string, VendorCategory[]> = Object.fromEntries(perVendor);
-
-  const sections = await listCategorySwitches();
 
   // Preserved through every switch so the redirect lands back on the vendor
   // that was open, not at the top of the list.

@@ -55,12 +55,19 @@ export default async function AdminHomepagePage({
   const error = str(sp.error);
   const saved = SAVED[str(sp.saved)];
 
-  const { ready, message, picks } = await listHomePicks();
+  /*
+    Search only when asked, but always draw the preview: it is the answer to
+    "did that do what I wanted", and it has to be there before the first click.
 
-  // Search only when asked, but always draw the preview: it is the answer to
-  // "did that do what I wanted", and it has to be there before the first click.
-  const [results, preview] = await Promise.all([
-    ready && term ? searchPickable(term) : Promise.resolve<HomePick[]>([]),
+    All three go out together. The pick list used to be awaited first, and the
+    search was gated on the `ready` it returned — so the two queries that do
+    not depend on it waited for it anyway. A search against a database with no
+    picks table returns nothing and is discarded, since the screen renders the
+    "not available yet" notice in that state rather than any of this.
+  */
+  const [{ ready, message, picks }, results, preview] = await Promise.all([
+    listHomePicks(),
+    term ? searchPickable(term) : Promise.resolve<HomePick[]>([]),
     getBestsellers(8),
   ]);
 

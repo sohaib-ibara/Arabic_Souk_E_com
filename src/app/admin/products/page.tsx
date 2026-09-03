@@ -5,9 +5,8 @@ import { Notice } from "@/components/admin/notice";
 import { ProductsTable } from "@/components/admin/products-table";
 import { isAdmin } from "@/lib/admin-auth";
 import {
-  getCatalogueStatus,
+  getCatalogueBreakdown,
   getCategoryOptions,
-  getSourceOptions,
   listAdminProducts,
   type ListResult,
 } from "@/lib/admin-products";
@@ -42,32 +41,42 @@ export default async function AdminProductsPage({
   const parsedPage = Number.parseInt(str(sp.page) || "1", 10);
   const page = Number.isNaN(parsedPage) ? 1 : parsedPage;
 
-  const status = await getCatalogueStatus();
+  /*
+    All three at once.
 
-  // Only query when the catalogue is actually reachable — otherwise the notice
-  // below explains what's missing instead of surfacing a raw Postgres error.
-  let result: ListResult = { items: [], total: 0, page, perPage: 25, pageCount: 1 };
-  let loadError: string | null = null;
-  let categories = [] as Awaited<ReturnType<typeof getCategoryOptions>>;
-  let sources = [] as Awaited<ReturnType<typeof getSourceOptions>>;
+    "Is the catalogue reachable" used to be its own query, awaited before any
+    of this could start — and it was a count of the products table, which the
+    supplier breakdown below was about to read in full anyway. It now comes
+    back with that breakdown, so the screen waits for one round trip instead
+    of two. See getCatalogueBreakdown.
 
-  if (status.configured) {
-    try {
-      [result, categories, sources] = await Promise.all([
-        listAdminProducts({
-          search,
-          categoryId,
-          source,
-          visibility: visibility || undefined,
-          page,
-        }),
-        getCategoryOptions(),
-        getSourceOptions(),
-      ]);
-    } catch (e) {
-      loadError = (e as Error).message;
-    }
-  }
+    The other two are asked for unconditionally. Both return an empty result
+    rather than throwing when the service key is absent, and when the table
+    itself is unreachable the breakdown says so and the notice below explains
+    it in place of a raw Postgres error — which is what the guard was for.
+  */
+  const [breakdown, listed, categories] = await Promise.all([
+    getCatalogueBreakdown(),
+    listAdminProducts({
+      search,
+      categoryId,
+      source,
+      visibility: visibility || undefined,
+      page,
+    }).then(
+      (r) => ({ ok: true as const, result: r }),
+      (e: unknown) => ({ ok: false as const, message: (e as Error).message }),
+    ),
+    getCategoryOptions(),
+  ]);
+
+  const { status, sources } = breakdown;
+  const result: ListResult = listed.ok
+    ? listed.result
+    : { items: [], total: 0, page, perPage: 25, pageCount: 1 };
+  // A table that cannot be read explains itself once, through the status
+  // notice above, rather than twice.
+  const loadError = status.configured && !listed.ok ? listed.message : null;
 
   return (
     <Container className="py-10">
