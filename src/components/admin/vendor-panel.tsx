@@ -269,6 +269,31 @@ function PricingRule({ vendor, back }: { vendor: Vendor; back: string }) {
         Round to a retail ending (.19 / .29 / .49 / .69 / .89 / .99)
       </label>
 
+      {/*
+        The setting that decides whether importing puts things on the shop.
+
+        Worth spelling out on the form rather than leaving as a bare tick: it
+        is the difference between a supplier whose catalogue you pick over and
+        one you carry wholesale, and the shop showing 330 of 547 products was
+        this being off with nobody realising it was a choice.
+      */}
+      <label className="mt-3 flex items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          name="auto_list"
+          defaultChecked={vendor.auto_list}
+          className="mt-0.5 accent-brand"
+        />
+        <span>
+          List new products on the shop as they are imported
+          <span className="mt-0.5 block text-xs text-muted">
+            Off, every import arrives hidden and somebody lists it by hand. On, we carry
+            whatever this supplier adds. Either way each product keeps its own switch
+            afterwards, and this changes nothing about what is already in the catalogue.
+          </span>
+        </span>
+      </label>
+
       <label className="mt-3 block text-sm">
         Notes
         <textarea name="notes" rows={2} defaultValue={vendor.notes ?? ""} className={field} />

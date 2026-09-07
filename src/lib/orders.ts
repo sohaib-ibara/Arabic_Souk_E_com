@@ -3,7 +3,7 @@ import { getStripe, getPresentment, type Presentment } from "./stripe";
 import { getAllProducts, type DemandContact } from "./data";
 import { siteConfig } from "./config";
 import { reconcileOrderStock } from "./inventory";
-import { sendOrderConfirmation, type OrderEmail } from "./email";
+import { notifyNewOrder } from "./order-mail";
 import { PRICE_DECIMALS } from "@/lib/format";
 
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
@@ -481,8 +481,9 @@ export async function createCodOrder(input: CreateOrderInput): Promise<CreateOrd
   }
 
   // Cash needs no payment step, so the order is final the moment it's written —
-  // this is the point at which the customer should hear about it.
-  await emailOrderConfirmation(admin, order.id);
+  // this is the point at which the customer, and the people who have to buy the
+  // stock, should hear about it.
+  await notifyNewOrder(admin, order.id);
 
   return { ok: true, orderNumber: order.order_number, orderId: order.id };
 }
@@ -523,58 +524,6 @@ async function findRecentCodOrder(
 }
 
 /**
- * Reads one order back and emails its confirmation.
- *
- * Reads rather than takes the figures as arguments so the email can only ever
- * describe what was actually stored — a confirmation that disagrees with the
- * order is worse than no confirmation at all.
- *
- * Never throws, and never blocks the order: a missing API key, a rejected
- * sender domain or an unreachable mail host all end as a logged line.
- */
-async function emailOrderConfirmation(
-  admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
-  orderId: string,
-): Promise<void> {
-  try {
-    const { data } = await admin
-      .from("orders")
-      .select(
-        "order_number, email, full_name, currency, subtotal, shipping_fee, total, payment_method, shipping_address, order_items(name,quantity,unit_price)",
-      )
-      .eq("id", orderId)
-      .maybeSingle();
-    if (!data?.email) return;
-
-    const payload: OrderEmail = {
-      orderNumber: data.order_number as string,
-      email: data.email as string,
-      fullName: (data.full_name as string | null) ?? null,
-      currency: (data.currency as string) ?? siteConfig.currency,
-      subtotal: Number(data.subtotal ?? 0),
-      shipping: Number(data.shipping_fee ?? 0),
-      total: Number(data.total ?? 0),
-      paymentMethod: (data.payment_method as "card" | "cod") ?? "card",
-      address: (data.shipping_address as OrderEmail["address"]) ?? null,
-      items: (Array.isArray(data.order_items) ? data.order_items : []).map((li) => ({
-        name: (li as { name: string }).name,
-        quantity: Number((li as { quantity: number }).quantity ?? 0),
-        unitPrice: Number((li as { unit_price: number }).unit_price ?? 0),
-      })),
-    };
-
-    const sent = await sendOrderConfirmation(payload);
-    if (!sent.ok && process.env.NODE_ENV !== "production") {
-      console.warn(`[email] confirmation for ${payload.orderNumber} not sent: ${sent.reason}`);
-    }
-  } catch (e) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn(`[email] confirmation for order ${orderId} failed: ${(e as Error).message}`);
-    }
-  }
-}
-
-/**
  * Marks the order behind a PaymentIntent as paid, then posts the sale to the
  * stock ledger.
  *
@@ -609,7 +558,7 @@ export async function markOrderPaid(paymentIntentId: string): Promise<void> {
   // Inside the guard above, so the webhook and the success page racing each
   // other still produce exactly one confirmation: only the call that actually
   // moved the order off 'pending' gets this far.
-  await emailOrderConfirmation(admin, data.id);
+  await notifyNewOrder(admin, data.id);
 }
 
 /**

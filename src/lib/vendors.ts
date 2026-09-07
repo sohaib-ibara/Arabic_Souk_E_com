@@ -49,6 +49,14 @@ export interface VendorRow {
   markup_percent: number;
   surcharge_bhd: number;
   round_prices: boolean;
+  /**
+   * Do this vendor's newly imported products go straight onto the shop?
+   *
+   * False is how the catalogue behaved before migration 0020, and it is what
+   * left 214 imported Cult Beauty products sitting unlisted. See that
+   * migration for why it is a setting and not a rule.
+   */
+  auto_list: boolean;
   notes: string | null;
   sort_order: number;
 }
@@ -110,6 +118,8 @@ function mapVendorRow(v: any): VendorRow {
     markup_percent: Number(v.markup_percent),
     surcharge_bhd: Number(v.surcharge_bhd),
     round_prices: Boolean(v.round_prices),
+    // Absent before 0020, and absent has to mean off: the old behaviour.
+    auto_list: v.auto_list === true,
     notes: v.notes ?? null,
     sort_order: Number(v.sort_order ?? 0),
   };
@@ -328,14 +338,37 @@ export interface VendorPricingInput {
   markup_percent: number;
   surcharge_bhd: number;
   round_prices: boolean;
+  auto_list: boolean;
   notes: string | null;
 }
 
 export async function updateVendor(id: string, input: VendorPricingInput): Promise<void> {
   const admin = getSupabaseAdmin();
   if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY isn't set.");
+
   const { error } = await admin.from("vendors").update(input).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (!error) return;
+
+  /*
+    The pricing rule must still save on a database without 0020.
+
+    `auto_list` is one field on a form that also carries the currency, the
+    rate, the markup and the rounding switch. Letting a missing column reject
+    the whole update would mean nobody could correct an exchange rate until
+    somebody had run a migration -- so the rest is saved and the one field is
+    reported as unavailable.
+  */
+  if (error.code === UNDEFINED_COLUMN) {
+    const rest: Partial<VendorPricingInput> = { ...input };
+    delete rest.auto_list;
+    const retry = await admin.from("vendors").update(rest).eq("id", id);
+    if (retry.error) throw new Error(retry.error.message);
+    throw new Error(
+      "Saved everything except ‘list new products automatically’ — run " +
+        "supabase/migrations/0020_vendor_auto_list.sql, then set it again.",
+    );
+  }
+  throw new Error(error.message);
 }
 
 export async function createVendor(
@@ -489,7 +522,7 @@ export async function priceVendor(
 /* --------------------- staging → catalogue --------------------- */
 
 export interface ImportResult {
-  /** Products created in the catalogue, all unlisted. */
+  /** Products created in the catalogue. Listed only if the vendor says so. */
   created: number;
   /** Already in the catalogue; their supplier price and stock were refreshed. */
   updated: number;
@@ -623,10 +656,17 @@ export async function importStagedForVendor(
       lead_days_min: row.lead_days_min ?? null,
       lead_days_max: row.lead_days_max ?? null,
       max_per_order: row.max_per_order ?? null,
-      // An existing product keeps whatever the admin decided. Only a genuinely
-      // new one is forced unlisted — sending false unconditionally would pull
-      // a product someone had deliberately put on the shop.
-      is_published: prior ? prior.is_published : false,
+      /*
+        An existing product keeps whatever the admin decided — sending a value
+        unconditionally would pull a product somebody had deliberately put on
+        the shop, or put back one they had deliberately hidden.
+
+        A genuinely new one is born according to the vendor's own setting. It
+        was always born hidden, and for this shop that was wrong: 214 imported
+        Cult Beauty products were still sitting unlisted when the client asked
+        why the site showed 330 products out of 547. See migration 0020.
+      */
+      is_published: prior ? prior.is_published : vendor.auto_list,
     };
 
     const { error } = sku
@@ -749,16 +789,39 @@ export async function listCategorySwitches(): Promise<CategorySwitch[]> {
   });
 }
 
-export async function setCategoryEnabled(id: string, enabled: boolean): Promise<void> {
+/**
+ * Switch sections of the shop on or off — one, or all of them.
+ *
+ * Plural because the panel now has Show all / Hide all, and doing that as
+ * fifty-four separate calls would be fifty-four round trips and fifty-four
+ * chances to end up half applied. One statement per hundred ids instead:
+ * Postgres does the lot, and `products.is_listed` is recomputed by trigger for
+ * every row affected.
+ *
+ * The chunking is not decoration. PostgREST puts `in.(...)` in the query
+ * string, and a few hundred UUIDs is a URL long enough for a proxy to refuse.
+ */
+export async function setCategoriesEnabled(ids: string[], enabled: boolean): Promise<number> {
   const admin = getSupabaseAdmin();
   if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY isn't set.");
-  const { error } = await admin.from("categories").update({ is_enabled: enabled }).eq("id", id);
-  if (error) {
-    if (error.code === UNDEFINED_COLUMN) {
-      throw new Error(
-        "categories.is_enabled is missing — run supabase/migrations/0015_category_switch.sql.",
-      );
+
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return 0;
+
+  for (let i = 0; i < unique.length; i += 100) {
+    const { error } = await admin
+      .from("categories")
+      .update({ is_enabled: enabled })
+      .in("id", unique.slice(i, i + 100));
+    if (error) {
+      if (error.code === UNDEFINED_COLUMN) {
+        throw new Error(
+          "categories.is_enabled is missing — run supabase/migrations/0015_category_switch.sql.",
+        );
+      }
+      throw new Error(error.message);
     }
-    throw new Error(error.message);
   }
+
+  return unique.length;
 }

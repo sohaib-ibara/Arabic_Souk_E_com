@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
 import {
@@ -13,7 +13,9 @@ import {
   updateProductRow,
   type ProductInput,
 } from "@/lib/admin-products";
-import { isOrderStatus, setOrderStatus } from "@/lib/admin-orders";
+import { getOrder, isOrderStatus, setOrderStatus } from "@/lib/admin-orders";
+import { notifyStatusChange } from "@/lib/order-mail";
+import { isNotifyStatus } from "@/lib/email";
 import {
   applyStockCsv,
   MANUAL_REASONS,
@@ -27,7 +29,7 @@ import {
   createVendor,
   importStagedForVendor,
   priceVendor,
-  setCategoryEnabled,
+  setCategoriesEnabled,
   setVendorCategoryEnabled,
   setVendorEnabled,
   updateVendor,
@@ -469,6 +471,18 @@ export async function updateOrderStatusAction(formData: FormData): Promise<void>
   const status = str(formData, "status");
   if (!id || !isOrderStatus(status)) return;
 
+  /*
+    Nothing to say when it did not move.
+
+    The status control is a dropdown that posts on change, and a browser will
+    happily re-post the value already selected. Without this, saving the form
+    twice would mail the customer "your order has been cancelled" twice for one
+    cancellation. Read before write, and only tell anyone if the write is a
+    change.
+  */
+  const before = await getOrder(id);
+  const changed = before?.status !== status;
+
   await setOrderStatus(id, status);
 
   // Bring the stock ledger in line with the new status: cancelling a paid order
@@ -480,6 +494,22 @@ export async function updateOrderStatusAction(formData: FormData): Promise<void>
     if (process.env.NODE_ENV !== "production") {
       console.warn(`[inventory] reconcile failed for order ${id}: ${(e as Error).message}`);
     }
+  }
+
+  /*
+    Then tell both parties, for the three statuses the client asked about.
+
+    Awaited rather than left running: on Vercel the function is frozen when the
+    response is sent, so a promise nobody waited for is a mail that sometimes
+    goes and sometimes does not. Two SMTP sends is a second or so on a screen
+    that is already doing a database write and a ledger reconcile.
+
+    It cannot fail this action. `notifyStatusChange` swallows everything —
+    a status change is a fact about the order, and an unreachable mail server
+    must not undo it.
+  */
+  if (changed && isNotifyStatus(status)) {
+    await notifyStatusChange(id, status);
   }
 
   revalidatePath("/admin/orders");
@@ -562,6 +592,7 @@ export async function saveVendorAction(formData: FormData): Promise<void> {
     markup_percent: markup,
     surcharge_bhd: surcharge,
     round_prices: bool(formData, "round_prices"),
+    auto_list: bool(formData, "auto_list"),
     notes: optStr(formData, "notes"),
   });
 
@@ -596,6 +627,10 @@ export async function createVendorAction(formData: FormData): Promise<void> {
       markup_percent: 0,
       surcharge_bhd: 0,
       round_prices: true,
+      // A vendor you have only just added has nothing imported yet, and
+      // whether to carry its catalogue wholesale is a decision to take with
+      // the first import in front of you, not while typing in its name.
+      auto_list: false,
       notes: optStr(formData, "notes"),
     });
   } catch {
@@ -678,33 +713,50 @@ export async function vendorImportAction(
 }
 
 /**
- * Switch a whole category on or off.
+ * Switch sections of the shop on or off.
  *
- * Blunter than the per-vendor switch above: this takes the category off the
+ * Blunter than the per-vendor switch above: this takes a category off the
  * navigation, the homepage and its own URL, and unlists everything in it
  * whoever supplies it. `products.is_listed` is recomputed by trigger, so there
  * is nothing to recalculate here — but every storefront surface has to be
  * revalidated, because a category disappearing changes all of them.
+ *
+ * One action for one section and for all of them, because the difference is a
+ * longer list of ids and nothing else. The ids are posted rather than derived
+ * from a keyword like "all": the panel acts on the sections it is showing, so
+ * what the admin saw when they pressed the button is what changes, even if the
+ * catalogue gained a category in the meantime.
+ *
+ * It deliberately does NOT redirect any more, and that is the whole point of
+ * the rewrite. A redirect is a navigation, a navigation remounts the page, and
+ * remounting closed the panel — so hiding two sections meant opening it twice.
+ * `refresh()` re-renders this route into the same response instead: the counts
+ * update, the client state (which panel is open, where you had scrolled) does
+ * not move. The forms still post, so this works with JavaScript off; without
+ * it the browser navigates and the panel closes, which is the old behaviour
+ * and an acceptable floor.
  */
-export async function setCategoryEnabledAction(formData: FormData): Promise<void> {
+export async function setSectionsEnabledAction(formData: FormData): Promise<void> {
   await requireAdmin();
 
-  const id = str(formData, "category_id");
+  const ids = str(formData, "category_ids")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   const enabled = formData.get("enabled") === "1";
-  const back = String(formData.get("back") || "/admin/categories");
-  if (!id) redirect(back);
+  const back = String(formData.get("back") || "/admin/vendors");
+  if (ids.length === 0) return;
 
   try {
-    await setCategoryEnabled(id, enabled);
+    await setCategoriesEnabled(ids, enabled);
   } catch (e) {
     redirect(withQuery(back, { error: (e as Error).message.slice(0, 120) }));
   }
 
-  revalidatePath("/admin/categories");
+  revalidatePath("/admin/vendors");
   revalidatePath("/admin/products");
   revalidateStorefront();
-
-  redirect(withQuery(back, { cat: enabled ? "on" : "off" }));
+  refresh();
 }
 
 /* ------------------------- the home page shelf ------------------------- */

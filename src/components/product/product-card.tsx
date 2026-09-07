@@ -105,15 +105,42 @@ export function ProductCard({
         </div>
       </div>
 
+      {/*
+        Every line above the price is a FIXED height, so the price lands at the
+        same offset in every card and the prices across a row line up.
+
+        They did not. Measured on the deployed shop, six rows out of six were
+        out of true, by as much as 22px, and there were three separate reasons
+        stacked on top of each other:
+
+          16px  the brand line was conditional, and 214 of the catalogue's
+                products have no brand at all — so those cards lost a whole
+                line and everything below them rode up
+          19px  a one-line product name against a two-line one
+           3px  a long brand name wrapping onto a second line
+
+        The client has now raised this twice. Percentage heights and mt-auto
+        both looked like fixes and neither is: the card's height is whatever
+        the grid row gives it, so anything measured from the bottom moves when
+        a neighbour changes. Fixing the height of each line above the price is
+        the only thing that makes the offset the same number in every card,
+        whatever is in it.
+
+        If you add a line here, give it a height, or this comes back.
+      */}
       <div className="mt-3 flex flex-1 flex-col">
-        {product.brand_name && (
-          <p className="text-[11px] uppercase tracking-wide text-muted">{product.brand_name}</p>
-        )}
-        <h3 className="mt-0.5">
-          <Link
-            href={href}
-            className="line-clamp-2 text-sm font-medium leading-snug hover:text-brand"
-          >
+        {/*
+          One line, always. `h-4` holds the line open when there is no brand,
+          so no placeholder character is needed, and `truncate` stops a long
+          one taking a second line.
+        */}
+        <p className="h-4 truncate text-[11px] uppercase leading-4 tracking-wide text-muted">
+          {product.brand_name}
+        </p>
+
+        {/* Exactly two lines: leading-5 is 20px, so h-10 is 40px. */}
+        <h3 className="mt-0.5 h-10">
+          <Link href={href} className="line-clamp-2 text-sm font-medium leading-5 hover:text-brand">
             {product.name}
           </Link>
         </h3>
@@ -122,8 +149,11 @@ export function ProductCard({
           Rating and delivery in the same grid cell, so one replaces the other
           without the card changing height — a row of cards that all grew a
           line on hover would shunt the whole grid down.
+
+          Fixed height here too: an out-of-stock card renders the rating and no
+          delivery line, and the two are not quite the same height.
         */}
-        <div className="mt-1.5 grid">
+        <div className="mt-1.5 grid h-5 items-center">
           <div
             className={cn(
               "col-start-1 row-start-1 transition-opacity duration-200",

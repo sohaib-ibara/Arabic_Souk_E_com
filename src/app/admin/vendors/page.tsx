@@ -33,6 +33,9 @@ export default async function AdminVendorsPage({
 
   const sp = await searchParams;
   const selectedId = str(sp.vendor);
+  // The one thing a switch on this page can still redirect for. Nothing read it
+  // before, so a section that refused to save looked exactly like one that had.
+  const failed = str(sp.error);
 
   /*
     One call, one wave of queries.
@@ -67,6 +70,12 @@ export default async function AdminVendorsPage({
   return (
     <Container className="py-10">
       <Header />
+
+      {failed && (
+        <Notice tone="danger" title="That didn’t save" className="mt-6">
+          {failed}
+        </Notice>
+      )}
 
       {vendors.length === 0 ? (
         <Notice tone="info" className="mt-6">
