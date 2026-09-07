@@ -30,6 +30,7 @@
  *   CONFIRM_SYNC  =1 to write; without it this is a dry run
  *   NEW_LIMIT     default 40   — most new products one run may take on
  *   REFRESH_LIMIT default 60   — how many known products to re-check (stalest first)
+ *   REFRESH       all | unpriced (default all) — which known products qualify
  *   DELAY_MS / CONCURRENCY / HEADLESS — as import:capture
  *   DISCOVER      shelves | sitemap | listing (default: the adapter's)
  */
@@ -60,6 +61,7 @@ const SITE = env.SITE;
 const CONFIRM = env.CONFIRM_SYNC === "1";
 const NEW_LIMIT = Number(env.NEW_LIMIT || 40);
 const REFRESH_LIMIT = Number(env.REFRESH_LIMIT || 60);
+const REFRESH_ONLY_UNPRICED = (env.REFRESH || "all").toLowerCase() === "unpriced";
 const HEADLESS = env.HEADLESS === "1";
 const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -171,14 +173,68 @@ const known = (url, sku) =>
   is accurate — that first run seeds the mirror, and every run after it diffs
   against it.
 */
+/*
+  The vendor's pricing rule, for the one case below where this sync sets a
+  price: a product that has none.
+
+  Read from `vendors` rather than assumed, and applied through the same
+  `vendor_retail_price` function the admin's reprice uses, so a price this
+  writes and a price the admin computes cannot disagree. Null when the vendor
+  row or the function is absent — an older database, or a source with no vendor
+  configured — and then no price is written and everything else still runs.
+*/
+let vendorRule = null;
+{
+  const { data } = await sb
+    .from("vendors")
+    .select("fx_rate_to_bhd, markup_percent, surcharge_bhd, round_prices")
+    .eq("key", site.key)
+    .maybeSingle();
+  if (data) vendorRule = data;
+}
+
+async function retailPrice(amount) {
+  if (!vendorRule) return 0;
+  const { data, error } = await sb.rpc("vendor_retail_price", {
+    p_amount: amount,
+    p_fx: vendorRule.fx_rate_to_bhd,
+    p_markup: vendorRule.markup_percent,
+    p_surcharge: vendorRule.surcharge_bhd,
+    p_round: vendorRule.round_prices,
+  });
+  if (error) {
+    vendorRule = null; // say it once, not once per product
+    console.log(`First prices not set: ${error.message}`);
+    return 0;
+  }
+  return Number(data ?? 0);
+}
+
 const liveUrls = new Set();
+/*
+  The live rows that have no price, by URL.
+
+  Two jobs. `REFRESH=unpriced` re-checks exactly these, which matters because
+  the ordinary rotation is stalest-first and takes five runs to come round on
+  301 products — so a product that came back into stock at the supplier can sit
+  unsellable on the shop for a week. These are the ones worth the requests: we
+  cannot sell them as they stand.
+
+  And below, they are the only rows whose `price` this sync will write. See the
+  note there for why that is not a contradiction of "the sync never sets
+  prices".
+*/
+const unpricedUrls = new Set();
 {
   const { data } = await sb
     .from("products")
-    .select("source_url")
+    .select("source_url, price")
     .eq("source", site.key)
     .not("source_url", "is", null);
-  for (const r of data ?? []) liveUrls.add(r.source_url);
+  for (const r of data ?? []) {
+    liveUrls.add(r.source_url);
+    if (!(Number(r.price) > 0)) unpricedUrls.add(r.source_url);
+  }
 }
 
 console.log(`Already held: ${stagedBySku.size} staged, ${liveUrls.size} live`);
@@ -360,7 +416,13 @@ for (const url of discovered) {
 }
 
 const fresh = candidates.filter((c) => !c.prev);
-const revisit = candidates.filter((c) => c.prev);
+let revisit = candidates.filter((c) => c.prev);
+
+if (REFRESH_ONLY_UNPRICED) {
+  const before = revisit.length;
+  revisit = revisit.filter((c) => unpricedUrls.has(c.url));
+  console.log(`  REFRESH=unpriced: ${revisit.length} of ${before} known products have no price`);
+}
 
 revisit.sort((a, b) => {
   const at = a.prev?.scraped_at ?? "";
@@ -702,11 +764,59 @@ if (!CONFIRM) {
     decision made in the admin, exactly as the message below has always said.
   */
   let costsApplied = 0;
+  let stockApplied = 0;
+  let firstPrices = 0;
   for (let k = 0; k < parsed.length; k += 1) {
     const { url, record } = parsed[k];
-    if (!(Number(record.price) > 0)) continue; // 0 means out of stock, not free
+    const patch = {};
 
-    const patch = { source_price: record.price, source_currency: record.currency };
+    /*
+      Availability goes through, and it goes through BOTH ways.
+
+      Same argument as the delivery window above: this shop holds no stock. It
+      buys from the supplier after the customer pays, so "can this be bought"
+      is the supplier's fact about its own warehouse, not a number anybody
+      edits here. Nothing else writes this column for a supplier product, so
+      leaving it alone is what left 46 noon products marked Out of stock on the
+      shop while noon was selling them, with no way back.
+
+      Outside the price guard below, and that placement is the whole point. A
+      product going out of stock is exactly the case where the supplier quotes
+      no price — noon publishes `price: 0` and `OutOfStock` together — so
+      handling availability only alongside a price would update the shop when
+      something came back and never when it went away. That is the direction
+      that sells a customer something we cannot buy.
+    */
+    if (record.available === true) patch.in_stock = true;
+    else if (record.available === false) patch.in_stock = false;
+
+    if (Number(record.price) > 0) {
+      // 0 is "out of stock", not "free", so it is never recorded as a cost.
+      patch.source_price = record.price;
+      patch.source_currency = record.currency;
+
+      /*
+        And the shelf price, but ONLY where there is none.
+
+        The rule this file has always followed — the sync does not set what the
+        shop charges — is about not overwriting a decision. A product with no
+        price at all embodies no decision: it cannot be bought, it shows
+        nothing where a figure should be, and every one of them got there by
+        being captured on a day the supplier happened to be out of stock.
+
+        So a first price is filled in from the vendor's own rule, through the
+        same database function /admin/vendors reprices with, and anything that
+        already has a price is left alone. Repricing the rest stays a human
+        action behind a preview.
+      */
+      if (unpricedUrls.has(url) && vendorRule) {
+        const shelf = await retailPrice(record.price);
+        if (shelf > 0) patch.price = shelf;
+      }
+    }
+
+    if (Object.keys(patch).length === 0) continue;
+
     // By URL first, because on a multi-variant product the parsed SKU is not
     // the one the row is stored under — the same trap as last_seen_at above.
     let { count, error } = await sb
@@ -738,15 +848,37 @@ if (!CONFIRM) {
         .eq("source", site.key)
         .eq("source_sku", String(record.sku)));
     }
-    costsApplied += count ?? 0;
+    const n = count ?? 0;
+    if (patch.source_price != null) costsApplied += n;
+    if (patch.in_stock != null) stockApplied += n;
+    if (patch.price != null) firstPrices += n;
+  }
+  if (stockApplied) {
+    console.log(`Availability updated on ${stockApplied} live product(s).`);
+  }
+  if (firstPrices) {
+    console.log(`First shelf price set on ${firstPrices} product(s) that had none.`);
   }
   if (costsApplied) {
     console.log(`Supplier price recorded on ${costsApplied} live product(s).`);
   }
 
+  /*
+    Say what was NOT done, precisely, because this line is the whole contract
+    between the sync and the person reading its output. It used to say "prices
+    were NOT changed on the live shop" full stop, which stopped being true the
+    day this started filling in a first price for a product that had none.
+    A summary that overstates its own restraint is worse than none.
+  */
+  const moves = results.changed.filter((c) => c.kinds.includes("price")).length;
+  const held = Math.max(0, moves - firstPrices);
   console.log(
-    `\nPrices were NOT changed on the live shop — ${results.changed.filter((c) => c.kinds.includes("price")).length} price move(s) are\n` +
-      `waiting in staging for review. Nothing new is listed until an admin lists it.`,
+    `\n${held} price move(s) are waiting in staging for review — an existing price is\n` +
+      `never changed here, only in /admin/vendors behind a preview.` +
+      (firstPrices
+        ? `\n${firstPrices} product(s) that had NO price were given their first one.`
+        : "") +
+      `\nNothing new is listed until an admin lists it.`,
   );
 
   /*

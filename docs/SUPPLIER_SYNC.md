@@ -466,6 +466,31 @@ wait for tomorrow. `REFRESH_LIMIT` (default 60, 120 in CI) re-checks known
 products **stalest first**, so everything comes round without fetching 3,526
 pages nightly at someone else's expense.
 
+`REFRESH=unpriced` narrows the re-check to the products the shop cannot
+currently sell — the ones with no price on the live row. Stalest-first rotation
+is right for a catalogue at rest and wrong for these: on noon's 301 products a
+full turn takes five runs, and noon only runs when somebody runs it here, so a
+product that came back into stock could sit unsellable for a week. On 8 Sept
+2026 a `REFRESH=unpriced` pass over 46 such products found 7 of them back in
+stock with a price.
+
+```bash
+SITE=noon DISCOVER=staged NEW_LIMIT=0 REFRESH=unpriced CONFIRM_SYNC=1 npm run sync
+```
+
+### What a run writes to live products
+
+Most of what the sync learns stops at staging, for review. Three things do not:
+
+| Written through | Why |
+| --- | --- |
+| Delivery window | The supplier's own fact about its own logistics. Nobody edits it here and a stale one is a promise we break. |
+| **Availability** | Same argument. This shop holds no stock — it buys after the customer pays — so "can this be bought" belongs to the supplier's warehouse. Nothing else writes the column for a supplier product, which is how 46 noon products sat marked Out of stock while noon was selling them. Both directions: a product going *out* of stock is the case that would otherwise sell somebody something we cannot buy. |
+| **A first price, only where there is none** | The rule against setting prices is about not overwriting a decision, and a product with no price at all embodies no decision. Computed through `vendor_retail_price`, the same function `/admin/vendors` reprices with, so the two cannot disagree. |
+
+A price that already exists is still never touched by a sync. Moving one stays
+a human action in `/admin/vendors`, behind a preview.
+
 ---
 
 ## Still open (client decisions)
