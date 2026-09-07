@@ -28,27 +28,30 @@ export function Price({
     stock with no figure is honest, and out of stock at nothing is not.
   */
   /*
-    Same box as a real price, so it sits on the same line as one.
+    No price: an empty line, not a message.
 
-    This branch used to be a bare `text-sm` on the wrapper while a real price
-    is an inner span at the size the `size` prop asks for — which at the
-    default is the base 16px, not 14px. Two different font sizes inside an
-    `items-baseline` flex box put the text 3px apart, and on a shop grid where
-    some cards have a price and some do not, that is a row of prices that does
-    not line up. It was the last 3px of a misalignment the client reported
-    twice; see the note in product-card.tsx for the other 19.
+    It said "Price on request" for a version, which invited a request the shop
+    cannot answer — there is no price to quote, because the supplier has not
+    given one, and all 46 products in this state are also out of stock. The
+    card already says so twice, on the Out of stock badge and on the
+    Unavailable button, and the product page says it in a panel of its own.
+    A third notice in the price slot was one too many.
+
+    The BOX stays, and that is the point of this branch existing at all rather
+    than returning null. It is the same box a real price occupies — same
+    `items-baseline` wrapper, same font size for the `size` asked for — so the
+    prices across a row of cards still land on one line and the button below
+    an unpriced card does not ride up to meet it. Returning null would collapse
+    it to nothing and bring back the misalignment the client reported twice.
+
+    `invisible` rather than a colour: the space is reserved and the text is
+    not painted. `aria-hidden` because there is nothing here to read out.
   */
   if (!(price > 0)) {
     return (
-      <span className={cn("inline-flex items-baseline", className)}>
-        <span
-          className={cn(
-            "text-muted",
-            size === "sm" && "text-sm",
-            size === "lg" && "text-2xl",
-          )}
-        >
-          Price on request
+      <span className={cn("inline-flex items-baseline", className)} aria-hidden="true">
+        <span className={cn(size === "sm" && "text-sm", size === "lg" && "text-2xl", "invisible")}>
+          &nbsp;
         </span>
       </span>
     );

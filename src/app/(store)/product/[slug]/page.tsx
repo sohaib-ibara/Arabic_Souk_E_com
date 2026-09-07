@@ -244,15 +244,26 @@ export default async function ProductPage({ params }: { params: Params }) {
               <StarRating rating={product.rating} count={product.review_count} size={16} />
             </div>
 
-            <div className="mt-4">
-              <Price
-                price={product.price}
-                compareAt={product.compare_at_price}
-                currency={product.currency}
-                size="lg"
-              />
-              <p className="mt-1 text-xs text-muted">Inclusive of VAT</p>
-            </div>
+            {/*
+              No price, no price block — not even the reserved line.
+
+              `Price` holds an empty line open when there is nothing to show,
+              because on a grid of cards the row has to stay level. A product
+              page is one column and has nothing to line up with, so here the
+              whole block goes: an empty gap under the name followed by
+              "Inclusive of VAT" is a VAT note attached to no figure at all.
+            */}
+            {product.price > 0 && (
+              <div className="mt-4">
+                <Price
+                  price={product.price}
+                  compareAt={product.compare_at_price}
+                  currency={product.currency}
+                  size="lg"
+                />
+                <p className="mt-1 text-xs text-muted">Inclusive of VAT</p>
+              </div>
+            )}
 
             {product.short_description && (
               <p className="mt-5 text-[15px] leading-relaxed text-ink/80">
@@ -260,10 +271,23 @@ export default async function ProductPage({ params }: { params: Params }) {
               </p>
             )}
 
-            <p className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-700">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              In stock — ready to ship
-            </p>
+            {/*
+              Only when it is true.
+
+              This line was unconditional, so every out-of-stock product page
+              said "In stock — ready to ship" in green, three inches above a
+              panel saying "Currently unavailable". Forty-six product pages
+              contradicted themselves, and the green line is the one a shopper
+              reads first. Nothing replaces it here: the buy box below states
+              the case properly, and two notices saying the same thing is what
+              was wrong with "Price on request".
+            */}
+            {product.in_stock && (
+              <p className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-700">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                In stock — ready to ship
+              </p>
+            )}
 
             {/* The id is the sticky bar's anchor: it watches this element
                 rather than a scroll offset, because how far down the button

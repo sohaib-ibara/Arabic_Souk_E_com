@@ -5,7 +5,7 @@ import { OrdersTable } from "@/components/admin/orders-table";
 import { isAdmin } from "@/lib/admin-auth";
 import { listOrders, isOrderStatus, type OrderStatus } from "@/lib/admin-orders";
 import { formatPrice } from "@/lib/format";
-import { emailConfigured } from "@/lib/email";
+import { adminRecipients, emailConfigured } from "@/lib/email";
 
 export const metadata: Metadata = {
   title: "Orders · Admin",
@@ -59,15 +59,26 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       </div>
 
       {/* Said here because this is where someone would otherwise assume it was
-          working. Confirmations failing silently is the kind of thing nobody
-          notices until a customer asks why they never heard anything. */}
-      {!emailConfigured() && (
-        <Notice tone="warning" title="Order confirmation emails are switched off" className="mt-6">
-          Customers are not being emailed when they place an order. Set{" "}
-          <code className="rounded bg-sand px-1">SMTP_USER</code> and{" "}
+          working. Mail failing silently is the kind of thing nobody notices
+          until a customer asks why they never heard anything. */}
+      {!emailConfigured() ? (
+        <Notice tone="warning" title="Order emails are switched off" className="mt-6">
+          Nobody is being emailed — not the customer when they order, and not you when the
+          status changes. Set <code className="rounded bg-sand px-1">SMTP_USER</code> and{" "}
           <code className="rounded bg-sand px-1">SMTP_PASS</code> in the environment to turn
           them on. Orders themselves are unaffected.
         </Notice>
+      ) : (
+        adminRecipients().length === 0 && (
+          /* The customer's half works and yours does not, which is the case
+             most likely to be mistaken for everything working. */
+          <Notice tone="warning" title="You are not being emailed about orders" className="mt-6">
+            Customers get their confirmations, but the staff copies have nowhere to go. Set{" "}
+            <code className="rounded bg-sand px-1">ADMIN_EMAILS</code> (or{" "}
+            <code className="rounded bg-sand px-1">ORDER_ADMIN_EMAILS</code>) to a
+            comma-separated list of addresses.
+          </Notice>
+        )
       )}
 
       {result.error ? (

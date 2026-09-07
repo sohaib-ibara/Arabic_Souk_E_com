@@ -13,7 +13,9 @@ import {
   updateProductRow,
   type ProductInput,
 } from "@/lib/admin-products";
-import { isOrderStatus, setOrderStatus } from "@/lib/admin-orders";
+import { getOrder, isOrderStatus, setOrderStatus } from "@/lib/admin-orders";
+import { notifyStatusChange } from "@/lib/order-mail";
+import { isNotifyStatus } from "@/lib/email";
 import {
   applyStockCsv,
   MANUAL_REASONS,
@@ -469,6 +471,18 @@ export async function updateOrderStatusAction(formData: FormData): Promise<void>
   const status = str(formData, "status");
   if (!id || !isOrderStatus(status)) return;
 
+  /*
+    Nothing to say when it did not move.
+
+    The status control is a dropdown that posts on change, and a browser will
+    happily re-post the value already selected. Without this, saving the form
+    twice would mail the customer "your order has been cancelled" twice for one
+    cancellation. Read before write, and only tell anyone if the write is a
+    change.
+  */
+  const before = await getOrder(id);
+  const changed = before?.status !== status;
+
   await setOrderStatus(id, status);
 
   // Bring the stock ledger in line with the new status: cancelling a paid order
@@ -480,6 +494,22 @@ export async function updateOrderStatusAction(formData: FormData): Promise<void>
     if (process.env.NODE_ENV !== "production") {
       console.warn(`[inventory] reconcile failed for order ${id}: ${(e as Error).message}`);
     }
+  }
+
+  /*
+    Then tell both parties, for the three statuses the client asked about.
+
+    Awaited rather than left running: on Vercel the function is frozen when the
+    response is sent, so a promise nobody waited for is a mail that sometimes
+    goes and sometimes does not. Two SMTP sends is a second or so on a screen
+    that is already doing a database write and a ledger reconcile.
+
+    It cannot fail this action. `notifyStatusChange` swallows everything —
+    a status change is a fact about the order, and an unreachable mail server
+    must not undo it.
+  */
+  if (changed && isNotifyStatus(status)) {
+    await notifyStatusChange(id, status);
   }
 
   revalidatePath("/admin/orders");
