@@ -27,10 +27,29 @@ export function Price({
     first to tell us about a product. So the display refuses to print it: out of
     stock with no figure is honest, and out of stock at nothing is not.
   */
+  /*
+    Same box as a real price, so it sits on the same line as one.
+
+    This branch used to be a bare `text-sm` on the wrapper while a real price
+    is an inner span at the size the `size` prop asks for — which at the
+    default is the base 16px, not 14px. Two different font sizes inside an
+    `items-baseline` flex box put the text 3px apart, and on a shop grid where
+    some cards have a price and some do not, that is a row of prices that does
+    not line up. It was the last 3px of a misalignment the client reported
+    twice; see the note in product-card.tsx for the other 19.
+  */
   if (!(price > 0)) {
     return (
-      <span className={cn("inline-flex items-baseline text-sm text-muted", className)}>
-        Price on request
+      <span className={cn("inline-flex items-baseline", className)}>
+        <span
+          className={cn(
+            "text-muted",
+            size === "sm" && "text-sm",
+            size === "lg" && "text-2xl",
+          )}
+        >
+          Price on request
+        </span>
       </span>
     );
   }

@@ -562,6 +562,7 @@ export async function saveVendorAction(formData: FormData): Promise<void> {
     markup_percent: markup,
     surcharge_bhd: surcharge,
     round_prices: bool(formData, "round_prices"),
+    auto_list: bool(formData, "auto_list"),
     notes: optStr(formData, "notes"),
   });
 
@@ -596,6 +597,10 @@ export async function createVendorAction(formData: FormData): Promise<void> {
       markup_percent: 0,
       surcharge_bhd: 0,
       round_prices: true,
+      // A vendor you have only just added has nothing imported yet, and
+      // whether to carry its catalogue wholesale is a decision to take with
+      // the first import in front of you, not while typing in its name.
+      auto_list: false,
       notes: optStr(formData, "notes"),
     });
   } catch {

@@ -54,7 +54,10 @@ export const CATEGORY_ALIASES: Record<string, Record<string, string>> = {
     "scalp-exfoliator-treatments": "hair-scalp-treatments",
 
     // Bath and body
-    "bath-oils-bubbles-soaks": "bath",
+    // Not "bath": that is a second bath aisle beside "Bath & Body", holding
+    // eight products nobody could see because it was switched off shop-wide
+    // while Bath & Body was on. One aisle, and it is the one already there.
+    "bath-oils-bubbles-soaks": "bath-body",
     "bath-shower": "bath-body",
     "body-oil": "bath-body",
     "body-oil-shimmers": "bath-body",
