@@ -789,16 +789,39 @@ export async function listCategorySwitches(): Promise<CategorySwitch[]> {
   });
 }
 
-export async function setCategoryEnabled(id: string, enabled: boolean): Promise<void> {
+/**
+ * Switch sections of the shop on or off — one, or all of them.
+ *
+ * Plural because the panel now has Show all / Hide all, and doing that as
+ * fifty-four separate calls would be fifty-four round trips and fifty-four
+ * chances to end up half applied. One statement per hundred ids instead:
+ * Postgres does the lot, and `products.is_listed` is recomputed by trigger for
+ * every row affected.
+ *
+ * The chunking is not decoration. PostgREST puts `in.(...)` in the query
+ * string, and a few hundred UUIDs is a URL long enough for a proxy to refuse.
+ */
+export async function setCategoriesEnabled(ids: string[], enabled: boolean): Promise<number> {
   const admin = getSupabaseAdmin();
   if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY isn't set.");
-  const { error } = await admin.from("categories").update({ is_enabled: enabled }).eq("id", id);
-  if (error) {
-    if (error.code === UNDEFINED_COLUMN) {
-      throw new Error(
-        "categories.is_enabled is missing — run supabase/migrations/0015_category_switch.sql.",
-      );
+
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return 0;
+
+  for (let i = 0; i < unique.length; i += 100) {
+    const { error } = await admin
+      .from("categories")
+      .update({ is_enabled: enabled })
+      .in("id", unique.slice(i, i + 100));
+    if (error) {
+      if (error.code === UNDEFINED_COLUMN) {
+        throw new Error(
+          "categories.is_enabled is missing — run supabase/migrations/0015_category_switch.sql.",
+        );
+      }
+      throw new Error(error.message);
     }
-    throw new Error(error.message);
   }
+
+  return unique.length;
 }

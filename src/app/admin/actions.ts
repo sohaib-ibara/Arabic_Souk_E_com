@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
 import {
@@ -27,7 +27,7 @@ import {
   createVendor,
   importStagedForVendor,
   priceVendor,
-  setCategoryEnabled,
+  setCategoriesEnabled,
   setVendorCategoryEnabled,
   setVendorEnabled,
   updateVendor,
@@ -683,33 +683,50 @@ export async function vendorImportAction(
 }
 
 /**
- * Switch a whole category on or off.
+ * Switch sections of the shop on or off.
  *
- * Blunter than the per-vendor switch above: this takes the category off the
+ * Blunter than the per-vendor switch above: this takes a category off the
  * navigation, the homepage and its own URL, and unlists everything in it
  * whoever supplies it. `products.is_listed` is recomputed by trigger, so there
  * is nothing to recalculate here — but every storefront surface has to be
  * revalidated, because a category disappearing changes all of them.
+ *
+ * One action for one section and for all of them, because the difference is a
+ * longer list of ids and nothing else. The ids are posted rather than derived
+ * from a keyword like "all": the panel acts on the sections it is showing, so
+ * what the admin saw when they pressed the button is what changes, even if the
+ * catalogue gained a category in the meantime.
+ *
+ * It deliberately does NOT redirect any more, and that is the whole point of
+ * the rewrite. A redirect is a navigation, a navigation remounts the page, and
+ * remounting closed the panel — so hiding two sections meant opening it twice.
+ * `refresh()` re-renders this route into the same response instead: the counts
+ * update, the client state (which panel is open, where you had scrolled) does
+ * not move. The forms still post, so this works with JavaScript off; without
+ * it the browser navigates and the panel closes, which is the old behaviour
+ * and an acceptable floor.
  */
-export async function setCategoryEnabledAction(formData: FormData): Promise<void> {
+export async function setSectionsEnabledAction(formData: FormData): Promise<void> {
   await requireAdmin();
 
-  const id = str(formData, "category_id");
+  const ids = str(formData, "category_ids")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   const enabled = formData.get("enabled") === "1";
-  const back = String(formData.get("back") || "/admin/categories");
-  if (!id) redirect(back);
+  const back = String(formData.get("back") || "/admin/vendors");
+  if (ids.length === 0) return;
 
   try {
-    await setCategoryEnabled(id, enabled);
+    await setCategoriesEnabled(ids, enabled);
   } catch (e) {
     redirect(withQuery(back, { error: (e as Error).message.slice(0, 120) }));
   }
 
-  revalidatePath("/admin/categories");
+  revalidatePath("/admin/vendors");
   revalidatePath("/admin/products");
   revalidateStorefront();
-
-  redirect(withQuery(back, { cat: enabled ? "on" : "off" }));
+  refresh();
 }
 
 /* ------------------------- the home page shelf ------------------------- */
