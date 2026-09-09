@@ -54,9 +54,13 @@ export const CATEGORY_ALIASES: Record<string, Record<string, string>> = {
     "scalp-exfoliator-treatments": "hair-scalp-treatments",
 
     // Bath and body
-    // Not "bath": that is a second bath aisle beside "Bath & Body", holding
-    // eight products nobody could see because it was switched off shop-wide
-    // while Bath & Body was on. One aisle, and it is the one already there.
+    //
+    // "bath" is listed here deliberately, and it is the reason the lookup
+    // below prefers an alias over a name match. It exists as a category of our
+    // own — a second bath aisle beside "Bath & Body" — and every import that
+    // trusted the name put more products into it, where they sat switched off
+    // and unseeable. One aisle, and it is the one already there.
+    bath: "bath-body",
     "bath-oils-bubbles-soaks": "bath-body",
     "bath-shower": "bath-body",
     "body-oil": "bath-body",
@@ -75,8 +79,28 @@ export function resolveCategorySlug(
   known: Set<string>,
 ): string | null {
   if (!staged) return null;
-  // A shelf whose name already matches one of ours needs no alias.
-  if (known.has(staged)) return staged;
+
+  /*
+    An alias beats a name that merely matches.
+
+    This was the other way round — a shelf whose name equalled one of our slugs
+    was taken as-is and the alias table never consulted. That is right almost
+    always and wrong in exactly the case that bit us: our own category list
+    still contains the supplier's old merchandising shelves, created by earlier
+    imports, so "matches one of ours" can mean "matches a shelf we no longer
+    want to file anything into".
+
+    `bath` is the worked example. It is a real row in `categories`, so the
+    shortcut sent Cult Beauty's bath products there — into a second bath aisle
+    sitting beside "Bath & Body", switched off, holding products nobody could
+    see. Merging them by hand fixed it twice; it came back both times, because
+    the next import put more in.
+
+    An alias is a decision somebody made. A name collision is an accident. The
+    decision wins.
+  */
   const mapped = CATEGORY_ALIASES[source ?? ""]?.[staged];
-  return mapped && known.has(mapped) ? mapped : null;
+  if (mapped) return known.has(mapped) ? mapped : null;
+
+  return known.has(staged) ? staged : null;
 }
