@@ -825,3 +825,22 @@ export async function setCategoriesEnabled(ids: string[], enabled: boolean): Pro
 
   return unique.length;
 }
+
+/**
+ * Vendor key → display name, and nothing else.
+ *
+ * Two rows and two columns. `getVendorBoard` would answer the same question
+ * with five queries and a scan of the whole catalogue, which is the shape this
+ * file spent a day removing from the Vendors page; a screen that needs to
+ * print "noon" rather than "noon" should not pay for that.
+ *
+ * An empty map is a fine answer. Callers fall back to the vendor key, which is
+ * a word a human can read.
+ */
+export async function vendorNames(): Promise<Map<string, string>> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return new Map();
+  const { data, error } = await admin.from("vendors").select("key, name");
+  if (error || !data) return new Map();
+  return new Map(data.map((v) => [v.key as string, v.name as string]));
+}

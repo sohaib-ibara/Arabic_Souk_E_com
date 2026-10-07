@@ -3,8 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { StatusBadge, StatusForm, formatDateTime } from "@/components/admin/order-bits";
+import { SupplierExport } from "@/components/admin/supplier-export";
 import { isAdmin } from "@/lib/admin-auth";
 import { getOrder } from "@/lib/admin-orders";
+import { vendorNames } from "@/lib/vendors";
+import { splitBySupplier } from "@/lib/supplier-order";
 import { formatPrice } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -29,8 +32,12 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
   if (!(await isAdmin())) return null;
 
   const { id } = await params;
-  const order = await getOrder(id);
+  // One wave: the vendor names do not depend on the order, and this page is
+  // force-dynamic so both run on every view.
+  const [order, names] = await Promise.all([getOrder(id), vendorNames()]);
   if (!order) notFound();
+
+  const split = splitBySupplier(order.items ?? [], names);
 
   const addr = order.address;
   const addressLines = [addr.address, addr.area, addr.city, addr.governorate].filter(Boolean);
@@ -151,6 +158,10 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
               <strong>{formatPrice(order.total, order.currency)}</strong>
             </Row>
           </div>
+
+          {/* Under the items, because it is about the items: the next thing
+              anyone does with this screen is go and buy them. */}
+          <SupplierExport orderNumber={order.orderNumber} split={split} />
         </section>
 
         {/* Customer / CRM panel */}

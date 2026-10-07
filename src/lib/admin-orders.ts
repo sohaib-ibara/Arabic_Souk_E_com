@@ -40,6 +40,18 @@ export interface OrderItemRow {
    * product has no link yet, or has since been deleted from the catalogue.
    */
   sourceUrl: string | null;
+  /**
+   * Which supplier this line has to be bought from — the vendor `key`, null
+   * for a product added by hand. Everything below is read live from the
+   * product for the same reason `sourceUrl` is, and exists so the order can be
+   * turned into a purchase request per supplier.
+   */
+  source: string | null;
+  /** The supplier's own code for it, which is what they will recognise. */
+  sourceSku: string | null;
+  /** What the SUPPLIER charges, in their currency — not our shelf price. */
+  supplierPrice: number | null;
+  supplierCurrency: string | null;
 }
 
 export interface OrderRow {
@@ -100,6 +112,12 @@ function mapOrder(row: any, withItems = false): OrderRow {
       quantity: Number(i.quantity ?? 0),
       productId: i.product_id ?? null,
       sourceUrl: i.product?.source_url ?? null,
+      source: i.product?.source ?? null,
+      sourceSku: i.product?.source_sku ?? null,
+      // A supplier price of zero means "they would not quote one", which is
+      // not a price — see the same rule in the importer and in <Price>.
+      supplierPrice: Number(i.product?.source_price) > 0 ? Number(i.product.source_price) : null,
+      supplierCurrency: i.product?.source_currency ?? null,
     }));
     order.itemCount = order.items.reduce((s, i) => s + i.quantity, 0);
   } else {
@@ -213,7 +231,8 @@ export async function getOrder(id: string): Promise<OrderRow | null> {
   const { data, error } = await admin
     .from("orders")
     .select(
-      "*, items:order_items(id,name,unit_price,quantity,product_id,product:products(source_url))",
+      "*, items:order_items(id,name,unit_price,quantity,product_id," +
+        "product:products(source_url,source,source_sku,source_price,source_currency))",
     )
     .eq("id", id)
     .maybeSingle();
