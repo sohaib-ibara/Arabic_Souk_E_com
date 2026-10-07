@@ -12,6 +12,10 @@ import {
 /**
  * "What we need to buy, per supplier" — as a file you can send them.
  *
+ * One component for both callers: an order screen passes that order, the
+ * orders list passes a day's worth. The only difference is what `covers`
+ * says, which is also what the filename is built from.
+ *
  * Built in the browser from what the page already rendered, matching
  * SubscriberExport: a download route would be a second place to get the
  * authorisation check right, for data this page has already fetched and
@@ -23,25 +27,40 @@ import {
  * server; see splitBySupplier.
  */
 export function SupplierExport({
-  orderNumber,
   split,
+  covers,
+  coversLabel,
+  children,
 }: {
-  orderNumber: string;
   split: SupplierSplit;
+  /** Goes in the filename: an order number, or a date. */
+  covers: string;
+  /** Goes on screen: "AS-260907-1008", "7 Oct 2026", "all open orders". */
+  coversLabel: string;
+  /** Anything the calling page needs to say about what was included. */
+  children?: React.ReactNode;
 }) {
   const { requests, unsourced } = split;
-  if (requests.length === 0 && unsourced.length === 0) return null;
 
   return (
     <section className="mt-6 rounded-2xl border border-line bg-white p-5">
       <h2 className="font-medium">Send to suppliers</h2>
       <p className="mt-1 text-sm text-muted">
-        What this order needs us to buy, as one file per supplier. The file carries their
-        prices and their product codes — not the customer&rsquo;s details, and not what we
-        charged.
+        {/* Explicit space: this JSX transform drops the one that would
+            otherwise sit between </span> and the word after it — the same
+            trap already noted on the order screen. */}
+        What <span className="text-ink">{coversLabel}</span>{" "}
+        needs us to buy, as one file per supplier. The file carries their prices and their product codes — not the
+        customer&rsquo;s details, and not what we charged.
       </p>
 
-      {requests.length > 0 && (
+      {children}
+
+      {requests.length === 0 ? (
+        <p className="mt-4 rounded-xl bg-sand/60 px-4 py-3 text-sm text-muted">
+          Nothing to buy here.
+        </p>
+      ) : (
         <ul className="mt-4 space-y-2">
           {requests.map((r) => (
             <li
@@ -65,7 +84,7 @@ export function SupplierExport({
                   )}
                 </p>
               </div>
-              <DownloadButton orderNumber={orderNumber} request={r} />
+              <DownloadButton request={r} covers={covers} />
             </li>
           ))}
         </ul>
@@ -80,29 +99,23 @@ export function SupplierExport({
         <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-900">
           {unsourced.length} line{unsourced.length === 1 ? " is" : "s are"} not linked to a
           supplier and {unsourced.length === 1 ? "is" : "are"} in none of these files:{" "}
-          {unsourced.map((i) => i.name).join(", ")}.
+          {[...new Set(unsourced.map((i) => i.name))].join(", ")}.
         </p>
       )}
     </section>
   );
 }
 
-function DownloadButton({
-  orderNumber,
-  request,
-}: {
-  orderNumber: string;
-  request: SupplierRequest;
-}) {
+function DownloadButton({ request, covers }: { request: SupplierRequest; covers: string }) {
   function download() {
-    const csv = supplierCsv(orderNumber, request);
+    const csv = supplierCsv(request);
     // A BOM, so Excel opens it as UTF-8 rather than mangling any non-ASCII —
     // and product names here are full of ™, é and ×.
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = supplierCsvFilename(orderNumber, request);
+    a.download = supplierCsvFilename(request, covers);
     a.click();
     URL.revokeObjectURL(url);
   }

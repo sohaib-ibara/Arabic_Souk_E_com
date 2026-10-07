@@ -37,7 +37,10 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
   const [order, names] = await Promise.all([getOrder(id), vendorNames()]);
   if (!order) notFound();
 
-  const split = splitBySupplier(order.items ?? [], names);
+  const split = splitBySupplier(
+    [{ orderNumber: order.orderNumber, items: order.items ?? [] }],
+    names,
+  );
 
   const addr = order.address;
   const addressLines = [addr.address, addr.area, addr.city, addr.governorate].filter(Boolean);
@@ -161,7 +164,11 @@ export default async function AdminOrderPage({ params }: { params: Params }) {
 
           {/* Under the items, because it is about the items: the next thing
               anyone does with this screen is go and buy them. */}
-          <SupplierExport orderNumber={order.orderNumber} split={split} />
+          <SupplierExport
+            split={split}
+            covers={order.orderNumber}
+            coversLabel={order.orderNumber}
+          />
         </section>
 
         {/* Customer / CRM panel */}

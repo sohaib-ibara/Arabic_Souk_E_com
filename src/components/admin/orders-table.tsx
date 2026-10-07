@@ -5,23 +5,42 @@ import { StatusBadge, formatDateTime } from "./order-bits";
 import { cn } from "@/lib/cn";
 import { adminButton } from "@/components/admin/button-styles";
 
-function hrefFor(params: { status: string; search: string; page?: number }) {
+function hrefFor(params: {
+  status: string;
+  search: string;
+  from?: string;
+  to?: string;
+  page?: number;
+}) {
   const p = new URLSearchParams();
   if (params.status && params.status !== "all") p.set("status", params.status);
   if (params.search) p.set("search", params.search);
+  if (params.from) p.set("from", params.from);
+  if (params.to) p.set("to", params.to);
   if (params.page && params.page > 1) p.set("page", String(params.page));
   const qs = p.toString();
   return qs ? `/admin/orders?${qs}` : "/admin/orders";
+}
+
+/** Today, as the browser-less server would write it for a date input. */
+function todayValue(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export function OrdersTable({
   result,
   status,
   search,
+  from,
+  to,
 }: {
   result: OrdersResult;
   status: string;
   search: string;
+  from: string;
+  to: string;
 }) {
   const { items, total, page, pageCount, perPage, countsByStatus } = result;
   const first = total === 0 ? 0 : (page - 1) * perPage + 1;
@@ -42,7 +61,7 @@ export function OrdersTable({
         {tabs.map((t) => (
           <Link
             key={t.key}
-            href={hrefFor({ status: t.key, search })}
+            href={hrefFor({ status: t.key, search, from, to })}
             className={cn(
               "rounded-full border px-4 py-2 text-sm transition-colors",
               status === t.key
@@ -56,7 +75,7 @@ export function OrdersTable({
         ))}
       </div>
 
-      <form method="GET" action="/admin/orders" className="mt-4 flex flex-wrap gap-3">
+      <form method="GET" action="/admin/orders" className="mt-4 flex flex-wrap items-center gap-3">
         {status !== "all" && <input type="hidden" name="status" value={status} />}
         <input
           type="search"
@@ -66,15 +85,56 @@ export function OrdersTable({
           aria-label="Search orders"
           className="min-w-60 flex-1 rounded-full border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-brand"
         />
+
+        {/*
+          The day a purchase request is for.
+
+          Two fields rather than one, because the common case after a weekend
+          or a day off is "Friday and Saturday", and a single-day picker makes
+          that two downloads a human has to merge. Leave them blank and
+          nothing is filtered, which is what this page did before.
+        */}
+        <label className="flex items-center gap-2 text-sm text-muted">
+          From
+          <input
+            type="date"
+            name="from"
+            defaultValue={from}
+            max={to || undefined}
+            aria-label="Orders placed from"
+            className="rounded-full border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-sm text-muted">
+          to
+          <input
+            type="date"
+            name="to"
+            defaultValue={to}
+            min={from || undefined}
+            aria-label="Orders placed up to"
+            className="rounded-full border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand"
+          />
+        </label>
+
         <button
           type="submit"
           className={adminButton("primary")}
         >
-          Search
+          Apply
         </button>
-        {search && (
+
+        {/* The one window anybody asks for by name, in one click. */}
+        <Link
+          href={hrefFor({ status, search, from: todayValue(), to: todayValue() })}
+          className={adminButton("secondary")}
+        >
+          Today
+        </Link>
+
+        {(search || from || to) && (
           <Link
-            href={hrefFor({ status, search: "" })}
+            href={hrefFor({ status, search: "", from: "", to: "" })}
             className={adminButton("quiet")}
           >
             Clear
@@ -157,7 +217,7 @@ export function OrdersTable({
         <nav className="mt-6 flex items-center justify-between gap-3" aria-label="Pagination">
           {page > 1 ? (
             <Link
-              href={hrefFor({ status, search, page: page - 1 })}
+              href={hrefFor({ status, search, from, to, page: page - 1 })}
               className={adminButton("secondary")}
             >
               ← Previous
@@ -170,7 +230,7 @@ export function OrdersTable({
           </span>
           {page < pageCount ? (
             <Link
-              href={hrefFor({ status, search, page: page + 1 })}
+              href={hrefFor({ status, search, from, to, page: page + 1 })}
               className={adminButton("secondary")}
             >
               Next →

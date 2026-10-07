@@ -2,15 +2,26 @@ import { toCsv } from "./csv";
 import type { OrderItemRow } from "./admin-orders";
 
 /**
- * Turning an order into a purchase request, one per supplier.
+ * Turning orders into a purchase request, one per supplier.
  *
  * This shop owns no stock. An order arrives, and somebody then has to buy
  * those items from noon or Cult Beauty and forward them. Until now that was
  * done by opening each line's "Buy from supplier" link in turn, which is fine
  * for a two-line order and not fine for a day's worth.
  *
- * WHAT THIS DELIBERATELY DOES NOT PUT IN THE FILE, because the file is sent
- * out of the building:
+ * Two shapes, one file format:
+ *
+ *   one order   from the order screen, while looking at it
+ *   one day     from the orders list, which is how the work actually arrives:
+ *               nobody buys one order at a time, they buy the morning's
+ *               orders in one go
+ *
+ * The day version AGGREGATES. Three orders for the same lipstick is one line
+ * reading quantity 3, not three lines a human has to add up — with the order
+ * numbers kept in a column so a delivery can still be reconciled. That is the
+ * whole reason the day version is worth having over downloading each order.
+ *
+ * WHAT THESE FILES DELIBERATELY DO NOT CARRY, because they leave the building:
  *
  *   The customer.  No name, no email, no phone, no delivery address. Goods
  *                  come to us and we forward them, so the supplier has no use
@@ -35,6 +46,12 @@ export interface SupplierLine {
   /** The supplier's own price each, null when we have never been quoted one. */
   unitPrice: number | null;
   currency: string | null;
+  /**
+   * Which of our orders this line is for — one for a single-order request,
+   * several once a day's orders are aggregated. Kept so a part-delivery can
+   * be traced back to the customer waiting for it.
+   */
+  orders: string[];
 }
 
 export interface SupplierRequest {
@@ -66,41 +83,82 @@ export interface SupplierSplit {
   unsourced: OrderItemRow[];
 }
 
+/** An order reduced to what a purchase request needs from it. */
+export interface PurchaseSource {
+  orderNumber: string;
+  items: OrderItemRow[];
+}
+
 /**
- * Split an order's lines by who we buy them from.
+ * Split one or many orders by who we buy from, merging identical products.
  *
  * `vendorNames` maps a vendor key to its display name. A key with no vendor
  * row still gets a request, under its own key: the products exist and have to
  * be bought whether or not somebody has configured the supplier.
  */
 export function splitBySupplier(
-  items: OrderItemRow[],
+  orders: PurchaseSource[],
   vendorNames: Map<string, string>,
 ): SupplierSplit {
-  const bySource = new Map<string, OrderItemRow[]>();
+  const bySource = new Map<string, Map<string, SupplierLine>>();
   const unsourced: OrderItemRow[] = [];
 
-  for (const item of items) {
-    if (!item.source) {
-      unsourced.push(item);
-      continue;
+  for (const order of orders) {
+    for (const item of order.items) {
+      if (!item.source) {
+        unsourced.push(item);
+        continue;
+      }
+
+      /*
+        What counts as "the same product" across orders.
+
+        The product id, when there is one — two orders for the same catalogue
+        row are one thing to buy. Falling back to the supplier's own code, and
+        then to the name, because a product deleted from the catalogue still
+        has to be bought and still has a name on the order line. Never the
+        name alone when an id exists: two suppliers can sell a product under
+        exactly the same name, and merging those would order the wrong one.
+      */
+      const identity = item.productId ?? item.sourceSku ?? item.name;
+
+      let lines = bySource.get(item.source);
+      if (!lines) {
+        lines = new Map();
+        bySource.set(item.source, lines);
+      }
+
+      const existing = lines.get(identity);
+      if (existing) {
+        existing.quantity += item.quantity;
+        if (!existing.orders.includes(order.orderNumber)) {
+          existing.orders.push(order.orderNumber);
+        }
+        // A price learnt on one line is better than a blank on another: the
+        // product is the same, and the later sync may simply not have reached
+        // the row the first line read.
+        if (existing.unitPrice == null && item.supplierPrice != null) {
+          existing.unitPrice = item.supplierPrice;
+          existing.currency = item.supplierCurrency;
+        }
+        continue;
+      }
+
+      lines.set(identity, {
+        name: item.name,
+        sku: item.sourceSku,
+        url: item.sourceUrl,
+        quantity: item.quantity,
+        unitPrice: item.supplierPrice,
+        currency: item.supplierCurrency,
+        orders: [order.orderNumber],
+      });
     }
-    const list = bySource.get(item.source);
-    if (list) list.push(item);
-    else bySource.set(item.source, [item]);
   }
 
   const requests: SupplierRequest[] = [...bySource.entries()]
-    .map(([key, rows]) => {
-      const lines: SupplierLine[] = rows.map((r) => ({
-        name: r.name,
-        sku: r.sourceSku,
-        url: r.sourceUrl,
-        quantity: r.quantity,
-        unitPrice: r.supplierPrice,
-        currency: r.supplierCurrency,
-      }));
-
+    .map(([key, lineMap]) => {
+      const lines = [...lineMap.values()];
       const priced = lines.filter((l) => l.unitPrice != null);
       return {
         key,
@@ -121,16 +179,19 @@ export function splitBySupplier(
 /**
  * The request as CSV.
  *
- * Our order number is on every row rather than in a banner above the table,
- * because a header line that is not part of the data stops the file being a
- * spreadsheet: the supplier opens it, sorts a column, and the banner sorts
- * with it. One repeated value is the cost of a file anybody can open.
+ * Our order numbers sit in a column on every row rather than in a banner
+ * above the table, because a header line that is not part of the data stops
+ * the file being a spreadsheet: the supplier opens it, sorts a column, and
+ * the banner sorts with it. A repeated value is the cost of a file anybody
+ * can open.
  */
-export function supplierCsv(orderNumber: string, request: SupplierRequest): string {
+export function supplierCsv(request: SupplierRequest): string {
   return toCsv([
-    ["order", "product", "supplier_sku", "supplier_url", "quantity", "unit_price", "currency", "line_total"],
+    ["orders", "product", "supplier_sku", "supplier_url", "quantity", "unit_price", "currency", "line_total"],
     ...request.lines.map((l) => [
-      orderNumber,
+      // Space-separated: order numbers contain no spaces, so this needs no
+      // quoting and still splits cleanly for anyone who wants the list back.
+      l.orders.join(" "),
       l.name,
       l.sku ?? "",
       l.url ?? "",
@@ -146,12 +207,10 @@ export function supplierCsv(orderNumber: string, request: SupplierRequest): stri
  * A filename somebody can find again in a downloads folder six weeks later.
  *
  * Supplier first, because the question being answered is "what did we send
- * noon", and the order number second so two requests never collide.
+ * noon"; then what the request covers — an order number, or a date.
  */
-export function supplierCsvFilename(orderNumber: string, request: SupplierRequest): string {
-  const slug = request.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return `${slug || request.key}-${orderNumber}.csv`;
+export function supplierCsvFilename(request: SupplierRequest, covers: string): string {
+  const slug = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `${slug(request.name) || request.key}-${slug(covers) || "orders"}.csv`;
 }
