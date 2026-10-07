@@ -2,8 +2,17 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Notice } from "@/components/admin/notice";
 import { OrdersTable } from "@/components/admin/orders-table";
+import { SupplierExport } from "@/components/admin/supplier-export";
 import { isAdmin } from "@/lib/admin-auth";
-import { listOrders, isOrderStatus, type OrderStatus } from "@/lib/admin-orders";
+import {
+  listOrders,
+  listOrdersToBuy,
+  isOrderStatus,
+  PURCHASE_STATUSES,
+  type OrderStatus,
+} from "@/lib/admin-orders";
+import { vendorNames } from "@/lib/vendors";
+import { splitBySupplier } from "@/lib/supplier-order";
 import { formatPrice } from "@/lib/format";
 import { adminRecipients, emailConfigured } from "@/lib/email";
 
@@ -36,14 +45,34 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const rawStatus = str(sp.status);
   const status = isOrderStatus(rawStatus) ? rawStatus : "all";
   const search = str(sp.search);
+  // Only a yyyy-mm-dd gets through. A date input cannot produce anything else,
+  // but this is a URL and anyone can type one.
+  const day = (v: string) => (/^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "");
+  const from = day(str(sp.from));
+  const to = day(str(sp.to));
   const parsedPage = Number.parseInt(str(sp.page) || "1", 10);
   const page = Number.isNaN(parsedPage) ? 1 : parsedPage;
 
-  const result = await listOrders({
-    status: status as OrderStatus | "all",
-    search,
-    page,
-  });
+  /*
+    Three reads, one wave. The table is 25 rows; the purchase request needs
+    every matching order's lines and is a separate query for that reason; the
+    vendor names are two rows and are needed to label the suppliers.
+  */
+  const [result, toBuy, names] = await Promise.all([
+    listOrders({ status: status as OrderStatus | "all", search, from, to, page }),
+    listOrdersToBuy({ status: status as OrderStatus | "all", search, from, to }),
+    vendorNames(),
+  ]);
+
+  const purchase = splitBySupplier(toBuy.orders, names);
+
+  // What the file is for, in the words on the screen and in its filename.
+  const coversLabel =
+    from && to ? (from === to ? formatDay(from) : `${formatDay(from)} – ${formatDay(to)}`)
+    : from ? `${formatDay(from)} onwards`
+    : to ? `up to ${formatDay(to)}`
+    : "every open order";
+  const coversSlug = from && to ? (from === to ? from : `${from}_${to}`) : from || to || "open";
 
   // A cash order needs buying and delivering exactly like a paid one — the only
   // difference is when the money arrives — so it counts as awaiting fulfilment.
@@ -88,7 +117,20 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       ) : (
         <>
           <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Stat label="Total orders" value={result.total} />
+            {/*
+              Every tile counts the whole shop, including this one.
+
+              It used to count whatever the page was filtered to, which put
+              "Total orders 3" beside "Awaiting fulfilment 19" and read as a
+              contradiction — the date window made it obvious, the status tabs
+              had been doing it quietly all along. How many match the filter is
+              already answered by "Showing 1–3 of 3" under the search box, so
+              these four are the business and the table is the view.
+            */}
+            <Stat
+              label="Total orders"
+              value={Object.values(result.countsByStatus).reduce((a, b) => a + b, 0)}
+            />
             <Stat
               label="Awaiting fulfilment"
               value={awaiting}
@@ -102,9 +144,53 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             />
           </div>
 
-          <OrdersTable result={result} status={status} search={search} />
+          <SupplierExport split={purchase} covers={coversSlug} coversLabel={coversLabel}>
+            {/*
+              What was counted, said before anyone presses a button. The set
+              is not "the orders on screen": a purchase request is only ever
+              for orders that still need buying, so cancelled, unpaid and
+              already-fulfilled ones are out however the page is filtered.
+            */}
+            <p className="mt-2 text-xs text-muted">
+              Counting {toBuy.orderCount} confirmed or paid order
+              {toBuy.orderCount === 1 ? "" : "s"}. Cancelled, unpaid and already-fulfilled
+              orders are never included.
+              {status !== "all" && !PURCHASE_STATUSES.includes(status as OrderStatus) && (
+                <span className="text-amber-700">
+                  {" "}
+                  The {status} filter has nothing to buy in it.
+                </span>
+              )}
+            </p>
+            {toBuy.truncated && (
+              <p className="mt-2 rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-900">
+                More orders match than one request should carry. Narrow the dates — these
+                files cover the oldest 500 only.
+              </p>
+            )}
+            {toBuy.error && (
+              <p className="mt-2 rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-900">
+                Couldn&rsquo;t work out what to buy: {toBuy.error}
+              </p>
+            )}
+          </SupplierExport>
+
+          <OrdersTable
+            result={result}
+            status={status}
+            search={search}
+            from={from}
+            to={to}
+          />
         </>
       )}
     </Container>
   );
+}
+
+/** "7 Oct 2026" — short, unambiguous, and the same in every locale we serve. */
+function formatDay(day: string): string {
+  const d = new Date(`${day}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return day;
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
